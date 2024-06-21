@@ -1,12 +1,8 @@
 import random
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
-from openai import OpenAI
 import json
 import numpy as np
 import os
-from agents.gpt_agent import GPTAgent
-from agents.hf_agent import HFAgent
+from agents import HFAgent, GPTAgent
 
 
 def generate_initial_state(items_min=3, items_max=3, quantity_min=1, quantity_max=5, utility_min=1, utility_max=5, player_1_name = 'player_1', player_2_name = 'player_2'):

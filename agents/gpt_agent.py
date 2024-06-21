@@ -1,5 +1,4 @@
 from typing import Any
-from transformers import AutoModelForCausalLM, AutoTokenizer
 from openai import OpenAI
 
 class GPTAgent():
