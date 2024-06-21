@@ -2,10 +2,11 @@ from typing import Any
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from openai import OpenAI
 
-class HFAgent():
-    def __init__(self) -> None:
+class GPTAgent():
+    def __init__(self, name) -> None:
         self.messages = []
         self.openai = OpenAI()
+        self.name = name
         
         
     def __call__(self, *args: Any, **kwds: Any) -> Any:
