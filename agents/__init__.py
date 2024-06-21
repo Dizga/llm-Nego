@@ -1,2 +1,2 @@
-from hf_agent import HFAgent
-from gpt_agent import GPTAgent
+from agents.hf_agent import HFAgent
+from agents.gpt_agent import GPTAgent
