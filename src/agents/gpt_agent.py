@@ -23,5 +23,8 @@ class GPTAgent():
     def add_message(self, role, message):
         self.messages.append({"role": role, "content": message})
 
+    def reset_messages(self):
+        self.messages = []
+
     def add_system_message(self, message):
         self.add_message("system", message)

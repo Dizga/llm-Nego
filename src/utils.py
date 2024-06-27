@@ -1,10 +1,11 @@
 import random
 from typing import List, Dict, Union
+import numpy as np
 from scipy.stats import poisson
 
 def generate_initial_state(
     items_min: int = 3, items_max: int = 3, quantity_min: int = 1, 
-    quantity_max: int = 5, utility_min: int = 1, utility_max: int = 5, 
+    quantity_max: int = 5, utility_min: int = 1, utility_max: int = 5, expected_turns = 5,
     player_1_name: str = 'player_1', player_2_name: str = 'player_2'
 ) -> Dict[str, Union[int, List[int], Dict[str, List[int]]]]:
     """Generate the initial state of the negotiation game."""
@@ -18,7 +19,8 @@ def generate_initial_state(
         "utilities": {
             player_1_name: player_1_utility_values,
             player_2_name: player_2_utility_values
-        }
+        },
+        "turns": np.random.poisson(expected_turns)
     }
 
 def calculate_remaining_items(item_quantities: List[int], proposal: List[int]) -> List[int]:
@@ -40,7 +42,7 @@ def calculate_rewards(
     state: Dict[str, Union[int, List[int], Dict[str, List[int]]]], player: str, opponent: str, proposal: List[int]
 ) -> Dict[str, int]:
     """Calculate the rewards for both players based on the proposal."""
-    type_of_items, item_quantities, utilities = state.values()
+    type_of_items, item_quantities, utilities, _ = state.values()
 
     player_utilities = utilities[player]
     opponent_utilities = utilities[opponent]

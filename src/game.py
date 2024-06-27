@@ -9,7 +9,7 @@ def generate_prompt(
     opponent_message: str = None
 ) -> str:
     """Generate a prompt for the player's turn."""
-    type_of_items, item_quantities, utilities = state.values()
+    type_of_items, item_quantities, utilities, _ = state.values()
 
     player_utilities = utilities[player_turn]
     opponent_utilities = utilities[opponent_turn]
@@ -29,7 +29,7 @@ def generate_prompt(
         opponent_proposal_text = (
             f"The opponent's proposal is to take "
             + ", ".join([f"{opponent_proposal[i]} of item_{i+1}" for i in range(len(opponent_proposal))]) +
-            f" and leave you with {remaining_items_text}. "
+            f" and leave you with {remaining_items_text}.\n"
             f"{opponent_message}\n"
             "Reason about the current state of the game, then choose to accept or decline the proposal. "
             "If you decline this proposal, reason about a new proposal. "
@@ -43,25 +43,36 @@ def generate_prompt(
         f"{opponent_proposal_text} "
     )
 
-def generate_json_prompt(types_of_items: int) -> str:
+def generate_json_prompt(types_of_items: int, comm_channel: bool) -> str:
     """Generate a JSON prompt for the player's proposal."""
     item_info = ", ".join(["int" for _ in range(types_of_items)])
 
-    proposal_template = f"""{{
-        "accept_opponent_proposal": true | false,
-        "my_proposal": null | List[{item_info}],
-        "comm_channel": null | str
-    }}"""
+    comm_prompt = ""
+
+    if comm_channel:
+        proposal_template = ("{{\n"
+                            '\t"accept_opponent_proposal": true | false,\n'
+                            f'\t"my_proposal": null | List[{item_info}],\n'
+                            '\t"comm_channel": null | str\n'
+                            '}}')
+        comm_prompt = "Anything you want to say to your opponent, to share information or try to influence his decision for example, you can write in the 'comm_channel'. "
+    else:
+        proposal_template = ("{{\n"
+                            '\t"accept_opponent_proposal": true | false,\n'
+                            f'\t"my_proposal": null | List[{item_info}]\n'
+                            '}}')
 
     return (f"Return your answer as a valid JSON string following this template: {proposal_template}, 'my_proposal' should be a list of length {types_of_items}. "
-            "Anything you want to say to your opponent, to share information or try to influence his decision for example, you can write in the 'comm_channel'. "
+            f"{comm_prompt}" 
             "No explanation needed. No Markdown needed")
 
 def nego_game(
-    state: Dict[str, Union[int, List[int], Dict[str, List[int]]]], turns: int, expected_turns: int, 
-    player1: GPTAgent, player2: GPTAgent, logger
+    state: Dict[str, Union[int, List[int], Dict[str, List[int]]]], expected_turns: int, 
+    player1: GPTAgent, player2: GPTAgent, logger, comm_channel: bool = True
 ) -> Dict[str, int]:
     """Run the negotiation game."""
+
+    turns = state['turns']
     current_proposal = None
     current_communication = None
     max_retries = 3
@@ -74,7 +85,7 @@ def nego_game(
             logger.log_debug(f"{player.name}: {reasoning_prompt}")
             player.add_message('user', reasoning_prompt)
             player()
-            produce_json_prompt = generate_json_prompt(state['type_of_items'])
+            produce_json_prompt = generate_json_prompt(state['type_of_items'], comm_channel)
             player.add_message('user', produce_json_prompt)
 
             retries = 0
@@ -103,7 +114,7 @@ def nego_game(
                 return calculate_rewards(state, player.name, opponent.name, current_proposal)
 
             current_proposal = player_proposal["my_proposal"]
-            current_communication = player_proposal["comm_channel"]
+            current_communication = player_proposal["comm_channel"] if comm_channel else None
 
             logger.log_info(f"{player.name} proposal {current_proposal}.")
 

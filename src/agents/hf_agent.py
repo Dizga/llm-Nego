@@ -8,12 +8,12 @@ class HFAgent():
         self.name = name
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model = AutoModelForCausalLM.from_pretrained(
-            "microsoft/Phi-3-mini-4k-instruct",
+            "microsoft/Phi-3-mini-128k-instruct",
             torch_dtype="auto",
             device_map="auto",
             trust_remote_code=True,
         )
-        self.tokenizer = AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct")
+        self.tokenizer = AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-128k-instruct")
         
         
     def __call__(self, add_to_history = True, *args: Any, **kwds: Any ) -> Any:
@@ -28,6 +28,9 @@ class HFAgent():
     
     def add_message(self, role, message):
         self.messages.append({"role": role, "content": message})
+
+    def reset_messages(self):
+        self.messages = []
 
     def add_system_message(self, message):
         self.add_message("user", message)

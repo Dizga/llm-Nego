@@ -1,5 +1,7 @@
 # User defined
 logs/
+test.py
+test.ipynb
 
 
 # Byte-compiled / optimized / DLL files

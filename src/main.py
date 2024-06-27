@@ -1,3 +1,4 @@
+import json
 import numpy as np
 from agents import GPTAgent, HFAgent
 from game import nego_game
@@ -17,25 +18,47 @@ instruction_prompt = (
     "If no proposal is accepted after a random amount of turns, the game ends with both players receiving a reward of 0.\n"
 )
 
-player1 = GPTAgent("player_1")
-# player2 = GPTAgent("player_2")
-player2 = HFAgent("player_2")
 
-player1.add_system_message(instruction_prompt)
-player2.add_system_message(instruction_prompt)
-
-state = generate_initial_state()
-logger.log_info("State:")
-logger.log_info(state)
-
+player1 = GPTAgent('player_1')
+player2 = GPTAgent("player_2")
+# player1 = HFAgent('player_1')
+# player2 = HFAgent('player_2')
 expected_turns = 5
-num_turns = np.random.poisson(expected_turns)
-logger.log_info(f"There will be {num_turns} turns.")
+p1_rewards = []
+p2_rewards = []
+p1_history = []
+p2_history = []
 
-rewards = nego_game(state, num_turns, expected_turns, player1, player2, logger)
+# states = [generate_initial_state() for _ in range(2)]
 
-logger.save_player_messages("player_1", player1.messages)
-logger.save_player_messages("player_2", player2.messages)
+with open("states.json", 'r') as f:
+    states = json.load(f)
 
-logger.log_info("Rewards:")
-logger.log_info(rewards)
+for game, state in enumerate(states, 1):
+    logger.log_info(f'Game {game} started.')
+
+    player1.reset_messages()
+    player2.reset_messages()
+
+    player1.add_system_message(instruction_prompt)
+    player2.add_system_message(instruction_prompt)
+
+    logger.log_info("State:")
+    logger.log_info(state)
+
+    rewards = nego_game(state, expected_turns, player1, player2, logger)
+
+    p1_rewards.append(rewards[player1.name])
+    p2_rewards.append(rewards[player2.name])
+    p1_history.append(player1.messages)
+    p2_history.append(player2.messages)
+
+    logger.log_info("Rewards:")
+    logger.log_info(rewards)
+
+logger.save_player_messages(player1.name, p1_history)
+logger.save_player_messages(player2.name, p2_history)
+
+logger.log_info("Cumulative Rewards:")
+logger.log_info(f'{player1.name}: {p1_rewards}')
+logger.log_info(f'{player2.name}: {p2_rewards}')
