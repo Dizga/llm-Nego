@@ -6,6 +6,7 @@ class GPTAgent():
         self.messages = []
         self.openai = OpenAI()
         self.name = name
+        self.type = 'gpt3'
         
         
     def __call__(self, add_to_history = True, *args: Any, **kwds: Any) -> Any:

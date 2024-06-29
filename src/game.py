@@ -37,9 +37,10 @@ def generate_prompt(
         )
 
     return (
-        f"It is Turn {turn}. The probability of the game ending is {game_ending_prob:0.2f}. There are {item_info}. "
-        f"Your utility values for the items are: {your_utilities}. "
-        f"The opponent's utility values for the items are: {opponent_utilities}. "
+        f"It is Turn {turn}. The probability of the game ending because the maximum number of turn is reached is {game_ending_prob:0.2f}.\n"
+        f"There are {item_info}.\n"
+        f"Your utility values for the items are: {your_utilities}.\n"
+        f"The opponent's utility values for the items are: {opponent_utilities}.\n"
         f"{opponent_proposal_text} "
     )
 
@@ -57,14 +58,14 @@ def generate_json_prompt(types_of_items: int, comm_channel: bool) -> str:
                             '}}')
         comm_prompt = "Anything you want to say to your opponent, to share information or try to influence his decision for example, you can write in the 'comm_channel'. "
     else:
-        proposal_template = ("{{\n"
+        proposal_template = ("\n{{\n"
                             '\t"accept_opponent_proposal": true | false,\n'
                             f'\t"my_proposal": null | List[{item_info}]\n'
-                            '}}')
+                            '}}\n')
 
     return (f"Return your answer as a valid JSON string following this template: {proposal_template}, 'my_proposal' should be a list of length {types_of_items}. "
             f"{comm_prompt}" 
-            "No explanation needed. No Markdown needed")
+            "No explanation needed. No Markdown needed, your answer should start with '{'.")
 
 def nego_game(
     state: Dict[str, Union[int, List[int], Dict[str, List[int]]]], expected_turns: int, 
@@ -73,6 +74,7 @@ def nego_game(
     """Run the negotiation game."""
 
     turns = state['turns']
+    proposals = []
     current_proposal = None
     current_communication = None
     max_retries = 3
@@ -102,7 +104,7 @@ def nego_game(
                 except json.JSONDecodeError:
                     retries += 1
                     logger.log_warning(f"Error decoding JSON from {player.name} response. Retry {retries} of {max_retries}.")
-                    player.add_message("user", "Invalid response. Please try again and return a valid JSON string.")
+                    player.add_message("user", "Invalid response. Please try again and return a valid JSON string. No explanation needed. No Markdown needed.")
 
             if retries == max_retries:
                 logger.log_error(f"Error decoding JSON from {player.name} after {max_retries} retries.")
@@ -111,11 +113,12 @@ def nego_game(
             if player_proposal["accept_opponent_proposal"]:
                 logger.log_info("Game ended with acceptance.")
                 logger.log_info(f"Final proposal: {current_proposal}")
-                return calculate_rewards(state, player.name, opponent.name, current_proposal)
+                return calculate_rewards(state, player.name, opponent.name, current_proposal), proposals
 
             current_proposal = player_proposal["my_proposal"]
             current_communication = player_proposal["comm_channel"] if comm_channel else None
+            proposals.append(player_proposal)
 
             logger.log_info(f"{player.name} proposal {current_proposal}.")
 
-    return {player1.name: 0, player2.name: 0}
+    return {player1.name: 0, player2.name: 0}, proposals

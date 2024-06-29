@@ -19,10 +19,10 @@ instruction_prompt = (
 )
 
 
-player1 = GPTAgent('player_1')
-player2 = GPTAgent("player_2")
-# player1 = HFAgent('player_1')
-# player2 = HFAgent('player_2')
+# player1 = GPTAgent('player_1')
+# player2 = GPTAgent("player_2")
+player1 = HFAgent('player_1')
+player2 = HFAgent('player_2')
 expected_turns = 5
 p1_rewards = []
 p2_rewards = []
@@ -34,7 +34,7 @@ p2_history = []
 with open("states.json", 'r') as f:
     states = json.load(f)
 
-for game, state in enumerate(states, 1):
+for game, state in enumerate(states[:2], 1):
     logger.log_info(f'Game {game} started.')
 
     player1.reset_messages()
@@ -46,15 +46,21 @@ for game, state in enumerate(states, 1):
     logger.log_info("State:")
     logger.log_info(state)
 
-    rewards = nego_game(state, expected_turns, player1, player2, logger)
+    try:
+        rewards = nego_game(state, expected_turns, player1, player2, logger)
 
-    p1_rewards.append(rewards[player1.name])
-    p2_rewards.append(rewards[player2.name])
-    p1_history.append(player1.messages)
-    p2_history.append(player2.messages)
+        p1_rewards.append(rewards[player1.name])
+        p2_rewards.append(rewards[player2.name])
+        logger.log_info("Rewards:")
+        logger.log_info(rewards)
+    except:
+        p1_history.append(player1.messages)
+        p2_history.append(player2.messages)
+        break
+    else:
+        p1_history.append(player1.messages)
+        p2_history.append(player2.messages)
 
-    logger.log_info("Rewards:")
-    logger.log_info(rewards)
 
 logger.save_player_messages(player1.name, p1_history)
 logger.save_player_messages(player2.name, p2_history)
