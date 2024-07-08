@@ -21,8 +21,8 @@ class GPTAgent():
         if add_to_history : self.add_message('assistant', response)
         return response
     
-    def add_message(self, role, message):
-        self.messages.append({"role": role, "content": message})
+    def add_message(self, role, message, **kwargs):
+        self.messages.append({"role": role, "content": message, "name": self.name})
 
     def reset_messages(self):
         self.messages = []

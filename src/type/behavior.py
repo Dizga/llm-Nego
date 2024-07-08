@@ -1,6 +1,6 @@
 from enum import Enum
 
-class Prompt(Enum):
+class Behavior(Enum):
     BASIC = 0
     COMPETITIVE = 1
     ACCOMODATING = 2

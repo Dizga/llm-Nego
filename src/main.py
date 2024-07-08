@@ -2,6 +2,9 @@ import json
 import numpy as np
 from agents import GPTAgent, HFAgent
 from game import nego_game
+from prompts.instruction import get_instruction_prompt
+from store import add_run_to_store
+from type.behavior import Behavior
 from utils import generate_initial_state
 from logger import Logger
 
@@ -19,35 +22,50 @@ instruction_prompt = (
 )
 
 
-# player1 = GPTAgent('player_1')
-# player2 = GPTAgent("player_2")
-player1 = HFAgent('player_1')
-player2 = HFAgent('player_2')
+player1 = GPTAgent('player_1')
+player2 = GPTAgent("player_2")
+# player1 = HFAgent('player_1')
+# player2 = HFAgent('player_2')
 expected_turns = 5
+p1_behavior = Behavior.BASIC
+p2_behavior = Behavior.BASIC
 p1_rewards = []
 p2_rewards = []
 p1_history = []
 p2_history = []
 
+state = {
+  "type_of_items": 3,
+  "item_quantities": [5,5,5],
+  "utilities": {
+   "player_1": [2,2,2],
+   "player_2": [2,2,2]
+  },
+  "turns": 5
+ }
+
+# states= [state]
+
 # states = [generate_initial_state() for _ in range(2)]
 
-with open("states.json", 'r') as f:
-    states = json.load(f)
+# with open("states.json", 'r') as f:
+#     states = json.load(f)
 
-for game, state in enumerate(states[:2], 1):
+# for game, state in enumerate(states, 1):
+for game in range(1):
     logger.log_info(f'Game {game} started.')
 
     player1.reset_messages()
     player2.reset_messages()
 
-    player1.add_system_message(instruction_prompt)
-    player2.add_system_message(instruction_prompt)
+    player1.add_system_message(get_instruction_prompt(p1_behavior))
+    player2.add_system_message(get_instruction_prompt(p2_behavior))
 
     logger.log_info("State:")
     logger.log_info(state)
 
     try:
-        rewards = nego_game(state, expected_turns, player1, player2, logger)
+        rewards, propositions = nego_game(state, expected_turns, player1, player2, logger)
 
         p1_rewards.append(rewards[player1.name])
         p2_rewards.append(rewards[player2.name])
@@ -60,6 +78,8 @@ for game, state in enumerate(states[:2], 1):
     else:
         p1_history.append(player1.messages)
         p2_history.append(player2.messages)
+
+    add_run_to_store(player1.type, player2.type, player1.messages, player2.messages, rewards[player1.name], rewards[player2.name], p1_behavior, p2_behavior, propositions, 0)
 
 
 logger.save_player_messages(player1.name, p1_history)

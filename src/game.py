@@ -33,7 +33,8 @@ def generate_prompt(
             f"{opponent_message}\n"
             "Reason about the current state of the game, then choose to accept or decline the proposal. "
             "If you decline this proposal, reason about a new proposal. "
-            "If you decide that the best option is to accept your opponent's proposal, clearly say it at the end of your reasoning."
+            "If you decide that the best option is to accept your opponent's proposal, clearly say it at the end of your reasoning. "
+            "Do not answer in JSON format yet. "
         )
 
     return (
@@ -63,7 +64,7 @@ def generate_json_prompt(types_of_items: int, comm_channel: bool) -> str:
                             f'\t"my_proposal": null | List[{item_info}]\n'
                             '}}\n')
 
-    return (f"Return your answer as a valid JSON string following this template: {proposal_template}, 'my_proposal' should be a list of length {types_of_items}. "
+    return (f"Return your answer as a valid JSON string following this template:\n{proposal_template},\n'my_proposal' should be a list of length {types_of_items}. "
             f"{comm_prompt}" 
             "No explanation needed. No Markdown needed, your answer should start with '{'.")
 
@@ -75,6 +76,7 @@ def nego_game(
 
     turns = state['turns']
     proposals = []
+    convo = []
     current_proposal = None
     current_communication = None
     max_retries = 3
@@ -86,7 +88,8 @@ def nego_game(
             reasoning_prompt = generate_prompt(turn, expected_turns, state, player.name, opponent.name, current_proposal, current_communication)
             logger.log_debug(f"{player.name}: {reasoning_prompt}")
             player.add_message('user', reasoning_prompt)
-            player()
+            response = player()
+            convo.append({"content": response, "name": player.name, "type": "reasoning"})
             produce_json_prompt = generate_json_prompt(state['type_of_items'], comm_channel)
             player.add_message('user', produce_json_prompt)
 
@@ -100,11 +103,12 @@ def nego_game(
                         logger.log_warning(f"Error in proposal from {player.name} response. Retry {retries} of {max_retries}.")
                         player.add_message("user", f"Invalid proposal. Your proposal should be a list of length {state['type_of_items']}. Please try again.")
                     else:
+                        convo.append({"content": player_proposal, "name": player.name, "type": "proposal"})
                         break
                 except json.JSONDecodeError:
                     retries += 1
                     logger.log_warning(f"Error decoding JSON from {player.name} response. Retry {retries} of {max_retries}.")
-                    player.add_message("user", "Invalid response. Please try again and return a valid JSON string. No explanation needed. No Markdown needed.")
+                    player.add_message("user", "Invalid response. Please try again and return a valid JSON string. No explanation needed. No Markdown needed, your answer should start with '{'.")
 
             if retries == max_retries:
                 logger.log_error(f"Error decoding JSON from {player.name} after {max_retries} retries.")
@@ -113,7 +117,7 @@ def nego_game(
             if player_proposal["accept_opponent_proposal"]:
                 logger.log_info("Game ended with acceptance.")
                 logger.log_info(f"Final proposal: {current_proposal}")
-                return calculate_rewards(state, player.name, opponent.name, current_proposal), proposals
+                return calculate_rewards(state, player.name, opponent.name, current_proposal), convo
 
             current_proposal = player_proposal["my_proposal"]
             current_communication = player_proposal["comm_channel"] if comm_channel else None
@@ -121,4 +125,4 @@ def nego_game(
 
             logger.log_info(f"{player.name} proposal {current_proposal}.")
 
-    return {player1.name: 0, player2.name: 0}, proposals
+    return {player1.name: 0, player2.name: 0}, convo

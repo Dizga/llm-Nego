@@ -5,4 +5,4 @@ class States(Enum):
     SMALL_ADVANTAGE_P1 = 1
     SMALL_ADVANTAGE_P2 = 2
     BIG_ADVANTAGE_P1 = 3
-    BIG_ADVANTAGE_P1 = 4
+    BIG_ADVANTAGE_P2 = 4
