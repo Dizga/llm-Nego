@@ -18,6 +18,25 @@ class Logger:
         self.log_instructions(cfg.instructions)
 
         self.games_log_file = os.path.join(self.log_dir, 'games_log.txt')
+        self.current_it = 0
+        self.curr_it_folder = ""
+
+    def new_iteration(self):
+        self.current_it+=1
+        self.curr_it_folder = self.log_dir + f"/ITERATION_{self.current_it}"
+        os.makedirs(self.curr_it_folder, exist_ok=True)
+
+    def log_instructs(self):
+        # Log instructions
+        file_path = os.path.join(self.current_it_folder, "instructions.txt")
+        with open(file_path, 'w') as f: f.write(self.instructions)
+        # Log chain of thought prompt
+        file_path = os.path.join(self.current_it_folder, "CoT_prompt.txt")
+        with open(file_path, 'w') as f: f.write(self.instructions)
+
+
+
+
 
     def setup_logging(self, config_file):
         logging.config.fileConfig(config_file, defaults={'date': self.datenow})
@@ -40,11 +59,21 @@ class Logger:
             f.write(instructions)
 
     def log_game(self, game: dict):
-        "Append game to the games log file."
-        game_a = game['quantities'] + " $$ " + game['a_values'] + " $$ " +  a_perspective + 'a_score'
-        game_b = game['quantities'] + " " + game['a_values'] + a_perspective + 'score'
-        with open(self.games_log_file, 'a') as f:
-            f.write(game_str + '\n')
+        "Append compact game descritions to output dataset."
+        for val
+        game_a = {
+            "quantities": game['quantities'],
+            "values": game['b_values'],
+            "score" : game['a_score'],
+            "perspective": game['a_perspective']
+        }
+        game_b = {
+            "quantities": game['quantities'],
+            "values": game['b_values'],
+            "score" : game['a_score'],
+            "perspective": game['a_perspective']
+        }
+        with open(self.games_dataset_file, 'a') as f: json.dump(game + '\n')
 
     def save_player_messages(self, player_name: str, messages: list):
         file_path = os.path.join(self.log_dir, f"{player_name}.json")
