@@ -4,39 +4,52 @@ import logging
 import logging.config
 from datetime import datetime
 from omegaconf import OmegaConf
+import pandas as pd
 
 class Logger:
     def __init__(self, name, cfg):
         self.datenow = datetime.now().strftime('%Y%m%d_%H%M%S')
-        self.log_dir = os.path.join(cfg.log_dir, self.datenow)
+        self.log_dir = os.path.join(cfg.log_dir, self.datenow) #TODO: add name
+        os.makedirs(self.log_dir, exist_ok=True)
+        self.logger = logging.getLogger(name)
+        columns = [
+            'p0_score',
+            'p1_score',
+            'quantities',
+            'p0_values',
+            'p1_values',
+            'p0_proposal',
+            'p1_proposal',
+            'reach_agreement',
+            'p0_file',
+            'p1_file'
+        ]
+        self.dataframe = pd.DataFrame(columns=columns)
+        self.games_log_file = os.path.join(self.log_dir, 'games_log.txt')
+
+    def log_game(self, game: dict, it: int, game_nb: int):
+        p0_history = game.pop("p0_history")
+        p1_history = game.pop("p1_history")
+
+        p0_game_name = f"{game['player']}_GAME_{it}_{game_nb}_{self.datenow}.json"
+        p1_game_name = f"{game['player']}_GAME_{it}_{game_nb}_{self.datenow}.json"
+
         os.makedirs(self.log_dir, exist_ok=True)
 
-        self.setup_logging(cfg.log_config)
-        self.logger = logging.getLogger(name)
+        with open(os.path.join(self.log_dir, p0_game_name), 'w') as f:
+            json.dump(p0_history, f)
 
-        self.instructions_file = os.path.join(self.log_dir, 'instructions.txt')
-        self.log_instructions(cfg.instructions)
+        with open(os.path.join(self.log_dir, p1_game_name), 'w') as f:
+            json.dump(p1_history, f)
 
-        self.games_log_file = os.path.join(self.log_dir, 'games_log.txt')
-        self.current_it = 0
-        self.curr_it_folder = ""
+        game['p0_file'] = p0_game_name
+        game['p1_file'] = p1_game_name
 
-    def new_iteration(self):
-        self.current_it+=1
-        self.curr_it_folder = self.log_dir + f"/ITERATION_{self.current_it}"
-        os.makedirs(self.curr_it_folder, exist_ok=True)
+        self.dataframe = self.dataframe.append(game, ignore_index=True)
+        self.dataframe.to_csv(self.dataframe_file)
 
-    def log_instructs(self):
-        # Log instructions
-        file_path = os.path.join(self.current_it_folder, "instructions.txt")
-        with open(file_path, 'w') as f: f.write(self.instructions)
-        # Log chain of thought prompt
-        file_path = os.path.join(self.current_it_folder, "CoT_prompt.txt")
-        with open(file_path, 'w') as f: f.write(self.instructions)
-
-
-
-
+    def comp_stats_and_log(self):
+        pass
 
     def setup_logging(self, config_file):
         logging.config.fileConfig(config_file, defaults={'date': self.datenow})
@@ -52,28 +65,6 @@ class Logger:
 
     def log_error(self, message: str):
         self.logger.error(message)
-
-    def log_instructions(self, instructions: str):
-        "Log the instructions to a text file."
-        with open(self.instructions_file, 'w') as f:
-            f.write(instructions)
-
-    def log_game(self, game: dict):
-        "Append compact game descritions to output dataset."
-        for val
-        game_a = {
-            "quantities": game['quantities'],
-            "values": game['b_values'],
-            "score" : game['a_score'],
-            "perspective": game['a_perspective']
-        }
-        game_b = {
-            "quantities": game['quantities'],
-            "values": game['b_values'],
-            "score" : game['a_score'],
-            "perspective": game['a_perspective']
-        }
-        with open(self.games_dataset_file, 'a') as f: json.dump(game + '\n')
 
     def save_player_messages(self, player_name: str, messages: list):
         file_path = os.path.join(self.log_dir, f"{player_name}.json")
