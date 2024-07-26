@@ -88,3 +88,10 @@ logger.save_player_messages(player2.name, p2_history)
 logger.log_info("Cumulative Rewards:")
 logger.log_info(f'{player1.name}: {p1_rewards}')
 logger.log_info(f'{player2.name}: {p2_rewards}')
+
+@hydra.main(config_path="../conf", config_name="config")
+def main(cfg: DictConfig):
+    print(f"Training with config: {cfg}")
+    (...)
+if __name__ == "__main__":
+    main()

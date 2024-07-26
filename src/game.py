@@ -3,9 +3,10 @@ from typing import List, Dict, Union
 from utils import calculate_remaining_items, calculate_end_probability, calculate_rewards
 from agents import GPTAgent
 
+
 def generate_prompt(
-    turn: int, expected_turns: int, state: Dict[str, Union[int, List[int], Dict[str, List[int]]]], 
-    player_turn: str, opponent_turn: str, opponent_proposal: List[int] = None, 
+    turn: int, expected_turns: int, state: Dict[str, Union[int, List[int], Dict[str, List[int]]]],
+    player_turn: str, opponent_turn: str, opponent_proposal: List[int] = None,
     opponent_message: str = None
 ) -> str:
     """Generate a prompt for the player's turn."""
@@ -65,11 +66,11 @@ def generate_json_prompt(types_of_items: int, comm_channel: bool) -> str:
                             '}}\n')
 
     return (f"Return your answer as a valid JSON string following this template:\n{proposal_template},\n'my_proposal' should be a list of length {types_of_items}. "
-            f"{comm_prompt}" 
+            f"{comm_prompt}"
             "No explanation needed. No Markdown needed, your answer should start with '{'.")
 
 def nego_game(
-    state: Dict[str, Union[int, List[int], Dict[str, List[int]]]], expected_turns: int, 
+    state: Dict[str, Union[int, List[int], Dict[str, List[int]]]], expected_turns: int,
     player1: GPTAgent, player2: GPTAgent, logger, comm_channel: bool = True
 ) -> Dict[str, int]:
     """Run the negotiation game."""
