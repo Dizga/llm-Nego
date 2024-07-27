@@ -1,0 +1,4 @@
+Your partner {other_player} said:"{message}"
+
+Using the <reason> tag, reason about the current state of the game, how to fulfill your objective, and what should be your next action: Message or final proposal.
+Then do the action using the appropriate tag: <message> or <proposal>.

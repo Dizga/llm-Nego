@@ -5,7 +5,7 @@ from game import nego_game
 from prompts.instruction import get_instruction_prompt
 from store import add_run_to_store
 from type.behavior import Behavior
-from utils import generate_initial_state
+from utils import generate_initial_state, parse_context
 from logger import Logger
 
 logger = Logger(__name__)
@@ -52,8 +52,36 @@ state = {
 #     states = json.load(f)
 
 # for game, state in enumerate(states, 1):
+
+with open("selfplay.txt", "r") as file:
+    # read lines into a list, stripping the newline character from each line
+    lines = [line.strip() for line in file]
+
+random_indices = np.random.randint(0, 4085, size=1)
+
+cnts, p1_vals = parse_context(lines[random_indices[i] * 2])
+_, p2_vals = parse_context(lines[random_indices[i] * 2 + 1])
+
+with open("prompts/coop.txt", "r") as system_prompt_file:
+    system_text = system_prompt_file.read()
+
+system_text.format(book_cnt=cnts[0])
+
 for game in range(1):
     logger.log_info(f'Game {game} started.')
+
+    cnts, p1_vals = parse_context(lines[random_indices[game] * 2])
+    _, p2_vals = parse_context(lines[random_indices[game] * 2 + 1])
+
+    state = {
+    "type_of_items": 3,
+    "item_quantities": cnts,
+    "utilities": {
+    "player_1": p1_vals,
+    "player_2": p2_vals
+    },
+    "turns": 5
+    }
 
     player1.reset_messages()
     player2.reset_messages()

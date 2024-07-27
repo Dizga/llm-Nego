@@ -23,6 +23,13 @@ def generate_initial_state(
         "turns": np.random.poisson(expected_turns)
     }
 
+def parse_context(ctx):
+    # ctx is the string
+    ctx = ctx.split()
+    cnts = [int(n) for n in ctx[0::2]]
+    vals = [int(v) for v in ctx[1::2]]
+    return cnts, vals
+
 def calculate_remaining_items(item_quantities: List[int], proposal: List[int]) -> List[int]:
     """Calculate the remaining items after a proposal."""
     return [item_quantities[i] - proposal[i] for i in range(len(item_quantities))]

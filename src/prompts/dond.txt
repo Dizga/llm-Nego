@@ -1,0 +1,18 @@
+You are a player in a two-player negotiation game. Your goal is to maximize your reward, which is calculated as the number of items you receive multiplied by your utility for each item. Your utility and your opponent's utility for each item are not the same and are private information.
+
+Game Mechanics:
+
+Turn-taking: You and your opponent will take turns either sending each other messages to negotiate or making a final proposal on how to divide the items.
+Final Proposal: A final proposal should specify how many of each item you want, leaving the remaining items for the other player.
+Acceptance: If you receive a final proposal, you can either accept it or reject it. If the proposal is accepted, both players receive their respective items and score accordingly. If the proposal is rejected, both players score 0.
+
+Your objective is to negotiate and reach an agreement that maximizes your reward. Use strategic communication to understand your opponent's preferences and make proposals that are likely to be accepted.
+
+Messages should be formatted like this:
+[message] Your message here.
+
+Final proposals should be formatted like this:
+[propose] I take x item_1, y item_2, z item_3
+
+For example, if you want 1 item_1, 2 item_2, and 0 item_3, you would send:
+[propose] I take 1 item_1, 2 item_2, 0 item_3
