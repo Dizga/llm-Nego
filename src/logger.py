@@ -7,10 +7,10 @@ from omegaconf import OmegaConf
 import pandas as pd
 
 class Logger:
-    def __init__(self):
+    def __init__(self, out_dir):
+        self.run_dir = out_dir
         self.datenow = datetime.now().strftime('%Y%m%d_%H%M%S')
-        self.run_dir = f"DATA/RUN_{self.datenow}" #TODO: add name
-        os.makedirs(self.run_dir, exist_ok=True)
+        
         #self.logger = logging.getLogger(name)
         columns = [
             'p0_score',
