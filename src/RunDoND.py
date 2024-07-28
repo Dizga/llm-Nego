@@ -8,8 +8,8 @@ from logger import Logger
 from DoND import DoND
 from agents import DoNDagent
 import hydra
-import datetime
-import os
+from datetime import datetime
+import os 
 
 class TwoPlayersNegoTrainer:
     def __init__(self, iterations_per_run, games_per_iteration, game, player_0, player_1, logger):
@@ -32,7 +32,9 @@ class TwoPlayersNegoTrainer:
             self.logger.new_iteration()
 
     def run_game(self):
-        self.game.reset()
+        quantities, values_p0, values_p1 = self.game.reset()
+        self.player_0.instruct(quantities, values_p0)
+        self.player_1.instruct(quantities, values_p1)
         ongoing = True
         message = None
         while ongoing:
@@ -44,7 +46,7 @@ class TwoPlayersNegoTrainer:
                 ongoing = self.game.step(message)
         return self.game.export()
     
-class DoNDtrainer(TwoPlayersNegoTrainer):
+class DoNDtrainer():
     def train_agents(self):
         "Train the agents on the last iteration."
         metrics = self.log.metrics # extract dataframe with data for each game
@@ -64,29 +66,42 @@ class DoNDtrainer(TwoPlayersNegoTrainer):
 def RunDoND(cfg):
 
     # Make output directory
-    out_dir = f"DATA/RUN_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}" 
+    out_dir = f"DATA/RUN_{datetime.now().strftime('%Y%m%d_%H%M%S')}" 
     os.makedirs(out_dir, exist_ok=True)
 
     logger = Logger(out_dir)
     
     game = DoND()
 
+    print(os.getcwd())
+    with open(cfg.p0.instructions, "r") as instruction_prompt_file:
+        instruction_text = instruction_prompt_file.read()
+
+    with open(cfg.p0.CoT, "r") as cot_prompt_file:
+        cot_text = cot_prompt_file.read()
+
     player_0 = DoNDagent(
         name="agent",
         device=cfg.device,
         model=cfg.p0.model,
         tokenizer=cfg.p0.tokenizer,
-        chain_of_thought=cfg.p0.CoT,
-        instructions=cfg.p0.force_conformity
+        chain_of_thought=cot_text,
+        instructions=instruction_text
     )
+
+    with open(cfg.p1.instructions, "r") as instruction_prompt_file:
+        instruction_text = instruction_prompt_file.read()
+
+    with open(cfg.p1.CoT, "r") as cot_prompt_file:
+        cot_text = cot_prompt_file.read()
 
     player_1 = DoNDagent(
         name="agent",
         device=cfg.device,
         model=cfg.p1.model,
         tokenizer=cfg.p1.tokenizer,
-        chain_of_thought=cfg.p1.CoT,
-        instructions=cfg.p1.force_conformity
+        chain_of_thought=cot_text,
+        instructions=instruction_text
     )
 
     run_handler = TwoPlayersNego(

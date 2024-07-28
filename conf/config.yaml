@@ -1,4 +1,11 @@
 device: "cuda"
+hydra:
+  job:
+    chdir: false
+
+cuda: true
+
+device: 'cuda:0'
 
 run:
   train: False
@@ -10,6 +17,15 @@ p0:
   tokenizer: "HuggingFaceTB/SmolLM-1.7B"
   model: "HuggingFaceTB/SmolLM-1.7B"
   CoT: True # false if none, else link to txt file 
+  nb_iterations: 1
+  games_per_iterations: 1
+
+p0:
+  openai: False
+  tokenizer: 'microsoft/Phi-3-mini-128k-instruct'
+  model: 'microsoft/Phi-3-mini-128k-instruct'
+  instructions: "src/prompts/coop.txt"
+  CoT: "src/prompts/coop-cot.txt"
   force_conformity: False
 
 p1:
@@ -17,4 +33,8 @@ p1:
   tokenizer: "HuggingFaceTB/SmolLM-1.7B"
   model: "HuggingFaceTB/SmolLM-1.7B"
   CoT: True # false if none, else link to txt file 
+  tokenizer: 'microsoft/Phi-3-mini-128k-instruct'
+  model: 'microsoft/Phi-3-mini-128k-instruct'
+  instructions: "src/prompts/coop.txt"
+  CoT: "src/prompts/coop-cot.txt" # false if none, else link to txt file 
   force_conformity: False

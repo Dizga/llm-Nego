@@ -1,4 +1,3 @@
-import gymnasium
 import regex as re
 import json
 
@@ -17,6 +16,7 @@ class DoND:
         self.points_p0 = 0
         self.points_p1 = 0
         self.agreement_reached = False
+        return self.quantities, self.values_p0, self.values_p1
 
     def step(self, output: str):
         self.turn += 1
