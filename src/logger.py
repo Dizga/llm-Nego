@@ -7,11 +7,11 @@ from omegaconf import OmegaConf
 import pandas as pd
 
 class Logger:
-    def __init__(self, name, cfg):
+    def __init__(self):
         self.datenow = datetime.now().strftime('%Y%m%d_%H%M%S')
-        self.log_dir = os.path.join(cfg.log_dir, self.datenow) #TODO: add name
-        os.makedirs(self.log_dir, exist_ok=True)
-        self.logger = logging.getLogger(name)
+        self.run_dir = f"DATA/RUN_{self.datenow}" #TODO: add name
+        os.makedirs(self.run_dir, exist_ok=True)
+        #self.logger = logging.getLogger(name)
         columns = [
             'p0_score',
             'p1_score',
@@ -24,29 +24,55 @@ class Logger:
             'p0_file',
             'p1_file'
         ]
-        self.dataframe = pd.DataFrame(columns=columns)
-        self.games_log_file = os.path.join(self.log_dir, 'games_log.txt')
+        self.metrics = pd.DataFrame(columns=columns)
+        columns = [
+            "Iteration",
+            "Agreement Percentage",
+            "Score Mean",
+            "Score Variance",
+            "Score Mean P0",
+            "Score Mean P1"
+        ]
+        self.statistics = pd.DataFrame(columns)
+        self.iteration = 0
 
-    def log_game(self, game: dict, it: int, game_nb: int):
+    def new_iteration(self):
+        self.iteration += 1
+        self.game_nb = 1
+        self.it_folder = os.path.join(self.run_dir, f"ITERATION_{self.iteration}")
+        os.makedirs(self.run_dir, exist_ok=True)
+        # Reset metrics
+        self.metrics = self.metrics[:]
+        self.metrics_file = os.path.join(self.it_folder, "metrics.csv")
+        # compute stats of past iteration
+        self.log_stats()
+
+    def log_stats(self):
+        # TODO
+        pass
+
+
+    def log_game(self, game: dict):
         p0_history = game.pop("p0_history")
         p1_history = game.pop("p1_history")
 
-        p0_game_name = f"{game['player']}_GAME_{it}_{game_nb}_{self.datenow}.json"
-        p1_game_name = f"{game['player']}_GAME_{it}_{game_nb}_{self.datenow}.json"
+        p0_game_name = f"{game['player']}_GAME_{self.iteration}_{self.game_nb}_{self.datenow}.json"
+        p1_game_name = f"{game['player']}_GAME_{self.iteration}_{self.game_nb}_{self.datenow}.json"
 
-        os.makedirs(self.log_dir, exist_ok=True)
+        os.makedirs(self.run_dir, exist_ok=True)
 
-        with open(os.path.join(self.log_dir, p0_game_name), 'w') as f:
+        with open(os.path.join(self.run_dir, p0_game_name), 'w') as f:
             json.dump(p0_history, f)
 
-        with open(os.path.join(self.log_dir, p1_game_name), 'w') as f:
+        with open(os.path.join(self.run_dir, p1_game_name), 'w') as f:
             json.dump(p1_history, f)
 
         game['p0_file'] = p0_game_name
         game['p1_file'] = p1_game_name
 
-        self.dataframe = self.dataframe.append(game, ignore_index=True)
-        self.dataframe.to_csv(self.dataframe_file)
+        self.metrics = self.metrics.append(game, ignore_index=True)
+        self.metrics.to_csv(self.metrics_file)
+        self.game_nb +=1
 
     def comp_stats_and_log(self):
         pass
@@ -67,6 +93,6 @@ class Logger:
         self.logger.error(message)
 
     def save_player_messages(self, player_name: str, messages: list):
-        file_path = os.path.join(self.log_dir, f"{player_name}.json")
+        file_path = os.path.join(self.run_dir, f"{player_name}.json")
         with open(file_path, 'w') as f:
             json.dump(messages, f, indent=4)
