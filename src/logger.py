@@ -11,8 +11,7 @@ class Logger:
         self.run_dir = out_dir
         self.datenow = datetime.now().strftime('%Y%m%d_%H%M%S')
         
-        #self.logger = logging.getLogger(name)
-        columns = [
+        columns_metrics = [
             'p0_score',
             'p1_score',
             'quantities',
@@ -24,73 +23,84 @@ class Logger:
             'p0_file',
             'p1_file'
         ]
-        self.metrics = pd.DataFrame(columns=columns)
-        columns = [
+        self.metrics = pd.DataFrame(columns=columns_metrics)
+        
+        columns_statistics = [
             "Iteration",
             "Agreement Percentage",
-            "Score Mean",
-            "Score Variance",
-            "Score Mean P0",
-            "Score Mean P1"
+            "Score Variance P0",
+            "Score Variance P1",
+            "Mean Score P0",
+            "Mean Score P1"
         ]
-        self.statistics = pd.DataFrame(columns)
+        self.statistics = pd.DataFrame(columns=columns_statistics)
+        self.statstics_file = os.path.join(self.run_dir, "STATISTICS.csv")
         self.iteration = 0
 
     def new_iteration(self):
         self.iteration += 1
         self.game_nb = 1
         self.it_folder = os.path.join(self.run_dir, f"ITERATION_{self.iteration}")
-        os.makedirs(self.run_dir, exist_ok=True)
-        # Reset metrics
-        self.metrics = self.metrics[:]
+        os.makedirs(self.it_folder, exist_ok=True)
+        # Reset metrics for the new iteration
+        self.metrics = pd.DataFrame(columns=self.metrics.columns)
         self.metrics_file = os.path.join(self.it_folder, "metrics.csv")
-        # compute stats of past iteration
-        self.log_stats()
+        # Compute and log stats of the past iteration
+        self.log_itr_stats()
 
-    def log_stats(self):
-        # TODO
-        pass
+    def get_itr_stats(self):
+        # Logs stats for the current iteration
+        self.iteration_stats = {
+            "Iteration": self.iteration,
+            "Agreement Percentage" : self.metrics['reach_agreement'].mean() * 100,
+            "Score Variance P0" : self.metrics['p0_score'].var(),
+            "Score Variance P1" : self.metrics['p1_score'].var(),
+            "Mean Score P0" : self.metrics['p0_score'].mean(),
+            "Mean Score P1" : self.metrics['p1_score'].mean()
+        }
+        return self.iteration_stats
 
+    def log_itr_stats(self):
+        self.log_itr_stats(self)
+        self.statistics = self.statistics.append(self.iteration_stats, ignore_index=True)
+        self.statistics.to_csv(self.statistics_file, index=False)
 
     def log_game(self, game: dict):
         p0_history = game.pop("p0_history")
         p1_history = game.pop("p1_history")
 
-        p0_game_name = f"{game['player']}_GAME_{self.iteration}_{self.game_nb}_{self.datenow}.json"
-        p1_game_name = f"{game['player']}_GAME_{self.iteration}_{self.game_nb}_{self.datenow}.json"
+        p0_game_name = f"{game['player']}_GAME_{self.iteration}_{self.game_nb}_{self.datenow}_p0.json"
+        p1_game_name = f"{game['player']}_GAME_{self.iteration}_{self.game_nb}_{self.datenow}_p1.json"
 
         os.makedirs(self.run_dir, exist_ok=True)
 
         with open(os.path.join(self.run_dir, p0_game_name), 'w') as f:
-            json.dump(p0_history, f)
+            json.dump(p0_history, f, indent=4)
 
         with open(os.path.join(self.run_dir, p1_game_name), 'w') as f:
-            json.dump(p1_history, f)
+            json.dump(p1_history, f, indent=4)
 
         game['p0_file'] = p0_game_name
         game['p1_file'] = p1_game_name
 
         self.metrics = self.metrics.append(game, ignore_index=True)
-        self.metrics.to_csv(self.metrics_file)
-        self.game_nb +=1
-
-    def comp_stats_and_log(self):
-        pass
+        self.metrics.to_csv(self.metrics_file, index=False)
+        self.game_nb += 1
 
     def setup_logging(self, config_file):
         logging.config.fileConfig(config_file, defaults={'date': self.datenow})
 
     def log_info(self, message: str):
-        self.logger.info(message)
+        logging.info(message)
 
     def log_debug(self, message: str):
-        self.logger.debug(message)
+        logging.debug(message)
 
     def log_warning(self, message: str):
-        self.logger.warning(message)
+        logging.warning(message)
 
     def log_error(self, message: str):
-        self.logger.error(message)
+        logging.error(message)
 
     def save_player_messages(self, player_name: str, messages: list):
         file_path = os.path.join(self.run_dir, f"{player_name}.json")

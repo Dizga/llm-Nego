@@ -1,0 +1,12 @@
+defaults:
+  - config
+
+cuda: false
+
+p0:
+  tokenizer: 'distilbert-base-uncased'
+  model: 'distilbert-base-uncased'
+
+p1:
+  tokenizer: 'distilbert-base-uncased'
+  model: 'distilbert-base-uncased'
