@@ -1,0 +1,17 @@
+device: cpu
+run:
+  train: false
+  nb_iterations: 10
+  games_per_iterations: 5
+p0:
+  openai: false
+  tokenizer: meta-llama/Meta-Llama-3.1-8B
+  model: meta-llama/Meta-Llama-3.1-8B
+  CoT: true
+  force_conformity: false
+p1:
+  openai: false
+  tokenizer: meta-llama/Meta-Llama-3.1-8B
+  model: meta-llama/Meta-Llama-3.1-8B
+  CoT: true
+  force_conformity: false

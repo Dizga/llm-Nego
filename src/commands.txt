@@ -1,2 +1,2 @@
 source /Users/pichedereck/Documents/dond_env/bin/activate 
-python3 run.py --config-name mac_config
+python3 src/runDoND.py --config-name mactest

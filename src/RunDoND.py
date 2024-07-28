@@ -11,7 +11,7 @@ import hydra
 import datetime
 import os
 
-class TwoPlayersNego:
+class TwoPlayersNegoTrainer:
     def __init__(self, iterations_per_run, games_per_iteration, game, player_0, player_1, logger):
         self.iterations_per_run = iterations_per_run
         self.games_per_iteration = games_per_iteration

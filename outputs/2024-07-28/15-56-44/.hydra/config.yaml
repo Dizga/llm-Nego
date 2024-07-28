@@ -1,0 +1,17 @@
+device: cpu
+run:
+  train: false
+  nb_iterations: 10
+  games_per_iterations: 500
+p0:
+  openai: false
+  tokenizer: distilbert-base-uncased
+  model: distilbert-base-uncased
+  CoT: true
+  force_conformity: false
+p1:
+  openai: false
+  tokenizer: distilbert-base-uncased
+  model: distilbert-base-uncased
+  CoT: true
+  force_conformity: false

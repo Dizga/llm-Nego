@@ -1,12 +1,12 @@
 defaults:
   - config
 
-cuda: false
+device: "cpu"
 
-p0:
-  tokenizer: 'distilbert-base-uncased'
-  model: 'distilbert-base-uncased'
+#p0:
+  #tokenizer: 'distilbert-base-uncased'
+  #model: 'distilbert-base-uncased'
 
-p1:
-  tokenizer: 'distilbert-base-uncased'
-  model: 'distilbert-base-uncased'
+#p1:
+  #tokenizer: 'distilbert-base-uncased'
+  #model: 'distilbert-base-uncased'

@@ -1,20 +1,20 @@
-cuda: true
+device: "cuda"
 
 run:
   train: False
   nb_iterations: 10
-  games_per_iterations: 500
+  games_per_iterations: 5
 
 p0:
   openai: False
-  tokenizer: 'llama-3.1-8b'
-  model: 'llama-3.1-8b'
+  tokenizer: "HuggingFaceTB/SmolLM-1.7B"
+  model: "HuggingFaceTB/SmolLM-1.7B"
   CoT: True # false if none, else link to txt file 
   force_conformity: False
 
 p1:
   openai: False
-  tokenizer: 'llama-3.1-8b'
-  model: 'llama-3.1-8b'
+  tokenizer: "HuggingFaceTB/SmolLM-1.7B"
+  model: "HuggingFaceTB/SmolLM-1.7B"
   CoT: True # false if none, else link to txt file 
   force_conformity: False

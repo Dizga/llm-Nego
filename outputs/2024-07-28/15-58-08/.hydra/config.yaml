@@ -1,0 +1,7 @@
+device: cpu
+run:
+  train: false
+  nb_iterations: 10
+  games_per_iterations: 500
+p0: null
+p1: null

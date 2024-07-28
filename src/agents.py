@@ -14,11 +14,10 @@ class NegoAgent:
                  tokenizer="microsoft/Phi-3-mini-128k-instruct",
                  chain_of_thought=False,
                  out_folder="/",
-                 instructions="You are playing sudoku.") -> None:
+                 ) -> None:
         self.name = name
         self.device = device
         self.chain_of_thought = chain_of_thought
-        self.instructions = instructions
         self.history = []
         self.model = AutoModelForCausalLM.from_pretrained(
             model,
@@ -76,6 +75,12 @@ class NegoAgent:
         self.model.save_pretrained(path)
         self.tokenizer.save_pretrained(path)
 
+    def set_instructions(self):
+        pass
+
+    def set_chain_of_thought(self, string):
+        pass
+
     def play(self, message):
         pass
 
@@ -90,6 +95,19 @@ class NegoAgent:
 
 
 class DoNDagent(NegoAgent):
+    def set_instructions(self, boiler:str, info:dict):
+        
+        state = f"""
+            There is a total of {self.quantities['books']} books,
+            {self.quantities['hats']} hats, and {self.quantities['balls']} balls.
+            Your values are {values['books']} for a book,
+            {values['hats']} for a hat, and {values['balls']} for a ball.
+        """
+        if info[""]
+
+    def set_chain_of_thought(self, string):
+        pass
+
     def play(self, message):
         user_msg = message
         if self.chain_of_thought:
@@ -109,7 +127,7 @@ class DoNDagent(NegoAgent):
 
         self.add_message(role="assistant", message=response_text)
         return self.extract_DoND_msg(response_text)
-
+    
     def extract_DoND_msg(self, response):
         pattern = r'<message>(.*?)</message>'
         match = rg.search(pattern, response, rg.DOTALL)
