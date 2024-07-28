@@ -20,11 +20,15 @@ class TwoPlayersNego:
         self.player_1 = player_1
         self.logger = logger
 
+    def train_agents(self):
+        pass
+
     def run_iterations(self):
         for _ in range(self.iterations_per_run):
             for _ in range(self.games_per_iteration):
                 game_result = self.run_game()
                 self.logger.log_game(game_result)
+            self.train_agents()
             self.logger.new_iteration()
 
     def run_game(self):
@@ -41,6 +45,22 @@ class TwoPlayersNego:
                 message = self.player_1.play(message)
                 ongoing = self.game.step(message)
         return self.game.export()
+    
+class DoNDtrainer():
+    def train_agents(self):
+        "Train the agents on the last iteration."
+        metrics = self.log.metrics # extract dataframe with data for each game
+        # train on all non zero 
+        mean_score = self.log.iteration_stats['Mean Score'] # get the mean score of the current iteration
+        # extract the file name of every game with score better than mean
+        filtered_p0 = metrics[metrics['p0_score'] > mean_score] 
+        filtered_p1 = metrics[metrics['p1_score'] > mean_score] 
+        p0_filt_files = filtered_p0['p0_file'].tolist() 
+        p1_filt_files = filtered_p1['p1_file'].tolist()
+        p0_filt_jsons = [ json.load(file_path) for file_path in p0_filt_files ]
+        p1_filt_jsons = [ json.load(file_path) for file_path in p1_filt_files ]
+        self.player_0.train(p0_filt_jsons)
+        self.player_1.train(p1_filt_jsons)
 
 @hydra.main(config_path="../conf", config_name="config")
 def RunDoND(cfg):
@@ -54,39 +74,39 @@ def RunDoND(cfg):
     game = DoND()
 
     print(os.getcwd())
-    with open(cfg['player_0']['instructions'], "r") as instruction_prompt_file:
+    with open(cfg.p0.instructions, "r") as instruction_prompt_file:
         instruction_text = instruction_prompt_file.read()
 
-    with open(cfg['player_0']['CoT'], "r") as cot_prompt_file:
+    with open(cfg.p0.CoT, "r") as cot_prompt_file:
         cot_text = cot_prompt_file.read()
 
     player_0 = DoNDagent(
         name="agent",
-        device=cfg['device'],
-        model=cfg['player_0']['model'],
-        tokenizer=cfg['player_0']['tokenizer'],
+        device=cfg.device,
+        model=cfg.p0.model,
+        tokenizer=cfg.p0.tokenizer,
         chain_of_thought=cot_text,
         instructions=instruction_text
     )
 
-    with open(cfg['player_1']['instructions'], "r") as instruction_prompt_file:
+    with open(cfg.p1.instructions, "r") as instruction_prompt_file:
         instruction_text = instruction_prompt_file.read()
 
-    with open(cfg['player_1']['CoT'], "r") as cot_prompt_file:
+    with open(cfg.p1.CoT, "r") as cot_prompt_file:
         cot_text = cot_prompt_file.read()
 
     player_1 = DoNDagent(
         name="agent",
-        device=cfg['device'],
-        model=cfg['player_1']['model'],
-        tokenizer=cfg['player_1']['tokenizer'],
+        device=cfg.device,
+        model=cfg.p1.model,
+        tokenizer=cfg.p1.tokenizer,
         chain_of_thought=cot_text,
         instructions=instruction_text
     )
 
     run_handler = TwoPlayersNego(
-        iterations_per_run=cfg["run"]["nb_iterations"],
-        games_per_iteration=cfg["run"]["games_per_iterations"],
+        iterations_per_run=cfg.run.nb_iterations,
+        games_per_iteration=cfg.run.games_per_iterations,
         game=game,
         player_0=player_0,
         player_1=player_1,
