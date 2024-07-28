@@ -1,0 +1,27 @@
+You are a player in a two-player cooperation game. I, the user, will be the game coordinator, acting as a middleman between you and your partner. Your objective is to maximize the shared reward. Each player's reward is calculated by multiplying the number of items they receive by their personal utility value for each item. Your utility values and your partner's utility values for each item are different and are private information.
+
+Game Mechanics:
+At the start of your turn, you will be asked to reason about the current state of the game and how to fulfill your objective.
+Turn-taking: You and your partner will take turns exchanging one message at a time. After a few exchanges, when you feel ready, you can make a final proposal to the game coordinator. Once a player decides to make a final proposal, their partner must also make a final proposal, ending the game.
+If the combined proposals don't match the total number of items available, both players score 0.
+Final Proposal: A final proposal should specify how many of each item you want, leaving the remaining items for the other player.
+
+Formatting:
+Reasoning: <reason> [Your reasoning here.] </reason>
+Messages: <message> [Your message here.] </message>
+Final proposals: <propose> I take X books, Y hats, Z balls. My partner gets A books, B hats, C balls. </propose>
+
+The game might proceed like this:
+[Initial state is given]
+<reason> [Your reasoning here.] </reason>
+<message> [Your message to your partner here.] </message>
+[Partner responds]
+<reason> [Your reasoning here.] </reason>
+<message> [Your message to your partner here.] </message>
+[Partner agrees]
+<reason> [Your reasoning here.] </reason>
+<propose> I take X books, Y hats, Z balls. My partner gets A books, B hats, C balls. </propose>
+[Partner make a matching proposal]
+[GAME END]
+
+Your task is to decide how to divide {book_cnt} books, {hat_cnt} hats, and {ball_cnt} balls between yourself and your partner. For you, a book is worth {book_val} points, a hat is worth {hat_cnt} points and a ball is worth {ball_val} points.

@@ -3,6 +3,7 @@ logs/
 test.py
 test.ipynb
 models/
+outputs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -8,7 +8,7 @@ from logger import Logger
 from DoND import DoND
 from agents import DoNDagent
 import hydra
-import datetime
+from datetime import datetime
 import os 
 
 class TwoPlayersNego:
@@ -28,7 +28,9 @@ class TwoPlayersNego:
             self.logger.new_iteration()
 
     def run_game(self):
-        self.game.reset()
+        quantities, values_p0, values_p1 = self.game.reset()
+        self.player_0.instruct(quantities, values_p0)
+        self.player_1.instruct(quantities, values_p1)
         ongoing = True
         message = None
         while ongoing:
@@ -51,27 +53,40 @@ def RunDoND(cfg):
     
     game = DoND()
 
+    print(os.getcwd())
+    with open(cfg['player_0']['instructions'], "r") as instruction_prompt_file:
+        instruction_text = instruction_prompt_file.read()
+
+    with open(cfg['player_0']['CoT'], "r") as cot_prompt_file:
+        cot_text = cot_prompt_file.read()
+
     player_0 = DoNDagent(
         name="agent",
         device=cfg['device'],
         model=cfg['player_0']['model'],
         tokenizer=cfg['player_0']['tokenizer'],
-        chain_of_thought=cfg['player_0']['chain_of_thought'],
-        instructions=cfg['player_0']['instructions']
+        chain_of_thought=cot_text,
+        instructions=instruction_text
     )
+
+    with open(cfg['player_1']['instructions'], "r") as instruction_prompt_file:
+        instruction_text = instruction_prompt_file.read()
+
+    with open(cfg['player_1']['CoT'], "r") as cot_prompt_file:
+        cot_text = cot_prompt_file.read()
 
     player_1 = DoNDagent(
         name="agent",
         device=cfg['device'],
         model=cfg['player_1']['model'],
         tokenizer=cfg['player_1']['tokenizer'],
-        chain_of_thought=cfg['player_1']['chain_of_thought'],
-        instructions=cfg['player_1']['instructions']
+        chain_of_thought=cot_text,
+        instructions=instruction_text
     )
 
     run_handler = TwoPlayersNego(
-        iterations_per_run=cfg["iterations_per_run"],
-        games_per_iteration=cfg["games_per_iteration"],
+        iterations_per_run=cfg["run"]["nb_iterations"],
+        games_per_iteration=cfg["run"]["games_per_iterations"],
         game=game,
         player_0=player_0,
         player_1=player_1,

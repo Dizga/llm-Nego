@@ -1,20 +1,28 @@
+hydra:
+  job:
+    chdir: false
+
 cuda: true
+
+device: 'cuda:0'
 
 run:
   train: False
-  nb_iterations: 10
-  games_per_iterations: 500
+  nb_iterations: 1
+  games_per_iterations: 1
 
 p0:
   openai: False
-  tokenizer: 'llama-3.1-8b'
-  model: 'llama-3.1-8b'
-  CoT: True # false if none, else link to txt file 
+  tokenizer: 'microsoft/Phi-3-mini-128k-instruct'
+  model: 'microsoft/Phi-3-mini-128k-instruct'
+  instructions: "src/prompts/coop.txt"
+  CoT: "src/prompts/coop-cot.txt"
   force_conformity: False
 
 p1:
   openai: False
-  tokenizer: 'llama-3.1-8b'
-  model: 'llama-3.1-8b'
-  CoT: True # false if none, else link to txt file 
+  tokenizer: 'microsoft/Phi-3-mini-128k-instruct'
+  model: 'microsoft/Phi-3-mini-128k-instruct'
+  instructions: "src/prompts/coop.txt"
+  CoT: "src/prompts/coop-cot.txt" # false if none, else link to txt file 
   force_conformity: False
