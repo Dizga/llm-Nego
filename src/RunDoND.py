@@ -49,7 +49,7 @@ class DoNDtrainer(TwoPlayersNegoTrainer):
         "Train the agents on the last iteration."
         metrics = self.log.metrics # extract dataframe with data for each game
         # train on all non zero 
-        mean_score = self.statistics['Mean Score'] # get the mean score of the current iteration
+        mean_score = self.log.iteration_stats['Mean Score'] # get the mean score of the current iteration
         # extract the file name of every game with score better than mean
         filtered_p0 = metrics[metrics['p0_score'] > mean_score] 
         filtered_p1 = metrics[metrics['p1_score'] > mean_score] 
