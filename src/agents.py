@@ -1,20 +1,28 @@
 from typing import Any
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+import regex as rg
 
-class HFAgent():
-    def __init__(self, name) -> None:
+class NegoAgent():
+    def __init__(self, 
+                name = "agent",
+                device = "cuda", # cuda or cpu
+                model = "microsoft/Phi-3-mini-128k-instruct",
+                tokenizer = "microsoft/Phi-3-mini-128k-instruct",
+                chain_of_thought = True,
+                instructions = "You are playing sudoku. You are the first player."
+                ) -> None:
         self.history = []
         self.name = name
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = device
         self.model = AutoModelForCausalLM.from_pretrained(
-            "microsoft/Phi-3-mini-128k-instruct",
+            model,
             torch_dtype="auto",
             device_map="auto",
             trust_remote_code=True,
         )
         self.type = self.model.config.model_type
-        self.tokenizer = AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-128k-instruct")
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)
 
 
     def __call__(self, add_to_history = True, *args: Any, **kwds: Any ) -> Any:
@@ -30,19 +38,8 @@ class HFAgent():
     def train(self):
         pass
 
-    def get_DoND_play(self, message):
-        # Add chain of thought to the model
-        user_msg = ""
-        if self.CoT_on == True:
-            user += self.CoT_prompt
-        user_msg += message
-        self.add_message(role="user", message="user_msg")
-        tokenized = self.tokenizer(self.history)
-        response = self.tokenizer(self.model(tokenized))
-
-    def check_conform(self, message):
+    def play(self, message):
         pass
-
 
     def add_message(self, role, message):
         self.history.append({"role": role, "content": message})
@@ -54,6 +51,42 @@ class HFAgent():
         self.add_message("user", message)
 
 
+class DoNDagent(NegoAgent):
+
+    def play(self, message):
+        # Add chain of thought to the model
+        user_msg = ""
+        if self.CoT_on == True:
+            user += self.CoT_prompt
+        user_msg += message
+        self.add_message(role="user", message="user_msg")
+        tokenized = self.tokenizer(self.history)
+        response = self.tokenizer(self.model(tokenized))
+        if self.force_conformity:
+            while not self.check_conformity(self, response):
+                response = self.tokenizer(self.model(tokenized))
+        else:
+            if not self.check_conformity(self, response):
+                response = "<message><\message>" 
+        self.add_message(self, role="assistant", message=response)
+        return self.extract_DoND_msg(response)
+
+    def extract_DoND_msg(self, response):
+        pattern = r'<message>(.*?)</message>'
+        match = rg.search(pattern, response, rg.DOTALL)
+        if match:
+            return match.group(1)
+        else:
+            return None
+
+    def check_DoND_conformity(self, message):
+        if self.CoT_on: 
+            regex = "<reason>(.*?)<\/reason>\s*(<message>(.*?)<\/message>|<proposal>(.*?)<\/proposal>)"
+            return rg.match(regex, message)
+        regex = "(<message>(.*?)<\/message>|<proposal>(.*?)<\/proposal>)"
+        return rg.match(regex, message)
+
+"""
 def bc_finetune(data:torch.tensor, model:torch.nnModule, optimizer, criterion, epochs=1):
     for epoch in range(epochs):
         for batch in data:
@@ -68,3 +101,4 @@ def bc_finetune(data:torch.tensor, model:torch.nnModule, optimizer, criterion, e
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+"""

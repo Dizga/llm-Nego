@@ -3,10 +3,8 @@ import regex as re
 import json
 
 class DoND():
-    def __init__(self,
-            instructions: str):
+    def __init__(self):
         # Generate values for each player
-        self.instructions = instructions
         self.turn = 0
         self.quantities = {'books': 5, 'hats': 4, 'balls': 3}
         self.values_p0 = {'books': 5, 'hats': 4, 'balls':3}
