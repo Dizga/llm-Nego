@@ -49,7 +49,7 @@ class DoNDInstructor(Instructor):
             user_message += self.game_basics 
             user_message += self.get_stringed_metrics(state["quantities"], state["values"])
         if state.get("has_proposed"): 
-            user_message += "THE OTHER PLAYER HAS MADE A PROPOSAL."
+            user_message += "A proposal as been made by your partner. You should also make a proposal of this format: <propose> I take X books, Y hats, Z balls. My partner gets A books, B hats, C balls. </propose>.\n"
         else:
             user_message += f"Other Player Reply: '{state['last_message']}'\n" if state['last_message'] else ""
         if self.chain_of_thought is not None:
@@ -60,21 +60,10 @@ class DoNDInstructor(Instructor):
         return (
             f"There is a total of {quantities['books']} books, "
             f"{quantities['hats']} hats, and {quantities['balls']} balls. "
-            f"Your values are {values['books']} for a book, "
-            f"{values['hats']} for a hat, and {values['balls']} for a ball."
+            f"Your utility values are {values['books']} for a book, "
+            f"{values['hats']} for a hat, and {values['balls']} for a ball. "
+            "You don't know your partner's utility values. "
         )
-
-    def extract_DoND_message(self, response):
-        pattern = r'<message>(.*?)</message>'
-        match = re.search(pattern, response, re.DOTALL)
-        return match.group(1) if match else None
-
-    def check_DoND_conformity(self, message):
-        if self.chain_of_thought:
-            regex = r"<reason>(.*?)</reason>\s*(<message>(.*?)</message>|<proposal>(.*?)</proposal>)"
-        else:
-            regex = r"(<message>(.*?)</message>|<proposal>(.*?)</proposal>)"
-        return re.match(regex, message) is not None
 
     def extract(self, message):
 
@@ -90,3 +79,9 @@ class DoNDInstructor(Instructor):
         match = re.search(pattern, message, re.DOTALL)
 
         return bool(match.group(2)), match.group(2) if match.group(2) else match.group(1)
+    
+    def reset_history(self):
+        self.first_turn = True
+        history = self.dond_player.history
+        self.dond_player.reset_messages()
+        return history

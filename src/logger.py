@@ -3,7 +3,6 @@ import json
 import logging
 import logging.config
 from datetime import datetime
-from omegaconf import OmegaConf
 import pandas as pd
 
 class Logger:
@@ -34,7 +33,7 @@ class Logger:
             "Mean Score P1"
         ]
         self.statistics = pd.DataFrame(columns=columns_statistics)
-        self.statstics_file = os.path.join(self.run_dir, "STATISTICS.csv")
+        self.statistics_file = os.path.join(self.run_dir, "STATISTICS.csv")
         self.iteration = 0
 
     def new_iteration(self):
@@ -52,38 +51,38 @@ class Logger:
         # Logs stats for the current iteration
         self.iteration_stats = {
             "Iteration": self.iteration,
-            "Agreement Percentage" : self.metrics['reach_agreement'].mean() * 100,
-            "Score Variance P0" : self.metrics['p0_score'].var(),
-            "Score Variance P1" : self.metrics['p1_score'].var(),
-            "Mean Score P0" : self.metrics['p0_score'].mean(),
-            "Mean Score P1" : self.metrics['p1_score'].mean()
+            "Agreement Percentage": self.metrics['reach_agreement'].mean() * 100 if not self.metrics['reach_agreement'].empty else 0,
+            "Score Variance P0": self.metrics['p0_score'].var() if not self.metrics['p0_score'].empty else 0,
+            "Score Variance P1": self.metrics['p1_score'].var() if not self.metrics['p1_score'].empty else 0,
+            "Mean Score P0": self.metrics['p0_score'].mean() if not self.metrics['p0_score'].empty else 0,
+            "Mean Score P1": self.metrics['p1_score'].mean() if not self.metrics['p1_score'].empty else 0
         }
         return self.iteration_stats
 
     def log_itr_stats(self):
-        self.log_itr_stats(self)
-        self.statistics = self.statistics.append(self.iteration_stats, ignore_index=True)
+        stats = self.get_itr_stats()
+        self.statistics = pd.concat([self.statistics, pd.DataFrame([stats])], ignore_index=True)
         self.statistics.to_csv(self.statistics_file, index=False)
 
     def log_game(self, game: dict):
         p0_history = game.pop("p0_history")
         p1_history = game.pop("p1_history")
 
-        p0_game_name = f"{game['player']}_GAME_{self.iteration}_{self.game_nb}_{self.datenow}_p0.json"
-        p1_game_name = f"{game['player']}_GAME_{self.iteration}_{self.game_nb}_{self.datenow}_p1.json"
+        p0_game_name = f"P0_GAME_{self.iteration}_{self.game_nb}_{self.datenow}_p0.json"
+        p1_game_name = f"P1_GAME_{self.iteration}_{self.game_nb}_{self.datenow}_p1.json"
 
         os.makedirs(self.run_dir, exist_ok=True)
 
-        with open(os.path.join(self.run_dir, p0_game_name), 'w') as f:
+        with open(os.path.join(self.it_folder, p0_game_name), 'w') as f:
             json.dump(p0_history, f, indent=4)
 
-        with open(os.path.join(self.run_dir, p1_game_name), 'w') as f:
+        with open(os.path.join(self.it_folder, p1_game_name), 'w') as f:
             json.dump(p1_history, f, indent=4)
 
         game['p0_file'] = p0_game_name
         game['p1_file'] = p1_game_name
 
-        self.metrics = self.metrics.append(game, ignore_index=True)
+        self.metrics = pd.concat([self.metrics, pd.DataFrame([game])], ignore_index=True)
         self.metrics.to_csv(self.metrics_file, index=False)
         self.game_nb += 1
 

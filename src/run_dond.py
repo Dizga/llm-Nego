@@ -26,34 +26,42 @@ class TwoPlayerNegotiationTrainer:
 
     def run_iterations(self):
         for _ in range(self.iterations_per_run):
+            self.logger.new_iteration()
             for _ in range(self.games_per_iteration):
                 game_result = self.run_game()
                 self.logger.log_game(game_result)
             self.train_agents()
-            self.logger.new_iteration()
 
     def run_game(self):
         self.game.reset()
         game_in_progress = True
         while game_in_progress:
-            self.player_0.play_move()
+            game_in_progress = self.player_0.play_move()
+            if not game_in_progress:
+                break
             game_in_progress = self.player_1.play_move()
-        return self.game.export_game()
+        game_description = self.game.export_game()
+        game_description['p0_history'] = self.player_0.reset_history()
+        game_description['p1_history'] = self.player_1.reset_history()
+        return game_description
+
+        
 
 class DoNDTrainer(TwoPlayerNegotiationTrainer):
     def train_agents(self):
         """Train the agents on the last iteration."""
         metrics = self.logger.metrics # Extract dataframe with data for each game
-        mean_score = self.logger.iteration_stats['Mean Score'] # Get the mean score of the current iteration
+        mean_score_p0 = self.logger.iteration_stats['Mean Score P0'] # Get the mean score of the current iteration
+        mean_score_p1 = self.logger.iteration_stats['Mean Score P1'] # Get the mean score of the current iteration
         # Filter games with score better than the mean score
-        filtered_p0 = metrics[metrics['p0_score'] > mean_score]
-        filtered_p1 = metrics[metrics['p1_score'] > mean_score]
+        filtered_p0 = metrics[metrics['p0_score'] > mean_score_p0]
+        filtered_p1 = metrics[metrics['p1_score'] > mean_score_p1]
         p0_filtered_files = filtered_p0['p0_file'].tolist()
         p1_filtered_files = filtered_p1['p1_file'].tolist()
         p0_filtered_jsons = [json.load(open(file_path, 'r')) for file_path in p0_filtered_files]
         p1_filtered_jsons = [json.load(open(file_path, 'r')) for file_path in p1_filtered_files]
-        self.player_0.train(p0_filtered_jsons)
-        self.player_1.train(p1_filtered_jsons)
+        self.player_0.dond_player.train(p0_filtered_jsons)
+        self.player_1.dond_player.train(p1_filtered_jsons)
 
 @hydra.main(config_path="../conf", config_name="config")
 def run_dond(cfg):

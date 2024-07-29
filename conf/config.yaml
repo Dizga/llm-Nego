@@ -12,8 +12,8 @@ run:
 
 p0:
   openai: False
-  tokenizer: "microsoft/Phi-3-mini-128k-instruct"
-  model: "microsoft/Phi-3-mini-128k-instruct"
+  tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+  model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
   game_intro_file: "src/prompts/coop.txt"
   chain_of_thought: "src/prompts/coop-cot.txt" # false if none, else link to txt file 
   # nb_iterations: 1
@@ -29,8 +29,8 @@ p0:
 
 p1:
   openai: False
-  tokenizer: "microsoft/Phi-3-mini-128k-instruct"
-  model: "microsoft/Phi-3-mini-128k-instruct"
+  tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+  model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
   # tokenizer: 'microsoft/Phi-3-mini-128k-instruct'
   # model: 'microsoft/Phi-3-mini-128k-instruct'
   game_intro_file: "src/prompts/coop.txt"

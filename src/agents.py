@@ -22,7 +22,8 @@ class NegoAgent:
             torch_dtype="auto",
             device_map="auto",
             trust_remote_code=True,
-        ).to(device)
+        )
+        # ).to(device)
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)
         self.out_folder = out_folder
 
@@ -33,21 +34,21 @@ class NegoAgent:
             lora_alpha=32,
             lora_dropout=0.1
         )
-        # self.model = get_peft_model(self.model, self.lora_config)
-        # self.training_args = TrainingArguments(
-        #     output_dir=out_folder,
-        #     num_train_epochs=1,
-        #     per_device_train_batch_size=5,
-        #     learning_rate=5e-5,
-        #     weight_decay=0.01,
-        #     logging_dir=os.path.join(out_folder, 'models', 'logs'),
-        #     logging_steps=10,
-        #     save_total_limit=2,
-        #     save_steps=500,
-        #     evaluation_strategy="steps",
-        #     eval_steps=500,
-        #     load_best_model_at_end=True
-        # )
+        self.model = get_peft_model(self.model, self.lora_config)
+        self.training_args = TrainingArguments(
+            output_dir=out_folder,
+            num_train_epochs=1,
+            per_device_train_batch_size=5,
+            learning_rate=5e-5,
+            weight_decay=0.01,
+            logging_dir=os.path.join(out_folder, 'models', 'logs'),
+            logging_steps=10,
+            save_total_limit=2,
+            save_steps=500,
+            evaluation_strategy="steps",
+            eval_steps=500,
+            load_best_model_at_end=True
+        )
 
     def __call__(self, add_to_history=True, *args: Any, **kwargs: Any) -> Any:
         text = self.tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
@@ -82,7 +83,7 @@ class NegoAgent:
         generated_ids = self.model.generate(model_inputs.input_ids, max_new_tokens=1000, do_sample=True)
         generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
         response = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-        
+
         return response
 
     def add_message(self, role, message):

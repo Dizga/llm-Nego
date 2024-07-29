@@ -7,9 +7,10 @@ class DoND:
 
     def reset(self):
         self.turn = 0
-        self.quantities = {'books': 5, 'hats': 4, 'balls': 3}
-        self.values_p0 = {'books': 5, 'hats': 4, 'balls': 3}
-        self.values_p1 = {'books': 5, 'hats': 4, 'balls': 3}
+        self.items = ['books', 'hats', 'balls']
+        self.quantities = {key: value for key, value in zip(self.items, [5,4,3])}
+        self.values_p0 = {key: value for key, value in zip(self.items, [5,4,3])}
+        self.values_p1 = {key: value for key, value in zip(self.items, [5,4,3])}
         self.has_proposed = False
         self.p0_prop = {}
         self.p1_prop = {}
@@ -17,6 +18,7 @@ class DoND:
         self.points_p1 = 0
         self.agreement_reached = False
         self.last_message = ""
+        self.max_turns = 2
         return self.quantities, self.values_p0, self.values_p1
 
     def step(self, output: str, is_proposal=False):
@@ -39,6 +41,9 @@ class DoND:
             self.propose(output)
 
             return True  # Continue the game
+        
+        if self.turn > self.max_turns:
+            return False
         
         # if re.match(r"\[ Message \] .*", output):
         #     return True  # Continue the game
@@ -63,14 +68,14 @@ class DoND:
         return out
 
     def verify_props_match(self):
-        for item in range(len(self.quantities)):
+        for item in self.items:
             if self.p0_prop[item] + self.p1_prop[item] != self.quantities[item]:
                 return False
         return True
 
     def set_points(self):
-        self.points_p0 = sum(self.values_p0[item] * self.p0_prop[item] for item in range(len(self.quantities)))
-        self.points_p1 = sum(self.values_p1[item] * self.p1_prop[item] for item in range(len(self.quantities)))
+        self.points_p0 = sum(self.values_p0[item] * self.p0_prop[item] for item in self.items)
+        self.points_p1 = sum(self.values_p1[item] * self.p1_prop[item] for item in self.items)
 
     def propose(self, string: str) -> bool:
         "Determines if there is a valid proposal in the string."
@@ -89,9 +94,9 @@ class DoND:
         # if any(prop[item] > self.quantities[item] for item in self.quantities):
         #     return False
         if self.current_turn() == "p0":
-            self.p0_prop = prop
+            self.p0_prop = {key: value for key, value in zip(self.items, prop)}
         else:
-            self.p1_prop = prop
+            self.p1_prop = {key: value for key, value in zip(self.items, prop)}
         # return True
 
     def render(self):
