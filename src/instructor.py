@@ -13,7 +13,7 @@ class DoNDInstructor(Instructor):
             self.game_basics = file.read()
         
         self.chain_of_thought = None
-        if chain_of_thought_file is not None:
+        if chain_of_thought_file:
             with open(chain_of_thought_file, 'r') as file:
                 self.chain_of_thought = file.read()
         
@@ -27,12 +27,14 @@ class DoNDInstructor(Instructor):
             return False
         
         user_message = self.get_usr_message(state)
-        response = False
+        response = self.dond_player.prompt(user_message)
         
-        while not response:
-            response = self.verificator(self.dond_player.prompt(user_message))
+        # while not response:
+        #     response = self.verificator(self.dond_player.prompt(user_message))
         
-        ongoing = self.dond_game.step(response) # whether the game is finished or not
+        is_proposal, content = self.extract(response)
+
+        ongoing = self.dond_game.step(content, is_proposal) # whether the game is finished or not
         self.first_turn = False
         return ongoing
 
@@ -49,7 +51,7 @@ class DoNDInstructor(Instructor):
         if state.get("has_proposed"): 
             user_message += "THE OTHER PLAYER HAS MADE A PROPOSAL."
         else:
-            user_message += f"Other Player Reply: {state['last_message']}"
+            user_message += f"Other Player Reply: '{state['last_message']}'\n" if state['last_message'] else ""
         if self.chain_of_thought is not None:
             user_message += self.chain_of_thought
         return user_message
@@ -73,3 +75,18 @@ class DoNDInstructor(Instructor):
         else:
             regex = r"(<message>(.*?)</message>|<proposal>(.*?)</proposal>)"
         return re.match(regex, message) is not None
+
+    def extract(self, message):
+
+        if self.chain_of_thought:
+            regex = r"<reason>(.*?)</reason>\s*(.*?)\s*(<message>(.*?)</message>|<proposal>(.*?)</proposal>)"
+        else:
+            regex = r"(<message>(.*?)</message>|<proposal>(.*?)</proposal>)"
+
+        if re.match(regex, message) is None:
+            return None, ''
+
+        pattern = r'<message>(.*?)</message>|<proposal>(.*?)</proposal>'
+        match = re.search(pattern, message, re.DOTALL)
+
+        return bool(match.group(2)), match.group(2) if match.group(2) else match.group(1)

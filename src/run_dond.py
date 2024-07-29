@@ -1,12 +1,12 @@
 import json
 import numpy as np
 from prompts.instruction import get_instruction_prompt
-from store import add_run_to_store
+# from store import add_run_to_store
 from type.behavior import Behavior
-from utils import generate_initial_state
+# from utils import generate_initial_state
 from logger import Logger
 from DoND import DoND
-from agents import DoNDagent
+from agents import NegoAgent
 import hydra
 from datetime import datetime
 import os
@@ -38,7 +38,7 @@ class TwoPlayerNegotiationTrainer:
         while game_in_progress:
             self.player_0.play_move()
             game_in_progress = self.player_1.play_move()
-        return self.game.export()
+        return self.game.export_game()
 
 class DoNDTrainer(TwoPlayerNegotiationTrainer):
     def train_agents(self):
@@ -65,7 +65,7 @@ def run_dond(cfg):
     logger = Logger(output_directory)
     game = DoND()
 
-    agent_0 = DoNDagent(
+    agent_0 = NegoAgent(
         name="agent_0",
         device=cfg.device,
         model=cfg.p0.model,
@@ -79,7 +79,7 @@ def run_dond(cfg):
         player_type="p0"
     )
 
-    agent_1 = DoNDagent(
+    agent_1 = NegoAgent(
         name="agent_1",
         device=cfg.device,
         model=cfg.p1.model,

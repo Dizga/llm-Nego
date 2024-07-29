@@ -5,36 +5,34 @@ hydra:
 
 cuda: true
 
-device: 'cuda:0'
-
 run:
   train: False
-  nb_iterations: 10
-  games_per_iterations: 5
+  nb_iterations: 2
+  games_per_iteration: 2
 
 p0:
   openai: False
-  tokenizer: "HuggingFaceTB/SmolLM-1.7B"
-  model: "HuggingFaceTB/SmolLM-1.7B"
-  CoT: True # false if none, else link to txt file 
-  nb_iterations: 1
-  games_per_iterations: 1
+  tokenizer: "microsoft/Phi-3-mini-128k-instruct"
+  model: "microsoft/Phi-3-mini-128k-instruct"
+  game_intro_file: "src/prompts/coop.txt"
+  chain_of_thought: "src/prompts/coop-cot.txt" # false if none, else link to txt file 
+  # nb_iterations: 1
+  # games_per_iterations: 1
 
-p0:
-  openai: False
-  tokenizer: 'microsoft/Phi-3-mini-128k-instruct'
-  model: 'microsoft/Phi-3-mini-128k-instruct'
-  instructions: "src/prompts/coop.txt"
-  CoT: "src/prompts/coop-cot.txt"
-  force_conformity: False
+# p0:
+#   openai: False
+#   tokenizer: 'microsoft/Phi-3-mini-128k-instruct'
+#   model: 'microsoft/Phi-3-mini-128k-instruct'
+#   instructions: "src/prompts/coop.txt"
+#   CoT: "src/prompts/coop-cot.txt"
+#   force_conformity: False
 
 p1:
   openai: False
-  tokenizer: "HuggingFaceTB/SmolLM-1.7B"
-  model: "HuggingFaceTB/SmolLM-1.7B"
-  CoT: True # false if none, else link to txt file 
-  tokenizer: 'microsoft/Phi-3-mini-128k-instruct'
-  model: 'microsoft/Phi-3-mini-128k-instruct'
-  instructions: "src/prompts/coop.txt"
-  CoT: "src/prompts/coop-cot.txt" # false if none, else link to txt file 
+  tokenizer: "microsoft/Phi-3-mini-128k-instruct"
+  model: "microsoft/Phi-3-mini-128k-instruct"
+  # tokenizer: 'microsoft/Phi-3-mini-128k-instruct'
+  # model: 'microsoft/Phi-3-mini-128k-instruct'
+  game_intro_file: "src/prompts/coop.txt"
+  chain_of_thought: "src/prompts/coop-cot.txt" # false if none, else link to txt file 
   force_conformity: False

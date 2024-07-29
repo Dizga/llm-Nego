@@ -1,3 +1,2 @@
-{context}
 Using the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.
 Then do it using the appropriate tag: <message> or <proposal>.

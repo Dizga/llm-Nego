@@ -76,10 +76,14 @@ class NegoAgent:
     def prompt(self, message:str):
         user_msg = message
         self.add_message(role="user", message=user_msg)
-        model_inputs = self.tokenizer(self.history, return_tensors="pt").to(self.device)
-        response = self.model.generate(model_inputs.input_ids, max_new_tokens=1000, do_sample=True)
-        response_text = self.tokenizer.decode(response[0], skip_special_tokens=True)
-        return response_text
+
+        text = self.tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
+        model_inputs = self.tokenizer([text], return_tensors="pt").to(self.device)
+        generated_ids = self.model.generate(model_inputs.input_ids, max_new_tokens=1000, do_sample=True)
+        generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
+        response = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        
+        return response
 
     def add_message(self, role, message):
         self.history.append({"role": role, "content": message})

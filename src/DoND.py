@@ -19,24 +19,31 @@ class DoND:
         self.last_message = ""
         return self.quantities, self.values_p0, self.values_p1
 
-    def step(self, output: str):
+    def step(self, output: str, is_proposal=False):
         self.turn += 1
         self.last_message = output
+        
         if self.has_proposed:
-            if self.propose(output) and self.verify_props_match():
+            self.propose(output)
+
+            if self.verify_props_match():
                 self.set_points()
                 self.agreement_reached = True
                 return False
             return False  # Game ended with failure to be complementary
         
-        if self.propose(output):
+        self.has_proposed = is_proposal
+        
+        if is_proposal:
             self.has_proposed = True
+            self.propose(output)
+
             return True  # Continue the game
         
-        if re.match(r"\[ Message \] .*", output):
-            return True  # Continue the game
+        # if re.match(r"\[ Message \] .*", output):
+        #     return True  # Continue the game
         
-        return False  # Game ended due to bad formatting
+        return True  # Game ended due to bad formatting
     
     def get_state(self, player="current_turn"):
         "Returns True if other player has proposed or no move played."
@@ -44,7 +51,8 @@ class DoND:
         "Else returns his last message."
         if player=="current_turn": player = self.current_turn()
         out = {
-            "quantities": self.agreement_reached,
+            "quantities": self.quantities,
+            "agreement_reached": self.agreement_reached,
             "has_proposed": self.has_proposed,
             "last_message": self.last_message
         }
@@ -52,30 +60,39 @@ class DoND:
             out["values"] = self.values_p0
             return out
         out["values"] = self.values_p1
+        return out
 
     def verify_props_match(self):
-        for item in self.quantities:
-            if self.p0_prop[item] * self.p1_prop[item] != self.quantities[item]:
+        for item in range(len(self.quantities)):
+            if self.p0_prop[item] + self.p1_prop[item] != self.quantities[item]:
                 return False
         return True
 
     def set_points(self):
-        self.points_p0 = sum(self.values_p0[item] * self.p0_prop[item] for item in self.quantities)
-        self.points_p1 = sum(self.values_p1[item] * self.p1_prop[item] for item in self.quantities)
+        self.points_p0 = sum(self.values_p0[item] * self.p0_prop[item] for item in range(len(self.quantities)))
+        self.points_p1 = sum(self.values_p1[item] * self.p1_prop[item] for item in range(len(self.quantities)))
 
     def propose(self, string: str) -> bool:
         "Determines if there is a valid proposal in the string."
-        match = re.match(r"\[ Proposal \] \{.*\}", string)
-        if not match:
-            return False
-        prop = json.loads(match.group(0)[12:])
-        if any(prop[item] > self.quantities[item] for item in self.quantities):
-            return False
+
+
+        regex = r"\d+"
+        numbers = re.findall(regex, string)
+        prop = numbers[:3]
+
+
+
+        # match = re.match(r"\[ Proposal \] \{.*\}", string)
+        # if not match:
+        #     return False
+        # prop = json.loads(match.group(0)[12:])
+        # if any(prop[item] > self.quantities[item] for item in self.quantities):
+        #     return False
         if self.current_turn() == "p0":
             self.p0_prop = prop
         else:
             self.p1_prop = prop
-        return True
+        # return True
 
     def render(self):
         pass
