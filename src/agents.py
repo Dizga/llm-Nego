@@ -12,12 +12,10 @@ class NegoAgent:
                  device="cuda",  # cuda or cpu
                  model="microsoft/Phi-3-mini-128k-instruct",
                  tokenizer="microsoft/Phi-3-mini-128k-instruct",
-                 chain_of_thought=None,
                  out_folder="/",
                  ) -> None:
         self.name = name
         self.device = device
-        self.chain_of_thought = chain_of_thought
         self.history = []
         self.model = AutoModelForCausalLM.from_pretrained(
             model,
@@ -75,14 +73,13 @@ class NegoAgent:
         self.model.save_pretrained(path)
         self.tokenizer.save_pretrained(path)
 
-    def set_instructions(self):
-        pass
-
-    def set_chain_of_thought(self, string):
-        pass
-
-    def play(self, message):
-        pass
+    def prompt(self, message:str):
+        user_msg = message
+        self.add_message(role="user", message=user_msg)
+        model_inputs = self.tokenizer(self.history, return_tensors="pt").to(self.device)
+        response = self.model.generate(model_inputs.input_ids, max_new_tokens=1000, do_sample=True)
+        response_text = self.tokenizer.decode(response[0], skip_special_tokens=True)
+        return response_text
 
     def add_message(self, role, message):
         self.history.append({"role": role, "content": message})
@@ -92,70 +89,3 @@ class NegoAgent:
 
     def add_system_message(self, message):
         self.add_message("user", message)
-
-
-class DoNDagent(NegoAgent):
-    def set_instructions(self, boiler:str, info:dict):
-        
-        state = f"""
-            There is a total of {self.quantities['books']} books,
-            {self.quantities['hats']} hats, and {self.quantities['balls']} balls.
-            Your values are {values['books']} for a book,
-            {values['hats']} for a hat, and {values['balls']} for a ball.
-        """
-        if info[""]
-
-    def set_chain_of_thought(self, string):
-        pass
-
-    def play(self, message):
-        user_msg = message
-        if self.chain_of_thought:
-            user_msg += self.chain_of_thought
-        self.add_message(role="user", message=user_msg)
-        model_inputs = self.tokenizer(self.history, return_tensors="pt").to(self.device)
-        response = self.model.generate(model_inputs.input_ids, max_new_tokens=1000, do_sample=True)
-        response_text = self.tokenizer.decode(response[0], skip_special_tokens=True)
-    def instruct(self, quantities, utility):
-        instruction_text = self.instructions.format(
-                    book_cnt=quantities["books"],
-                    hat_cnt=quantities["hats"],
-                    ball_cnt=quantities["balls"],
-                    book_val=utility["books"],
-                    hat_val=utility["hats"],
-                    ball_val=utility["balls"],
-                )
-        self.add_message(role="user", message=instruction_text)
-
-    def play(self, message):
-        if self.chain_of_thought is not None:
-
-            context = f'The other player said: "{message}"' if message else "There is no message from the other player yet. You are first to play."
-            message = self.chain_of_thought.format(context = context)
-        self.add_message(role="user", message=message)
-        # model_inputs = self.tokenizer(self.history, return_tensors="pt").to(self.device)
-        # response = self.model.generate(model_inputs.input_ids, max_new_tokens=1000, do_sample=True)
-        # response_text = self.tokenizer.decode(response[0], skip_special_tokens=True)
-        response = self(False)
-
-        if True:
-            while not self.check_DoND_conformity(response):
-                response = self(False)
-        else:
-            if not self.check_DoND_conformity(response_text):
-                response_text = "<message></message>"
-
-        self.add_message(role="assistant", message=response)
-        return self.extract_DoND_msg(response)
-
-    def extract_DoND_msg(self, response):
-        pattern = r'<message>(.*?)</message>'
-        match = rg.search(pattern, response, rg.DOTALL)
-        return match.group(1) if match else None
-
-    def check_DoND_conformity(self, message):
-        if self.chain_of_thought:
-            regex = r"<reason>(.*?)</reason>\s*(<message>(.*?)</message>|<proposal>(.*?)</proposal>)"
-        else:
-            regex = r"(<message>(.*?)</message>|<proposal>(.*?)</proposal>)"
-        return rg.match(regex, message) is not None

@@ -16,10 +16,12 @@ class DoND:
         self.points_p0 = 0
         self.points_p1 = 0
         self.agreement_reached = False
+        self.last_message = ""
         return self.quantities, self.values_p0, self.values_p1
 
     def step(self, output: str):
         self.turn += 1
+        self.last_message = output
         if self.has_proposed:
             if self.propose(output) and self.verify_props_match():
                 self.set_points()
@@ -35,6 +37,21 @@ class DoND:
             return True  # Continue the game
         
         return False  # Game ended due to bad formatting
+    
+    def get_state(self, player="current_turn"):
+        "Returns True if other player has proposed or no move played."
+        "Returns False if game is ended."
+        "Else returns his last message."
+        if player=="current_turn": player = self.current_turn()
+        out = {
+            "quantities": self.agreement_reached,
+            "has_proposed": self.has_proposed,
+            "last_message": self.last_message
+        }
+        if player=="p0":
+            out["values"] = self.values_p0
+            return out
+        out["values"] = self.values_p1
 
     def verify_props_match(self):
         for item in self.quantities:
@@ -46,16 +63,8 @@ class DoND:
         self.points_p0 = sum(self.values_p0[item] * self.p0_prop[item] for item in self.quantities)
         self.points_p1 = sum(self.values_p1[item] * self.p1_prop[item] for item in self.quantities)
 
-    def get_description(self, player) -> str:
-        values = self.values_p0 if player == "p0" else self.values_p1
-        return f"""
-            There is a total of {self.quantities['books']} books,
-            {self.quantities['hats']} hats, and {self.quantities['balls']} balls.
-            Your values are {values['books']} for a book,
-            {values['hats']} for a hat, and {values['balls']} for a ball.
-        """
-
     def propose(self, string: str) -> bool:
+        "Determines if there is a valid proposal in the string."
         match = re.match(r"\[ Proposal \] \{.*\}", string)
         if not match:
             return False
@@ -71,7 +80,7 @@ class DoND:
     def render(self):
         pass
 
-    def export(self):
+    def export_game(self):
         return {
             'p0_score': self.points_p0,
             'p1_score': self.points_p1,
