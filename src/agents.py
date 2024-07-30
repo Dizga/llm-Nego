@@ -2,8 +2,7 @@ from typing import Any
 import torch
 from datasets import Dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments
-from trl import SFTConfig, SFTTrainer
-import regex as rg
+from trl import SFTTrainer
 from peft import get_peft_model, LoraConfig, TaskType
 import os
 
@@ -27,8 +26,8 @@ class NegoAgent:
         )
         # ).to(device)
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)
-        if tokenizer.pad_token is None:
-            tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
         self.out_folder = out_folder
 
         # Training arguments and model configuration
