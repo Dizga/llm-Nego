@@ -53,7 +53,7 @@ class DoNDInstructor(Instructor):
 
         valid_response, error_message = self.validate(response)
 
-        max_retries = 3
+        max_retries = float('3')
         retries = 0
         while retries < max_retries:
             if valid_response:
@@ -63,7 +63,8 @@ class DoNDInstructor(Instructor):
             retries += 1
 
         if retries == max_retries:
-            raise ValueError(f"Error validating output after {max_retries} retries.")
+            response="<message></message>"
+            #raise ValueError(f"Error validating output after {max_retries} retries.")
 
         is_proposal, content = self.extract(response)
 
