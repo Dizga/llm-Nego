@@ -5,7 +5,7 @@ class DoND:
     def __init__(self, max_turns=7):
         self.reset()
 
-    def reset(self, max_turns=7):
+    def reset(self, max_turns=2):
         self.turn = 0
         self.items = ['books', 'hats', 'balls']
         self.quantities = {key: value for key, value in zip(self.items, [5,4,3])}

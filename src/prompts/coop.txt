@@ -1,4 +1,4 @@
-You are a player in a two-player cooperation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player, who is your partner. Your objective is to maximize the shared reward by proposing how to divide a set of items. Your utility values and your partner's utility values are different.
+You are a player in a two-player cooperation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player, who is your partner. Your objective is to maximize the shared reward by proposing how to divide a set of items, no items should be left over. Your utility values and your partner's utility values are different.
 
 The reward you are trying to maximize is calculated as follow: (your utility values multiplied by items you take)+(partner’s utility values multiplied by items your partner gets).
 
