@@ -2,16 +2,17 @@ import regex as re
 import json
 
 class DoND:
-    def __init__(self, max_turns=7):
+    def __init__(self, max_turns=None):
         """
         Initializes the DoND game.
 
         Args:
             max_turns (int): The maximum number of turns allowed in the game.
         """
-        self.reset(max_turns)
+        self.max_turns = max_turns
+        self.reset()
 
-    def reset(self, max_turns=7):
+    def reset(self):
         """
         Resets the game to its initial state.
 
@@ -33,7 +34,6 @@ class DoND:
         self.points_p1 = 0
         self.agreement_reached = False
         self.last_message = ""
-        self.max_turns = max_turns
         return self.quantities, self.values_p0, self.values_p1
 
     def step(self, output: str | list, is_proposal=False):

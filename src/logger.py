@@ -17,7 +17,7 @@ class Logger:
             out_dir (str): The output directory where logs will be saved.
         """
         self.run_dir = out_dir
-        self.datenow = datetime.now().strftime('%Y%m%d_%H%M%S')
+        self.datenow = datetime.now().strftime('%Y_%m_%d_%H_%M')
         
         columns_metrics = [
             'p0_score',
@@ -42,7 +42,7 @@ class Logger:
             "Mean Score P1"
         ]
         self.statistics = pd.DataFrame(columns=columns_statistics)
-        self.statistics_file = os.path.join(self.run_dir, "STATISTICS.csv")
+        self.statistics_file = os.path.join(self.run_dir, "stats.csv")
         self.iteration = 0
 
     def new_iteration(self):
@@ -51,7 +51,7 @@ class Logger:
         """
         self.iteration += 1
         self.game_nb = 1
-        self.it_folder = os.path.join(self.run_dir, f"ITERATION_{self.iteration}")
+        self.it_folder = os.path.join(self.run_dir, f"iteration_{self.iteration:02d}")
         os.makedirs(self.it_folder, exist_ok=True)
         # Reset metrics for the new iteration
         self.metrics = pd.DataFrame(columns=self.metrics.columns)
@@ -84,6 +84,9 @@ class Logger:
         self.statistics = pd.concat([self.statistics, pd.DataFrame([stats])], ignore_index=True)
         self.statistics.to_csv(self.statistics_file, index=False)
 
+    def new_game(self):
+        self.game_nb+=1
+
     def log_game(self, game: dict):
         """
         Logs game data, saves player histories, and updates metrics.
@@ -94,8 +97,8 @@ class Logger:
         p0_history = game.pop("p0_history")
         p1_history = game.pop("p1_history")
 
-        p0_game_name = f"P0_GAME_{self.iteration}_{self.game_nb}_{self.datenow}_p0.json"
-        p1_game_name = f"P1_GAME_{self.iteration}_{self.game_nb}_{self.datenow}_p1.json"
+        p0_game_name = f"p0_iter_{self.iteration:02d}_game_%{self.game_nb:04d}.json"
+        p1_game_name = f"p1_iter_{self.iteration:02d}_game_%{self.game_nb:04d}.json"
 
         os.makedirs(self.run_dir, exist_ok=True)
 
@@ -110,7 +113,6 @@ class Logger:
 
         self.metrics = pd.concat([self.metrics, pd.DataFrame([game])], ignore_index=True)
         self.metrics.to_csv(self.metrics_file, index=False)
-        self.game_nb += 1
 
     def setup_logging(self, config_file):
         """
