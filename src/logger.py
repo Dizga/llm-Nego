@@ -6,7 +6,16 @@ from datetime import datetime
 import pandas as pd
 
 class Logger:
+    """
+    Logger class for logging game data, metrics, and statistics.
+    """
     def __init__(self, out_dir):
+        """
+        Initializes the Logger.
+
+        Args:
+            out_dir (str): The output directory where logs will be saved.
+        """
         self.run_dir = out_dir
         self.datenow = datetime.now().strftime('%Y%m%d_%H%M%S')
         
@@ -37,6 +46,9 @@ class Logger:
         self.iteration = 0
 
     def new_iteration(self):
+        """
+        Starts a new iteration, resets metrics, and logs stats for the previous iteration.
+        """
         self.iteration += 1
         self.game_nb = 1
         self.it_folder = os.path.join(self.run_dir, f"ITERATION_{self.iteration}")
@@ -48,7 +60,12 @@ class Logger:
         self.log_itr_stats()
 
     def get_itr_stats(self):
-        # Logs stats for the current iteration
+        """
+        Computes statistics for the current iteration.
+
+        Returns:
+            dict: A dictionary containing statistics of the current iteration.
+        """
         self.iteration_stats = {
             "Iteration": self.iteration,
             "Agreement Percentage": self.metrics['reach_agreement'].mean() * 100 if not self.metrics['reach_agreement'].empty else 0,
@@ -60,11 +77,20 @@ class Logger:
         return self.iteration_stats
 
     def log_itr_stats(self):
+        """
+        Logs statistics for the current iteration and saves them to a CSV file.
+        """
         stats = self.get_itr_stats()
         self.statistics = pd.concat([self.statistics, pd.DataFrame([stats])], ignore_index=True)
         self.statistics.to_csv(self.statistics_file, index=False)
 
     def log_game(self, game: dict):
+        """
+        Logs game data, saves player histories, and updates metrics.
+
+        Args:
+            game (dict): A dictionary containing game data.
+        """
         p0_history = game.pop("p0_history")
         p1_history = game.pop("p1_history")
 
@@ -87,21 +113,58 @@ class Logger:
         self.game_nb += 1
 
     def setup_logging(self, config_file):
+        """
+        Sets up logging configuration from a config file.
+
+        Args:
+            config_file (str): Path to the logging configuration file.
+        """
         logging.config.fileConfig(config_file, defaults={'date': self.datenow})
 
     def log_info(self, message: str):
+        """
+        Logs an info message.
+
+        Args:
+            message (str): The message to log.
+        """
         logging.info(message)
 
     def log_debug(self, message: str):
+        """
+        Logs a debug message.
+
+        Args:
+            message (str): The message to log.
+        """
         logging.debug(message)
 
     def log_warning(self, message: str):
+        """
+        Logs a warning message.
+
+        Args:
+            message (str): The message to log.
+        """
         logging.warning(message)
 
     def log_error(self, message: str):
+        """
+        Logs an error message.
+
+        Args:
+            message (str): The message to log.
+        """
         logging.error(message)
 
     def save_player_messages(self, player_name: str, messages: list):
+        """
+        Saves player messages to a JSON file.
+
+        Args:
+            player_name (str): The name of the player.
+            messages (list): A list of messages from the player.
+        """
         file_path = os.path.join(self.run_dir, f"{player_name}.json")
         with open(file_path, 'w') as f:
             json.dump(messages, f, indent=4)

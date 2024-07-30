@@ -2,12 +2,27 @@ import json
 import regex as re
 
 class Instructor:
-    "The instructor acts as a middle-man between the game and a LLM player."
+    """
+    The Instructor acts as a middle-man between the game and a LLM player.
+    """
     def __init__(self):
+        """
+        Initializes the Instructor.
+        """
         pass
 
 class DoNDInstructor(Instructor):
     def __init__(self, game_intro_file, chain_of_thought_file, dond_game, dond_player, player_type="p0"):
+        """
+        Initializes the DoNDInstructor.
+
+        Args:
+            game_intro_file (str): Path to the file containing game introduction.
+            chain_of_thought_file (str): Path to the file containing chain of thought instructions.
+            dond_game (DoND): The DoND game instance.
+            dond_player (NegoAgent): The LLM player instance.
+            player_type (str): The type of player, either "p0" or "p1".
+        """
         self.first_turn = True
         
         with open(game_intro_file, 'r') as file:
@@ -23,6 +38,12 @@ class DoNDInstructor(Instructor):
         self.player_type = player_type
 
     def play_move(self):
+        """
+        Plays a move in the DoND game.
+
+        Returns:
+            bool: Whether the game should continue or not.
+        """
         state = self.dond_game.get_state()
         if state is None:
             return False
@@ -35,7 +56,8 @@ class DoNDInstructor(Instructor):
         max_retries = 3
         retries = 0
         while retries < max_retries:
-            if valid_response: break
+            if valid_response:
+                break
             response = self.dond_player.prompt(error_message)
             valid_response, error_message = self.validate(response)
             retries += 1
@@ -43,27 +65,41 @@ class DoNDInstructor(Instructor):
         if retries == max_retries:
             raise ValueError(f"Error validating output after {max_retries} retries.")
 
-        # while not response:
-        #     response = self.verificator(self.dond_player.prompt(user_message))
-        
         is_proposal, content = self.extract(response)
 
-        ongoing = self.dond_game.step(content, is_proposal) # whether the game is finished or not
+        ongoing = self.dond_game.step(content, is_proposal)  # Whether the game is finished or not
         self.first_turn = False
         return ongoing
 
     def verificator(self, message):
+        """
+        Verifies if the message is correct.
+
+        Args:
+            message (str): The message to verify.
+
+        Returns:
+            bool: Always returns True (placeholder for future implementation).
+        """
         # TODO: add conditions that return false if message not correct
         return message
 
     def get_usr_message(self, state):
-        # Get message from instructor
+        """
+        Constructs a user message based on the current game state.
+
+        Args:
+            state (dict): The current state of the game.
+
+        Returns:
+            str: The constructed user message.
+        """
         user_message = ""
         if self.first_turn:
-            user_message += self.game_basics 
+            user_message += self.game_basics
             user_message += self.get_stringed_metrics(state["quantities"], state["values"])
-        if state.get("has_proposed"): 
-            user_message += "A proposal as been made by the other player. You should also make a proposal reflecting the division of items you agreed upon.\n"
+        if state.get("has_proposed"):
+            user_message += "A proposal has been made by the other player. You should also make a proposal reflecting the division of items you agreed upon.\n"
         else:
             user_message += f"The other player said: '{state['last_message']}'\n" if state['last_message'] else ""
         if self.chain_of_thought is not None:
@@ -71,6 +107,16 @@ class DoNDInstructor(Instructor):
         return user_message
 
     def get_stringed_metrics(self, quantities, values):
+        """
+        Constructs a string describing the quantities and values of items.
+
+        Args:
+            quantities (dict): The quantities of items.
+            values (dict): The values of items.
+
+        Returns:
+            str: The constructed string describing the metrics.
+        """
         return (
             f"There is a total of {quantities['books']} books, "
             f"{quantities['hats']} hats, and {quantities['balls']} balls. "
@@ -80,6 +126,15 @@ class DoNDInstructor(Instructor):
         )
     
     def validate(self, response):
+        """
+        Validates the response from the LLM player.
+
+        Args:
+            response (str): The response from the LLM player.
+
+        Returns:
+            tuple: A tuple containing a boolean indicating validity and an error message if invalid.
+        """
         errors = []
         
         # Check if reasoning tag exists
@@ -121,7 +176,15 @@ class DoNDInstructor(Instructor):
             return True, "Response is valid."
 
     def extract(self, message):
+        """
+        Extracts the content from the response message.
 
+        Args:
+            message (str): The response message.
+
+        Returns:
+            tuple: A tuple containing a boolean indicating if it's a proposal and the extracted content.
+        """
         pattern = r'<message>(.*?)</message>|<propose>(.*?)</propose>'
         match = re.search(pattern, message, re.DOTALL)
 
@@ -132,6 +195,12 @@ class DoNDInstructor(Instructor):
             return False, match.group(1)
     
     def reset_history(self):
+        """
+        Resets the message history of the LLM player.
+
+        Returns:
+            list: The message history before resetting.
+        """
         self.first_turn = True
         history = self.dond_player.history
         self.dond_player.reset_messages()

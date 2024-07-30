@@ -5,7 +5,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingA
 from trl import SFTTrainer
 from peft import get_peft_model, LoraConfig, TaskType
 import os
-
+import openai
 
 class NegoAgent:
     def __init__(self,
@@ -15,6 +15,16 @@ class NegoAgent:
                  tokenizer="microsoft/Phi-3-mini-128k-instruct",
                  out_folder="/",
                  ) -> None:
+        """
+        Initializes the NegoAgent.
+
+        Args:
+            name (str): The name of the agent.
+            device (str): The device to run the model on, either 'cuda' or 'cpu'.
+            model (str): The model to be used, specified by the model name or path.
+            tokenizer (str): The tokenizer to be used, specified by the tokenizer name or path.
+            out_folder (str): The output folder for saving models and logs.
+        """
         self.name = name
         self.device = device
         self.history = []
@@ -24,7 +34,6 @@ class NegoAgent:
             device_map="auto",
             trust_remote_code=True,
         )
-        # ).to(device)
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)
         if self.tokenizer.pad_token is None:
             self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
@@ -55,18 +64,13 @@ class NegoAgent:
             load_best_model_at_end=True
         )
 
-    def __call__(self, add_to_history=True, *args: Any, **kwargs: Any) -> Any:
-        text = self.tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
-        model_inputs = self.tokenizer([text], return_tensors="pt").to(self.device)
-        generated_ids = self.model.generate(model_inputs.input_ids, max_new_tokens=1000, do_sample=True)
-        generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
-        response = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-
-        if add_to_history:
-            self.add_message('assistant', response)
-        return response
-
     def train(self, train_data):
+        """
+        Trains the model on the provided training data.
+
+        Args:
+            train_data (Dataset): The dataset to be used for training the model.
+        """
         
         ds = Dataset.from_dict({"conversations": train_data})
 
@@ -91,7 +95,16 @@ class NegoAgent:
         self.model.save_pretrained(path)
         self.tokenizer.save_pretrained(path)
 
-    def prompt(self, message:str):
+    def prompt(self, message: str):
+        """
+        Adds a user message to the conversation history and generates a response.
+
+        Args:
+            message (str): The user message to be added to the conversation history.
+
+        Returns:
+            str: The generated response from the model.
+        """
         user_msg = message
         self.add_message(role="user", message=user_msg)
 
@@ -105,10 +118,85 @@ class NegoAgent:
         return response
 
     def add_message(self, role, message):
+        """
+        Adds a message to the conversation history.
+
+        Args:
+            role (str): The role of the message sender (e.g., 'user', 'assistant').
+            message (str): The message content.
+        """
         self.history.append({"role": role, "content": message})
 
     def reset_messages(self):
+        """
+        Resets the conversation history.
+        """
         self.history = []
 
     def add_system_message(self, message):
+        """
+        Adds a system message to the conversation history.
+
+        Args:
+            message (str): The system message content.
+        """
         self.add_message("user", message)
+
+
+class OpenAINegoAgent(NegoAgent):
+    def __init__(self,
+                 name="openai_agent",
+                 api_key="",
+                 out_folder="/",
+                 model="gpt-3.5-turbo",  # default OpenAI model
+                 ) -> None:
+        """
+        Initializes the OpenAINegoAgent.
+
+        Args:
+            name (str): The name of the agent.
+            api_key (str): The API key for accessing OpenAI's API.
+            out_folder (str): The output folder for saving models and logs.
+            model (str): The model to be used, specified by the model name (default is 'gpt-3.5-turbo').
+        """
+        super().__init__(name=name, out_folder=out_folder)
+        self.api_key = api_key
+        openai.api_key = self.api_key
+        self.model = model
+
+    def train(self, train_data_path):
+        """
+        Trains the model using OpenAI's API.
+
+        Args:
+            train_data_path (str): The path to the training data file in JSONL format.
+        """
+        # TODO: complete
+        openai.File.create(
+            file=open(train_data_path, "rb"),
+            purpose="fine-tune"
+        )
+        openai.FineTune.create(
+            training_file=train_data_path, 
+            model=self.model
+        )
+
+    def prompt(self, message: str):
+        """
+        Adds a user message to the conversation history and generates a response using OpenAI's API.
+
+        Args:
+            message (str): The user message to be added to the conversation history.
+
+        Returns:
+            str: The generated response from the model.
+        """
+        user_msg = message
+        self.add_message(role="user", message=user_msg)
+        response = openai.ChatCompletion.create(
+            model=self.model,
+            messages=self.history,
+        )
+        response_text = response['choices'][0]['message']['content']
+        self.add_message(role="assistant", message=response_text)
+        return response_text
