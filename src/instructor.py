@@ -1,3 +1,4 @@
+import json
 import regex as re
 
 class Instructor:
@@ -28,7 +29,20 @@ class DoNDInstructor(Instructor):
         
         user_message = self.get_usr_message(state)
         response = self.dond_player.prompt(user_message)
-        
+
+        valid_response, error_message = self.validate(response)
+
+        max_retries = 3
+        retries = 0
+        while retries < max_retries:
+            if valid_response: break
+            response = self.dond_player.prompt(error_message)
+            valid_response, error_message = self.validate(response)
+            retries += 1
+
+        if retries == max_retries:
+            raise ValueError(f"Error validating output after {max_retries} retries.")
+
         # while not response:
         #     response = self.verificator(self.dond_player.prompt(user_message))
         
@@ -49,9 +63,9 @@ class DoNDInstructor(Instructor):
             user_message += self.game_basics 
             user_message += self.get_stringed_metrics(state["quantities"], state["values"])
         if state.get("has_proposed"): 
-            user_message += "A proposal as been made by your partner. You should also make a proposal of this format: <propose> I take X books, Y hats, Z balls. My partner gets A books, B hats, C balls. </propose>.\n"
+            user_message += "A proposal as been made by the other player. You should also make a proposal reflecting the division of items you agreed upon.\n"
         else:
-            user_message += f"Other Player Reply: '{state['last_message']}'\n" if state['last_message'] else ""
+            user_message += f"The other player said: '{state['last_message']}'\n" if state['last_message'] else ""
         if self.chain_of_thought is not None:
             user_message += self.chain_of_thought
         return user_message
@@ -64,21 +78,49 @@ class DoNDInstructor(Instructor):
             f"{values['hats']} for a hat, and {values['balls']} for a ball. "
             "You don't know your partner's utility values. "
         )
+    
+    def validate(self, response):
+        errors = []
+        
+        # Check if reasoning tag exists
+        if "<reason>" not in response or "</reason>" not in response:
+            errors.append("Missing <reason>...</reason> tag.")
+        
+        # Check if message or propose tag exists, but not both
+        has_message = "<message>" in response and "</message>" in response
+        has_propose = "<propose>" in response and "</propose>" in response
+        
+        if has_message and has_propose:
+            errors.append("Response contains both <message>...</message> and <propose>...</propose> tags. Only one is allowed per response.")
+        elif not has_message and not has_propose:
+            errors.append("Response must contain either <message>...</message> or <propose>...</propose> tag.")
+        
+        # Check if propose tag is JSON parsable and follows the specified format
+        if has_propose:
+            propose_content = response.split("<propose>")[1].split("</propose>")[0].strip()
+            try:
+                propose_json = json.loads(propose_content)
+                if not all(key in propose_json for key in ["i_take", "other_player_gets"]):
+                    errors.append('The <propose> tag must contain JSON with keys "i_take" and "other_player_gets".')
+            except json.JSONDecodeError:
+                errors.append("The content within <propose>...</propose> is not valid JSON.")
+        
+        # Generate error message or return success
+        if errors:
+            return False, "Errors: " + "; ".join(errors)
+        else:
+            return True, "Response is valid."
 
     def extract(self, message):
 
-        if self.chain_of_thought:
-            regex = r"<reason>(.*?)</reason>\s*(.*?)\s*(<message>(.*?)</message>|<proposal>(.*?)</proposal>)"
-        else:
-            regex = r"(<message>(.*?)</message>|<proposal>(.*?)</proposal>)"
-
-        if re.match(regex, message) is None:
-            return None, ''
-
-        pattern = r'<message>(.*?)</message>|<proposal>(.*?)</proposal>'
+        pattern = r'<message>(.*?)</message>|<propose>(.*?)</propose>'
         match = re.search(pattern, message, re.DOTALL)
 
-        return bool(match.group(2)), match.group(2) if match.group(2) else match.group(1)
+        if match.group(2):
+            # Extract json from proposal
+            return True, json.loads(match.group(2))["i_take"]
+        else:
+            return False, match.group(1)
     
     def reset_history(self):
         self.first_turn = True

@@ -21,7 +21,7 @@ class DoND:
         self.max_turns = max_turns
         return self.quantities, self.values_p0, self.values_p1
 
-    def step(self, output: str, is_proposal=False):
+    def step(self, output: str | list, is_proposal=False):
         self.turn += 1
         self.last_message = output
         
@@ -77,26 +77,12 @@ class DoND:
         self.points_p0 = sum(self.values_p0[item] * self.p0_prop[item] for item in self.items)
         self.points_p1 = sum(self.values_p1[item] * self.p1_prop[item] for item in self.items)
 
-    def propose(self, string: str) -> bool:
-        "Determines if there is a valid proposal in the string."
+    def propose(self, proposal: list) -> bool:
 
-
-        regex = r"\d+"
-        numbers = re.findall(regex, string)
-        prop = numbers[:3]
-
-
-
-        # match = re.match(r"\[ Proposal \] \{.*\}", string)
-        # if not match:
-        #     return False
-        # prop = json.loads(match.group(0)[12:])
-        # if any(prop[item] > self.quantities[item] for item in self.quantities):
-        #     return False
         if self.current_turn() == "p0":
-            self.p0_prop = {key: value for key, value in zip(self.items, prop)}
+            self.p0_prop = {key: value for key, value in zip(self.items, proposal)}
         else:
-            self.p1_prop = {key: value for key, value in zip(self.items, prop)}
+            self.p1_prop = {key: value for key, value in zip(self.items, proposal)}
         # return True
 
     def render(self):
