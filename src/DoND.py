@@ -2,10 +2,10 @@ import regex as re
 import json
 
 class DoND:
-    def __init__(self):
+    def __init__(self, max_turns=7):
         self.reset()
 
-    def reset(self):
+    def reset(self, max_turns=7):
         self.turn = 0
         self.items = ['books', 'hats', 'balls']
         self.quantities = {key: value for key, value in zip(self.items, [5,4,3])}
@@ -18,7 +18,7 @@ class DoND:
         self.points_p1 = 0
         self.agreement_reached = False
         self.last_message = ""
-        self.max_turns = 2
+        self.max_turns = max_turns
         return self.quantities, self.values_p0, self.values_p1
 
     def step(self, output: str, is_proposal=False):

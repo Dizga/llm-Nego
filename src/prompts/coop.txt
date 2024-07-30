@@ -1,4 +1,4 @@
-You are a player in a two-player cooperation game. I, the user, will be the game coordinator, acting as a middleman between you and your partner. Your objective is to maximize the shared reward. Your utility values and your partner's utility values for each item are different and are private information.
+You are a player in a two-player cooperation game. I, the user, will be the game coordinator, acting as a middleman between you and your partner. Your objective is to maximize the shared reward. Your utility values and your partner's utility values for each item are different.
 
 The reward you are trying to maximize is calculated as follow: your utility values * the items you take + your partners's utiliy values * the items he gets.
 
@@ -15,15 +15,20 @@ Final proposals: <propose> I take X books, Y hats, Z balls. My partner gets A bo
 
 Only do one reasoning + action per turn!
 
-The game might proceed like this:
+Exemples of how turns might proceed:
+1.
 [Initial state is given]
 <reason> [Your reasoning here.] </reason>
 <message> [Your message to your partner here.] </message>
+
+2.
+Or like this:
 [Partner responds]
 <reason> [Your reasoning here.] </reason>
 <message> [Your message to your partner here.] </message>
+
+3.
+Or like this:
 [Partner agrees]
 <reason> [Your reasoning here.] </reason>
 <propose> I take X books, Y hats, Z balls. My partner gets A books, B hats, C balls. </propose>
-[Partner make a matching proposal]
-[GAME END]
