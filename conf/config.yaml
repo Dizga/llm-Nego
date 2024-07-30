@@ -12,8 +12,8 @@ run:
 
 p0:
   openai: False
-  tokenizer: "microsoft/Phi-3-mini-128k-instruct"
-  model: "microsoft/Phi-3-mini-128k-instruct"
+  tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+  model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
   #tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
   #model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
   game_intro_file: "src/prompts/coop.txt"
@@ -21,8 +21,8 @@ p0:
 
 p1:
   openai: False
-  tokenizer: "microsoft/Phi-3-mini-128k-instruct"
-  model: "microsoft/Phi-3-mini-128k-instruct"
+  tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+  model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
   #tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
   #model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
   game_intro_file: "src/prompts/coop.txt"

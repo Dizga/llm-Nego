@@ -11,7 +11,7 @@ class DoND:
         """
         self.reset(max_turns)
 
-    def reset(self, max_turns=7):
+    def reset(self, max_turns=2):
         """
         Resets the game to its initial state.
 

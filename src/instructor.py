@@ -148,7 +148,7 @@ class DoNDInstructor(Instructor):
         if has_message and has_propose:
             errors.append("Response contains both <message>...</message> and <propose>...</propose> tags. Only one is allowed per response.")
         elif not has_message and not has_propose:
-            errors.append("Response must contain either <message>...</message> or <propose>...</propose> tag.")
+            errors.append("Response must contain either <message>...</message> or <propose>...</propose> tag. Do not forget the closing tag.")
         
         # Check if propose tag is JSON parsable and follows the specified format
         if has_propose:
@@ -157,6 +157,15 @@ class DoNDInstructor(Instructor):
                 propose_json = json.loads(propose_content)
                 if not all(key in propose_json for key in ["i_take", "other_player_gets"]):
                     errors.append('The <propose> tag must contain JSON with keys "i_take" and "other_player_gets".')
+                else:
+                    i_take = propose_json["i_take"]
+                    other_player_gets = propose_json["other_player_gets"]
+                    
+                    if not (isinstance(i_take, list) and len(i_take) == 3 and all(isinstance(x, int) for x in i_take)):
+                        errors.append('The "i_take" value must be a list of 3 integers.')
+                    
+                    if not (isinstance(other_player_gets, list) and len(other_player_gets) == 3 and all(isinstance(x, int) for x in other_player_gets)):
+                        errors.append('The "other_player_gets" value must be a list of 3 integers.')
             except json.JSONDecodeError:
                 errors.append("The content within <propose>...</propose> is not valid JSON.")
         

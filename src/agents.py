@@ -1,7 +1,8 @@
 from typing import Any
 import torch
+from datasets import Dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments
-import regex as rg
+from trl import SFTTrainer
 from peft import get_peft_model, LoraConfig, TaskType
 import os
 import openai
@@ -34,6 +35,8 @@ class NegoAgent:
             trust_remote_code=True,
         )
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
         self.out_folder = out_folder
 
         # Training arguments and model configuration
@@ -41,23 +44,25 @@ class NegoAgent:
             task_type=TaskType.CAUSAL_LM,
             r=16,
             lora_alpha=32,
-            lora_dropout=0.1
+            lora_dropout=0.1,
+            target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
+                      "gate_proj", "up_proj", "down_proj"]
         )
-        #self.model = get_peft_model(self.model, self.lora_config)
-        # self.training_args = TrainingArguments(
-        #     output_dir=out_folder,
-        #     num_train_epochs=1,
-        #     per_device_train_batch_size=5,
-        #     learning_rate=5e-5,
-        #     weight_decay=0.01,
-        #     logging_dir=os.path.join(out_folder, 'models', 'logs'),
-        #     logging_steps=10,
-        #     save_total_limit=2,
-        #     save_steps=500,
-        #     evaluation_strategy="steps",
-        #     eval_steps=500,
-        #     load_best_model_at_end=True
-        # )
+        self.model = get_peft_model(self.model, self.lora_config)
+        self.training_args = TrainingArguments(
+            output_dir=out_folder,
+            num_train_epochs=1,
+            per_device_train_batch_size=5,
+            learning_rate=5e-5,
+            weight_decay=0.01,
+            logging_dir=os.path.join(out_folder, 'models', 'logs'),
+            logging_steps=10,
+            save_total_limit=2,
+            save_steps=500,
+            evaluation_strategy="steps",
+            eval_steps=500,
+            load_best_model_at_end=True
+        )
 
     def train(self, train_data):
         """
@@ -66,13 +71,25 @@ class NegoAgent:
         Args:
             train_data (Dataset): The dataset to be used for training the model.
         """
-        trainer = Trainer(
+        
+        ds = Dataset.from_dict({"conversations": train_data})
+
+        def formatting_prompts_func(examples):
+            convos = examples["conversations"]
+            texts = [self.tokenizer.apply_chat_template(convo, tokenize = False, add_generation_prompt = False) for convo in convos]
+            return { "text" : texts, }
+        
+        dataset = ds.map(formatting_prompts_func, batched = True,)
+
+        trainer = SFTTrainer(
             model=self.model,
             args=self.training_args,
-            train_dataset=train_data,
+            dataset_text_field = "text",
+            train_dataset=dataset,
             eval_dataset=None,
             tokenizer=self.tokenizer,
         )
+
         trainer.train()
         path = os.path.join(self.out_folder, 'models')
         self.model.save_pretrained(path)
