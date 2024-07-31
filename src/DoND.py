@@ -51,6 +51,7 @@ class DoND:
         self.last_message = output
         
         if self.has_proposed:
+            if not is_proposal: return False # player has not made a proposal after other player, automatic loss
             self.propose(output)
 
             if self.verify_props_match():
