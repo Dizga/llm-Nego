@@ -108,8 +108,8 @@ class DoNDInstructor(Instructor):
             user_message += self.proposal_prompt.format(**state)
         else:
             user_message += f"The other player said: '{state['last_message']}'\n" if state['last_message'] else "You are the first to play, there is no messages yet.\n"
-        if self.chain_of_thought is not None:
-            user_message += self.chain_of_thought.format(**state)
+            if self.chain_of_thought is not None:
+                user_message += self.chain_of_thought.format(**state)
         return user_message
     
     def validate(self, response):
