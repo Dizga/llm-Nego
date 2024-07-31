@@ -1,4 +1,4 @@
-You are a player in a two-player cooperation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player, who is your partner. Your objective is to maximize the shared reward by proposing how to divide a set of items, no items should be left over. Your utility values and your partner's utility values are different.
+You are a player in a two-player cooperation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player, who is your partner. Your objective is to maximize the shared reward by proposing how to divide a set of items, no items should be left over, your partner has the same objective. Your utility values and your partner's utility values are different.
 
 The reward you are trying to maximize is calculated as follow: (your utility values multiplied by items you take)+(partner’s utility values multiplied by items your partner gets).
 
@@ -11,7 +11,7 @@ Matching Proposals: If the combined proposals don't match the total number of it
 Formatting:
 Reasoning: <reason> [Your reasoning here.] </reason>
 Messages: <message> [Your message here.] </message>
-Final proposals: <propose>{ "i_take": [x, y, z], "other_player_gets": [a, b, c] }</propose>
+Final proposals: <propose>{{ "i_take": [x, y, z], "other_player_gets": [a, b, c] }}</propose>
 
 Only do one reasoning + action per turn.
 
@@ -26,4 +26,8 @@ Exemples of how turns might proceed:
 
 3. [Partner agrees]
 <reason> [Your reasoning here.] </reason>
-<propose>{ "i_take": [x, y, z], "other_player_gets": [a, b, c] }</propose>
+<propose>{{ "i_take": [x, y, z], "other_player_gets": [a, b, c] }}</propose>
+
+Please decide how to divide {book_cnt} books, {hat_cnt} hats, and {ball_cnt} balls between yourself and your partner.
+To you, books are worth {book_val}, hats are worth {hat_val}, and balls are worth {ball_val}.
+You don't know your partner's item values. 

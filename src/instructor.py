@@ -1,6 +1,9 @@
 import json
 import regex as re
 
+from DoND import DoND
+from agents import NegoAgent
+
 class Instructor:
     """
     The Instructor acts as a middle-man between the game and a LLM player.
@@ -12,7 +15,7 @@ class Instructor:
         pass
 
 class DoNDInstructor(Instructor):
-    def __init__(self, game_intro_file, chain_of_thought_file, dond_game, dond_player, player_type="p0"):
+    def __init__(self, game_intro_file, chain_of_thought_file, proposal_file, dond_game:DoND, dond_player:NegoAgent, player_type="p0"):
         """
         Initializes the DoNDInstructor.
 
@@ -27,6 +30,9 @@ class DoNDInstructor(Instructor):
         
         with open(game_intro_file, 'r') as file:
             self.game_basics = file.read()
+
+        with open(proposal_file, 'r') as file:
+            self.proposal_prompt = file.read()
         
         self.chain_of_thought = None
         if chain_of_thought_file:
@@ -96,34 +102,14 @@ class DoNDInstructor(Instructor):
         """
         user_message = ""
         if self.first_turn:
-            user_message += self.game_basics
-            user_message += self.get_stringed_metrics(state["quantities"], state["values"])
+            user_message += self.game_basics.format(**state)
         if state.get("has_proposed"):
-            user_message += "A proposal has been made by the other player. You should also make a proposal reflecting the division of items you agreed upon.\n"
+            user_message += self.proposal_prompt.format(**state)
         else:
-            user_message += f"The other player said: '{state['last_message']}'\n" if state['last_message'] else ""
+            user_message += f"The other player said: '{state['last_message']}'\n" if state['last_message'] else "You are the first to play, there is no messages yet.\n"
         if self.chain_of_thought is not None:
-            user_message += self.chain_of_thought
+            user_message += self.chain_of_thought.format(**state)
         return user_message
-
-    def get_stringed_metrics(self, quantities, values):
-        """
-        Constructs a string describing the quantities and values of items.
-
-        Args:
-            quantities (dict): The quantities of items.
-            values (dict): The values of items.
-
-        Returns:
-            str: The constructed string describing the metrics.
-        """
-        return (
-            f"There is a total of {quantities['books']} books, "
-            f"{quantities['hats']} hats, and {quantities['balls']} balls. "
-            f"Your utility values are {values['books']} for a book, "
-            f"{values['hats']} for a hat, and {values['balls']} for a ball. "
-            "You don't know your partner's utility values. "
-        )
     
     def validate(self, response):
         """
