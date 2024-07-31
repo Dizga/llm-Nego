@@ -172,16 +172,17 @@ class DoNDInstructor(Instructor):
         Returns:
             tuple: A tuple containing a boolean indicating if it's a proposal and the extracted content.
         """
-        pattern = r'<message>(.*?)</message>|<propose>(.*?)</propose>'
+        pattern = r'<message>(.*?)</message>|<propose>\{\s*"i_take"\s*:\s*(\[.*?\])\s*,\s*"other_player_gets"\s*:\s*(\[.*?\])\s*\}</propose>'
         match = re.search(pattern, message, re.DOTALL)
 
         if match.group(2):
             # Extract json from proposal
-            return True, json.loads(match.group(2))["i_take"]
+            print(json.loads(match.group(2)))
+            return True, json.loads(match.group(2))
         else:
             return False, match.group(1)
     
-    def reset_history(self):
+    def new_game(self):
         """
         Resets the message history of the LLM player.
 
@@ -192,3 +193,6 @@ class DoNDInstructor(Instructor):
         history = self.dond_player.history
         self.dond_player.reset_messages()
         return history
+    
+    def get_history(self):
+        return self.dond_player.history

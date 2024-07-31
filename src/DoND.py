@@ -140,7 +140,7 @@ class DoND:
         """
         pass
 
-    def export_game(self):
+    def export(self):
         """
         Exports the current state of the game as a dictionary.
 
