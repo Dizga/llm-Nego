@@ -1,9 +1,5 @@
 import json
 import numpy as np
-from prompts.instruction import get_instruction_prompt
-# from store import add_run_to_store
-from type.behavior import Behavior
-# from utils import generate_initial_state
 from logger import Logger
 from DoND import DoND
 from agents import NegoAgent
@@ -11,6 +7,7 @@ import hydra
 from datetime import datetime
 import os
 from instructor import DoNDInstructor
+from hydra.core.hydra_config import HydraConfig
 
 class TwoPlayerNegotiationTrainer:
     def __init__(self, iterations_per_run, games_per_iteration, game, player_0, player_1, logger):
@@ -28,11 +25,11 @@ class TwoPlayerNegotiationTrainer:
         for _ in range(self.iterations_per_run):
             self.logger.new_iteration()
             for _ in range(self.games_per_iteration):
-                game_result = self.run_game()
-                self.logger.log_game(game_result)
-            self.train_agents()
+                self.run_game()
+            #self.train_agents()
 
     def run_game(self):
+        self.logger.log_info("Game started.")
         self.game.reset()
         game_in_progress = True
         while game_in_progress:
@@ -40,10 +37,15 @@ class TwoPlayerNegotiationTrainer:
             if not game_in_progress:
                 break
             game_in_progress = self.player_1.play_move()
-        game_description = self.game.export_game()
-        game_description['p0_history'] = self.player_0.reset_history()
-        game_description['p1_history'] = self.player_1.reset_history()
-        return game_description
+            game_description = self.game.export_game()
+            game_description['p0_history'] = self.player_0.dond_player.history
+            game_description['p1_history'] = self.player_1.dond_player.history
+            self.logger.log_game(game_description)
+            
+        self.player_0.reset_history()
+        self.player_1.reset_history()
+        self.logger.new_game()
+        self.logger.log_info("Game completed.")
 
         
 
@@ -67,11 +69,12 @@ class DoNDTrainer(TwoPlayerNegotiationTrainer):
 def run_dond(cfg):
 
     # Make output directory
-    output_directory = f"DATA/RUN_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
+    output_directory = hydra_cfg['runtime']['output_dir']
     os.makedirs(output_directory, exist_ok=True)
 
     logger = Logger(output_directory)
-    game = DoND()
+    game = DoND(max_turns=cfg.game.max_turns)
 
     agent_0 = NegoAgent(
         name="agent_0",
