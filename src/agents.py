@@ -35,8 +35,8 @@ class NegoAgent:
             trust_remote_code=True,
         )
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)
-        if self.tokenizer.pad_token is None:
-            self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+        # if self.tokenizer.pad_token is None:
+        #     self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
         self.out_folder = out_folder
 
         # Training arguments and model configuration
@@ -72,14 +72,7 @@ class NegoAgent:
             train_data (Dataset): The dataset to be used for training the model.
         """
         
-        ds = Dataset.from_dict({"conversations": train_data})
-
-        def formatting_prompts_func(examples):
-            convos = examples["conversations"]
-            texts = [self.tokenizer.apply_chat_template(convo, tokenize = False, add_generation_prompt = False) for convo in convos]
-            return { "text" : texts, }
-        
-        dataset = ds.map(formatting_prompts_func, batched = True,)
+        dataset = Dataset.from_dict({"messages": train_data})
 
         trainer = SFTTrainer(
             model=self.model,

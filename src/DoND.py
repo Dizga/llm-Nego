@@ -84,15 +84,23 @@ class DoND:
         if player == "current_turn":
             player = self.current_turn()
         out = {
-            "quantities": self.quantities,
+            "book_cnt": self.quantities["books"],
+            "hat_cnt": self.quantities["hats"],
+            "ball_cnt": self.quantities["balls"],
+            # "quantities": self.quantities,
             "agreement_reached": self.agreement_reached,
             "has_proposed": self.has_proposed,
             "last_message": self.last_message
         }
         if player == "p0":
-            out["values"] = self.values_p0
+            out["book_val"] = self.values_p0["books"]
+            out["hat_val"] = self.values_p0["hats"]
+            out["ball_val"] = self.values_p0["balls"]
+
             return out
-        out["values"] = self.values_p1
+        out["book_val"] = self.values_p1["books"]
+        out["hat_val"] = self.values_p1["hats"]
+        out["ball_val"] = self.values_p1["balls"]
         return out
 
     def verify_props_match(self):

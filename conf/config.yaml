@@ -19,8 +19,9 @@ p0:
   model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
   #tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
   #model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-  game_intro_file: "src/prompts/coop.txt"
-  chain_of_thought: "src/prompts/coop-cot.txt" # false if none, else link to txt file 
+  game_intro_file: "src/prompts/coop/rules.txt"
+  chain_of_thought: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
+  proposal_file: "src/prompts/coop/proposal.txt"
 
 p1:
   openai: False
@@ -28,6 +29,7 @@ p1:
   model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
   #tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
   #model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-  game_intro_file: "src/prompts/coop.txt"
-  chain_of_thought: "src/prompts/coop-cot.txt" # false if none, else link to txt file 
-  force_conformity: False
+  game_intro_file: "src/prompts/coop/rules.txt"
+  chain_of_thought: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
+  proposal_file: "src/prompts/coop/proposal.txt"
+  
