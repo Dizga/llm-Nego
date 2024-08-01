@@ -50,7 +50,7 @@ class Logger:
         Starts a new iteration, resets metrics, and logs stats for the previous iteration.
         """
         self.iteration += 1
-        self.game_nb = 1
+        self.game_nb = 0
         self.it_folder = os.path.join(self.run_dir, f"iteration_{self.iteration:02d}")
         os.makedirs(self.it_folder, exist_ok=True)
         # Reset metrics for the new iteration
@@ -87,18 +87,16 @@ class Logger:
     def new_game(self):
         self.game_nb+=1
 
-    def log_game(self, game: dict):
+    def log_game(self, game: dict, p0_history, p1_history):
         """
         Logs game data, saves player histories, and updates metrics.
 
         Args:
             game (dict): A dictionary containing game data.
         """
-        p0_history = game.pop("p0_history")
-        p1_history = game.pop("p1_history")
 
-        p0_game_name = f"p0_iter_{self.iteration:02d}_game_%{self.game_nb:04d}.json"
-        p1_game_name = f"p1_iter_{self.iteration:02d}_game_%{self.game_nb:04d}.json"
+        p0_game_name = f"p0_iter_{self.iteration:02d}_game_{self.game_nb:04d}.json"
+        p1_game_name = f"p1_iter_{self.iteration:02d}_game_{self.game_nb:04d}.json"
 
         os.makedirs(self.run_dir, exist_ok=True)
 
@@ -111,8 +109,10 @@ class Logger:
         game['p0_file'] = p0_game_name
         game['p1_file'] = p1_game_name
 
+        # Log metrics
         self.metrics = pd.concat([self.metrics, pd.DataFrame([game])], ignore_index=True)
         self.metrics.to_csv(self.metrics_file, index=False)
+
 
     def setup_logging(self, config_file):
         """

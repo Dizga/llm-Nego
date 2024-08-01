@@ -7,14 +7,14 @@ cuda: true
 
 run:
   train: False
-  nb_iterations: 4
-  games_per_iteration: 4
+  nb_iterations: 5
+  games_per_iteration: 100
 
 game:
   max_turns: 10
 
 p0:
-  openai: False
+  type: hf # hf (HuggingFace) or oai (OpenAI)
   tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
   model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
   #tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
@@ -24,7 +24,7 @@ p0:
   proposal_file: "src/prompts/coop/proposal.txt"
 
 p1:
-  openai: False
+  type: hf # hf (HuggingFace) or oai (OpenAI)
   tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
   model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
   #tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"

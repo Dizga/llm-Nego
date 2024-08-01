@@ -14,8 +14,8 @@ class TwoPlayerNegotiationTrainer:
         self.iterations_per_run = iterations_per_run
         self.games_per_iteration = games_per_iteration
         self.game = game
-        self.player_0 = player_0
-        self.player_1 = player_1
+        self.instructor_0 = player_0
+        self.instructor_1 = player_1
         self.logger = logger
 
     def train_agents(self):
@@ -30,21 +30,14 @@ class TwoPlayerNegotiationTrainer:
 
     def run_game(self):
         self.logger.log_info("Game started.")
-        self.game.reset()
-        game_in_progress = True
-        while game_in_progress:
-            game_in_progress = self.player_0.play_move()
-            if not game_in_progress:
-                break
-            game_in_progress = self.player_1.play_move()
-            game_description = self.game.export_game()
-            game_description['p0_history'] = self.player_0.dond_player.history
-            game_description['p1_history'] = self.player_1.dond_player.history
-            self.logger.log_game(game_description)
-            
-        self.player_0.reset_history()
-        self.player_1.reset_history()
         self.logger.new_game()
+        self.instructor_0.new_game()
+        self.instructor_1.new_game()
+        self.game.reset()
+        while True:
+            if not self.instructor_0.play_move(): break
+            if not self.instructor_1.play_move(): break
+        self.logger.log_game(self.game.export(), self.instructor_0.get_history(), self.instructor_1.get_history())
         self.logger.log_info("Game completed.")
 
         
@@ -62,8 +55,8 @@ class DoNDTrainer(TwoPlayerNegotiationTrainer):
         p1_filtered_files = [self.logger.it_folder + '/' + element for element in filtered_p1['p1_file'].tolist()]
         p0_filtered_jsons = [json.load(open(file_path, 'r')) for file_path in p0_filtered_files]
         p1_filtered_jsons = [json.load(open(file_path, 'r')) for file_path in p1_filtered_files]
-        self.player_0.dond_player.train(p0_filtered_jsons)
-        self.player_1.dond_player.train(p1_filtered_jsons)
+        self.instructor_0.dond_player.train(p0_filtered_jsons)
+        self.instructor_1.dond_player.train(p1_filtered_jsons)
 
 @hydra.main(config_path="../conf", config_name="config")
 def run_dond(cfg):

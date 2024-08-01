@@ -26,7 +26,7 @@ class DoND:
         self.items = ['books', 'hats', 'balls']
         self.quantities = {key: value for key, value in zip(self.items, [5, 4, 3])}
         self.values_p0 = {key: value for key, value in zip(self.items, [5, 4, 3])}
-        self.values_p1 = {key: value for key, value in zip(self.items, [5, 4, 3])}
+        self.values_p1 = {key: value for key, value in zip(self.items, [3, 4, 5])}
         self.has_proposed = False
         self.p0_prop = {}
         self.p1_prop = {}
@@ -51,6 +51,7 @@ class DoND:
         self.last_message = output
         
         if self.has_proposed:
+            if not is_proposal: return False # player has not made a proposal after other player, automatic loss
             self.propose(output)
 
             if self.verify_props_match():
@@ -140,7 +141,7 @@ class DoND:
         """
         pass
 
-    def export_game(self):
+    def export(self):
         """
         Exports the current state of the game as a dictionary.
 

@@ -42,6 +42,7 @@ class DoNDInstructor(Instructor):
         self.dond_game = dond_game
         self.dond_player = dond_player
         self.player_type = player_type
+        self.other_has_proposed = False # whether the other player has made a proposal
 
     def play_move(self):
         """
@@ -105,11 +106,12 @@ class DoNDInstructor(Instructor):
         if self.first_turn:
             user_message += self.game_basics.format(**state)
         if state.get("has_proposed"):
+            self.other_has_proposed = True
             user_message += self.proposal_prompt.format(**state)
         else:
             user_message += f"The other player said: '{state['last_message']}'\n" if state['last_message'] else "You are the first to play, there is no messages yet.\n"
-        if self.chain_of_thought is not None:
-            user_message += self.chain_of_thought.format(**state)
+            if self.chain_of_thought is not None:
+                user_message += self.chain_of_thought.format(**state)
         return user_message
     
     def validate(self, response):
@@ -136,6 +138,10 @@ class DoNDInstructor(Instructor):
             errors.append("Response contains both <message>...</message> and <propose>...</propose> tags. Only one is allowed per response.")
         elif not has_message and not has_propose:
             errors.append("Response must contain either <message>...</message> or <propose>...</propose> tag. Do not forget the closing tag.")
+
+        if self.other_has_proposed:
+            if not has_propose:
+                errors.append("The other player has made a proposal. You must propose also.")
         
         # Check if propose tag is JSON parsable and follows the specified format
         if has_propose:
@@ -172,23 +178,28 @@ class DoNDInstructor(Instructor):
         Returns:
             tuple: A tuple containing a boolean indicating if it's a proposal and the extracted content.
         """
-        pattern = r'<message>(.*?)</message>|<propose>(.*?)</propose>'
+        pattern = r'<message>(.*?)</message>|<propose>\{\s*"i_take"\s*:\s*(\[.*?\])\s*,\s*"other_player_gets"\s*:\s*(\[.*?\])\s*\}</propose>'
         match = re.search(pattern, message, re.DOTALL)
 
         if match.group(2):
             # Extract json from proposal
-            return True, json.loads(match.group(2))["i_take"]
+            print(json.loads(match.group(2)))
+            return True, json.loads(match.group(2))
         else:
             return False, match.group(1)
     
-    def reset_history(self):
+    def new_game(self):
         """
         Resets the message history of the LLM player.
 
         Returns:
             list: The message history before resetting.
         """
+        self.other_has_proposed = False
         self.first_turn = True
         history = self.dond_player.history
         self.dond_player.reset_messages()
         return history
+    
+    def get_history(self):
+        return self.dond_player.history
