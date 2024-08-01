@@ -3,7 +3,7 @@ import torch
 import os
 import openai
 
-from hf_agent import HfAgent
+from agents.hf_agent import HfAgent
 
 class OaiAgent(HfAgent):
     def __init__(self,
