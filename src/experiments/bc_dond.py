@@ -9,8 +9,8 @@ from hydra.core.hydra_config import HydraConfig
 from src.utils.bc_dond_logger import BcDondLogger
 from src.environments.dond_game import DondGame
 from src.environments.dond_instructor import DondInstructor
-from src.models.hf_agent import HfAgent
-from src.models.oai_agent import OaiAgent
+from src.agents.hf_agent import HfAgent
+from src.agents.oai_agent import OaiAgent
 
 class BcDondTrainer:
     def __init__(self, iterations_per_run, games_per_iteration, game, instructor_0, instructor_1, logger):
@@ -83,14 +83,14 @@ def run_bc_dond(cfg):
     game = DondGame(max_turns=cfg.game.max_turns)
 
     # Get the player/instructor 0
-    if cfg.p0.type == "oai":
-        agent_0 = OaiAgent(
+    if cfg.p0.type == "hf":
+        agent_0 = HfAgent(
             name="agent_0",
             device=cfg.device,
             model=cfg.p0.model,
             tokenizer=cfg.p0.tokenizer,
         )
-    else: 
+    elif cfg.p0.type == "oai":
         agent_0 = HfAgent(
             name="agent_0",
             device=cfg.device,
@@ -107,21 +107,20 @@ def run_bc_dond(cfg):
     )
 
     # Get player/instructor 1
-    if cfg.p1.type == "oai":
+    if cfg.p1.type == "hf":
+        agent_1 = HfAgent(
+            name="agent_1",
+            device=cfg.device,
+            model=cfg.p1.model,
+            tokenizer=cfg.p1.tokenizer,
+        )
+    elif cfg.p1.type == "oai":
         agent_1 = OaiAgent(
             name="agent_1",
             device=cfg.device,
             model=cfg.p1.model,
             tokenizer=cfg.p1.tokenizer,
         )
-    else: 
-        agent_1 = OaiAgent(
-            name="agent_1",
-            device=cfg.device,
-            model=cfg.p1.model,
-            tokenizer=cfg.p1.tokenizer,
-        )
-
     instructor_1 = DondInstructor(
         game_intro_file=cfg.p1.game_intro_file,
         chain_of_thought_file=cfg.p1.chain_of_thought,
