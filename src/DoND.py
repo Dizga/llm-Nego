@@ -26,7 +26,7 @@ class DoND:
         self.items = ['books', 'hats', 'balls']
         self.quantities = {key: value for key, value in zip(self.items, [5, 4, 3])}
         self.values_p0 = {key: value for key, value in zip(self.items, [5, 4, 3])}
-        self.values_p1 = {key: value for key, value in zip(self.items, [5, 4, 3])}
+        self.values_p1 = {key: value for key, value in zip(self.items, [3, 4, 5])}
         self.has_proposed = False
         self.p0_prop = {}
         self.p1_prop = {}

@@ -7,8 +7,8 @@ cuda: true
 
 run:
   train: False
-  nb_iterations: 4
-  games_per_iteration: 4
+  nb_iterations: 5
+  games_per_iteration: 100
 
 game:
   max_turns: 10
