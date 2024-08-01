@@ -4,13 +4,14 @@ import hydra
 from datetime import datetime
 import os
 from hydra.core.hydra_config import HydraConfig
+from omegaconf import OmegaConf
 
 # local imports
-from src.utils.bc_dond_logger import BcDondLogger
-from src.environments.dond_game import DondGame
-from src.environments.dond_instructor import DondInstructor
-from src.agents.hf_agent import HfAgent
-from src.agents.oai_agent import OaiAgent
+from utils.bc_dond_logger import BcDondLogger
+from environments.dond_game import DondGame
+from environments.dond_instructor import DondInstructor
+from agents.hf_agent import HfAgent
+from agents.oai_agent import OaiAgent
 
 class BcDondTrainer:
     def __init__(self, iterations_per_run, games_per_iteration, game, instructor_0, instructor_1, logger):
@@ -21,27 +22,12 @@ class BcDondTrainer:
         self.instructor_1 = instructor_1
         self.logger = logger
 
-    def train_agents(self):
-        """Train the agents on the last iteration."""
-        metrics = self.logger.metrics # Extract dataframe with data for each game
-        mean_score_p0 = self.logger.iteration_stats['Mean Score P0'] # Get the mean score of the current iteration
-        mean_score_p1 = self.logger.iteration_stats['Mean Score P1'] # Get the mean score of the current iteration
-        # Filter games with score better than the mean score
-        filtered_p0 = metrics[metrics['p0_score'] >= mean_score_p0]
-        filtered_p1 = metrics[metrics['p1_score'] >= mean_score_p1]
-        p0_filtered_files = [self.logger.it_folder + '/' + element for element in filtered_p0['p0_file'].tolist()]
-        p1_filtered_files = [self.logger.it_folder + '/' + element for element in filtered_p1['p1_file'].tolist()]
-        p0_filtered_jsons = [json.load(open(file_path, 'r')) for file_path in p0_filtered_files]
-        p1_filtered_jsons = [json.load(open(file_path, 'r')) for file_path in p1_filtered_files]
-        self.instructor_0.dond_player.train(p0_filtered_jsons)
-        self.instructor_1.dond_player.train(p1_filtered_jsons)
-
     def run_iterations(self):
         for _ in range(self.iterations_per_run):
             self.logger.new_iteration()
             for _ in range(self.games_per_iteration):
                 self.run_game()
-            #self.train_agents()
+            self.train_agents()
 
     def run_game(self):
         self.logger.log_info("Game started.")
@@ -89,6 +75,7 @@ def run_bc_dond(cfg):
             device=cfg.device,
             model=cfg.p0.model,
             tokenizer=cfg.p0.tokenizer,
+            out_folder=output_directory + "/checkpoints"
         )
     elif cfg.p0.type == "oai":
         agent_0 = HfAgent(
@@ -113,6 +100,7 @@ def run_bc_dond(cfg):
             device=cfg.device,
             model=cfg.p1.model,
             tokenizer=cfg.p1.tokenizer,
+            out_folder=output_directory + "/checkpoints"
         )
     elif cfg.p1.type == "oai":
         agent_1 = OaiAgent(
@@ -143,5 +131,9 @@ def run_bc_dond(cfg):
 
 
 @hydra.main(config_path="../conf", config_name="config")
-def main(cfg): run_bc_dond(cfg)
+def main(cfg):
+    if os.path.exists('conf/local.yaml'):
+        local_cfg = OmegaConf.load('conf/local.yaml')
+        cfg = OmegaConf.merge(cfg, local_cfg)
+    run_bc_dond(cfg)
 if __name__ == "__main__": main()

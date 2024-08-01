@@ -12,7 +12,7 @@ class HfAgent:
                  device="cuda",  # cuda or cpu
                  model="microsoft/Phi-3-mini-128k-instruct",
                  tokenizer="microsoft/Phi-3-mini-128k-instruct",
-                 out_folder="/",
+                 out_folder="checkpoints",
                  ) -> None:
         """
         Initializes the NegoAgent.
@@ -34,6 +34,7 @@ class HfAgent:
             trust_remote_code=True,
         )
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)
+        self.tokenizer.pad_token = self.tokenizer.eos_token
         # if self.tokenizer.pad_token is None:
         #     self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
         self.out_folder = out_folder
@@ -47,11 +48,11 @@ class HfAgent:
             target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
                       "gate_proj", "up_proj", "down_proj"]
         )
-        self.model = get_peft_model(self.model, self.lora_config)
+        # self.model = get_peft_model(self.model, self.lora_config)
         self.training_args = TrainingArguments(
             output_dir=out_folder,
             num_train_epochs=1,
-            per_device_train_batch_size=5,
+            per_device_train_batch_size=3,
             learning_rate=5e-5,
             weight_decay=0.01,
             logging_dir=os.path.join(out_folder, 'models', 'logs'),
@@ -76,10 +77,10 @@ class HfAgent:
         trainer = SFTTrainer(
             model=self.model,
             args=self.training_args,
-            dataset_text_field = "text",
             train_dataset=dataset,
             eval_dataset=None,
             tokenizer=self.tokenizer,
+            peft_config=self.lora_config
         )
 
         trainer.train()

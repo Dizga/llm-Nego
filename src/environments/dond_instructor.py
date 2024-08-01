@@ -2,7 +2,7 @@ import json
 import regex as re
 
 # local imports
-from src.environments.dond_game import DondGame
+from environments.dond_game import DondGame
 
 
 class DondInstructor():

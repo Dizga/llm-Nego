@@ -4,7 +4,7 @@ test.py
 test.ipynb
 models/
 outputs/
-DATA/
+conf/local.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
