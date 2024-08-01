@@ -2,11 +2,11 @@ import json
 import regex as re
 
 # local imports
-from dond import dond
+from src.environments.dond_game import DondGame
 
 
-class dond_instructor():
-    def __init__(self, game_intro_file, chain_of_thought_file, proposal_file, dond_game:dond, dond_player, player_type="p0"):
+class DondInstructor():
+    def __init__(self, game_intro_file, chain_of_thought_file, proposal_file, dond_game:DondGame, dond_player, player_type="p0"):
         """
         The Instructor acts as a middle-man between the game and a LLM player.
         Initializes the DoNDInstructor.

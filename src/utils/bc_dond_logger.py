@@ -5,7 +5,7 @@ import logging.config
 from datetime import datetime
 import pandas as pd
 
-class bc_dond_logger:
+class BcDondLogger:
     """
     Logger class for logging game data, metrics, and statistics.
     """

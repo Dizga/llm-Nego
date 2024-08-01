@@ -6,13 +6,13 @@ import os
 from hydra.core.hydra_config import HydraConfig
 
 # local imports
-from src.utils.bc_dond_logger import bc_dond_logger
-from src.environments.dond import dond
-from src.environments.dond_instructor import dond_instructor
-from src.models.hf_agent import hf_agent
-from src.models.oai_agent import oai_agent
+from src.utils.bc_dond_logger import BcDondLogger
+from src.environments.dond_game import DondGame
+from src.environments.dond_instructor import DondInstructor
+from src.models.hf_agent import HfAgent
+from src.models.oai_agent import OaiAgent
 
-class bc_dond_trainer:
+class BcDondTrainer:
     def __init__(self, iterations_per_run, games_per_iteration, game, instructor_0, instructor_1, logger):
         self.iterations_per_run = iterations_per_run
         self.games_per_iteration = games_per_iteration
@@ -79,25 +79,25 @@ def run_bc_dond(cfg):
     output_directory = hydra_cfg['runtime']['output_dir']
     os.makedirs(output_directory, exist_ok=True)
 
-    logger = bc_dond_logger(output_directory)
-    game = dond(max_turns=cfg.game.max_turns)
+    logger = BcDondLogger(output_directory)
+    game = DondGame(max_turns=cfg.game.max_turns)
 
     # Get the player/instructor 0
     if cfg.p0.type == "oai":
-        agent_0 = oai_agent(
+        agent_0 = OaiAgent(
             name="agent_0",
             device=cfg.device,
             model=cfg.p0.model,
             tokenizer=cfg.p0.tokenizer,
         )
     else: 
-        agent_0 = hf_agent(
+        agent_0 = HfAgent(
             name="agent_0",
             device=cfg.device,
             model=cfg.p0.model,
             tokenizer=cfg.p0.tokenizer,
         )
-    instructor_0 = dond_instructor(
+    instructor_0 = DondInstructor(
         game_intro_file=cfg.p0.game_intro_file,
         chain_of_thought_file=cfg.p0.chain_of_thought,
         proposal_file=cfg.p0.proposal_file,
@@ -108,21 +108,21 @@ def run_bc_dond(cfg):
 
     # Get player/instructor 1
     if cfg.p1.type == "oai":
-        agent_1 = oai_agent(
+        agent_1 = OaiAgent(
             name="agent_1",
             device=cfg.device,
             model=cfg.p1.model,
             tokenizer=cfg.p1.tokenizer,
         )
     else: 
-        agent_1 = oai_agent(
+        agent_1 = OaiAgent(
             name="agent_1",
             device=cfg.device,
             model=cfg.p1.model,
             tokenizer=cfg.p1.tokenizer,
         )
 
-    instructor_1 = dond_instructor(
+    instructor_1 = DondInstructor(
         game_intro_file=cfg.p1.game_intro_file,
         chain_of_thought_file=cfg.p1.chain_of_thought,
         proposal_file=cfg.p0.proposal_file,
@@ -131,7 +131,7 @@ def run_bc_dond(cfg):
         player_type="p1"
     )
 
-    trainer = bc_dond_trainer(
+    trainer = BcDondTrainer(
         iterations_per_run=cfg.run.nb_iterations,
         games_per_iteration=cfg.run.games_per_iteration,
         game=game,

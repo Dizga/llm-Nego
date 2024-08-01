@@ -1,7 +1,7 @@
 import regex as re
 import json
 
-class dond:
+class DondGame:
     def __init__(self, max_turns=None):
         """
         Initializes the DoND game.
