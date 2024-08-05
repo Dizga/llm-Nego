@@ -19,8 +19,6 @@ class BcDondLogger:
         self.run_dir = out_dir
         self.datenow = datetime.now().strftime('%Y_%m_%d_%H_%M')
 
-        self.metrics = pd.DataFrame()
-
         columns_statistics = [
             "Iteration",
             "Agreement Percentage",
@@ -42,10 +40,8 @@ class BcDondLogger:
         self.it_folder = os.path.join(self.run_dir, f"iteration_{self.iteration:02d}")
         os.makedirs(self.it_folder, exist_ok=True)
         # Reset metrics for the new iteration
-        self.metrics = pd.DataFrame(columns=self.metrics.columns)
+        self.metrics = pd.DataFrame()
         self.metrics_file = os.path.join(self.it_folder, "metrics.csv")
-        # Compute and log stats of the past iteration
-        self.log_itr_stats()
 
     def get_itr_stats(self):
         """
@@ -56,11 +52,11 @@ class BcDondLogger:
         """
         self.iteration_stats = {
             "Iteration": self.iteration,
-            "Agreement Percentage": self.metrics['agreement_reached'].mean() * 100 if not self.metrics['agreement_reached'].empty else 0,
-            "Score Variance P0": self.metrics['p0_score'].var() if not self.metrics['p0_score'].empty else 0,
-            "Score Variance P1": self.metrics['p1_score'].var() if not self.metrics['p1_score'].empty else 0,
-            "Mean Score P0": self.metrics['p0_score'].mean() if not self.metrics['p0_score'].empty else 0,
-            "Mean Score P1": self.metrics['p1_score'].mean() if not self.metrics['p1_score'].empty else 0
+            "Agreement Percentage": self.metrics['Agreement_reached'].mean() * 100 if not self.metrics['Agreement_reached'].empty else 0,
+            "Score Variance P0": self.metrics['P0_score'].var() if not self.metrics['P0_score'].empty else 0,
+            "Score Variance P1": self.metrics['P1_score'].var() if not self.metrics['P1_score'].empty else 0,
+            "Mean Score P0": self.metrics['P0_score'].mean() if not self.metrics['P0_score'].empty else 0,
+            "Mean Score P1": self.metrics['P1_score'].mean() if not self.metrics['P1_score'].empty else 0
         }
         return self.iteration_stats
 
