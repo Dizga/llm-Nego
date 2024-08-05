@@ -12,6 +12,10 @@ run:
 
 game:
   max_turns: 10
+  mode: coop # coop
+  setup: random_read
+  setups_file: src/environments/dond_setups.txt
+  iterations: 1
 
 p0:
   type: hf # hf (HuggingFace) or oai (OpenAI)

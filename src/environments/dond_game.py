@@ -1,8 +1,12 @@
 import regex as re
 import json
+import random
 
 class DondGame:
-    def __init__(self, max_turns=None):
+    def __init__(self, 
+                 max_turns=None,
+                 setup="random_read",
+                 setups_file=None):
         """
         Initializes the DoND game.
 
@@ -10,24 +14,46 @@ class DondGame:
             max_turns (int): The maximum number of turns allowed in the game.
         """
         self.max_turns = max_turns
+        self.setup = setup
+        self.setups_file = setups_file
+        self.line_in_setups_file = 7000  # TODO: automate
         self.reset()
 
     def reset(self):
         """
         Resets the game to its initial state.
 
-        Args:
-            max_turns (int): The maximum number of turns allowed in the game.
-
         Returns:
             tuple: The quantities of items and the values for player 0 and player 1.
         """
         self.turn = 0
         self.items = ['books', 'hats', 'balls']
-        self.quantities = {key: value for key, value in zip(self.items, [5, 4, 3])}
-        self.values_p0 = {key: value for key, value in zip(self.items, [5, 4, 3])}
-        self.values_p1 = {key: value for key, value in zip(self.items, [3, 4, 5])}
+        self.quantities = None
         self.has_proposed = False
+
+
+        if self.setup == "primitive":
+            self.quantities = {key: value for key, value in zip(self.items, [5, 4, 3])}
+            self.values_p0 = {key: value for key, value in zip(self.items, [5, 4, 3])}
+            self.values_p1 = {key: value for key, value in zip(self.items, [3, 4, 5])}
+
+        if self.setup == "random_read":
+            # get setup from random read
+            random_pair_id = random.randint(0, self.line_in_setups_file // 2) * 2
+            with open(self.setups_file) as f:
+                lines = f.readlines()[random_pair_id:random_pair_id + 2]
+                for i in range(2):
+                    l = [int(item) for item in lines[i].split()]
+                    quantities = {key: value for key, value in zip(self.items, [l[0], l[2], l[4]])}
+                    values = {key: value for key, value in zip(self.items, [l[1], l[3], l[5]])}
+                    if i == 0:
+                        self.values_p0 = values
+                    else:
+                        self.values_p1 = values
+                    if self.quantities and self.quantities != quantities:
+                        raise RuntimeError("Bad pair of DonD values/quantities.")
+                    self.quantities = quantities
+
         self.p0_prop = {}
         self.p1_prop = {}
         self.points_p0 = 0
@@ -36,7 +62,7 @@ class DondGame:
         self.last_message = ""
         return self.quantities, self.values_p0, self.values_p1
 
-    def step(self, output: str | list, is_proposal=False):
+    def step(self, output, is_proposal=False):
         """
         Advances the game by one step.
 
@@ -49,9 +75,10 @@ class DondGame:
         """
         self.turn += 1
         self.last_message = output
-        
+
         if self.has_proposed:
-            if not is_proposal: return False # player has not made a proposal after other player, automatic loss
+            if not is_proposal:
+                return False  # player has not made a proposal after other player, automatic loss
             self.propose(output)
 
             if self.verify_props_match():
@@ -59,19 +86,19 @@ class DondGame:
                 self.agreement_reached = True
                 return False  # Game ended successfully
             return False  # Game ended with failure to be complementary
-        
+
         self.has_proposed = is_proposal
-        
+
         if is_proposal:
             self.has_proposed = True
             self.propose(output)
             return True  # Continue the game
-        
+
         if self.turn > self.max_turns:
             return False  # Game ended due to exceeding max turns
-        
+
         return True  # Continue the game
-    
+
     def get_state(self, player="current_turn"):
         """
         Retrieves the current state of the game.
@@ -88,7 +115,6 @@ class DondGame:
             "book_cnt": self.quantities["books"],
             "hat_cnt": self.quantities["hats"],
             "ball_cnt": self.quantities["balls"],
-            # "quantities": self.quantities,
             "agreement_reached": self.agreement_reached,
             "has_proposed": self.has_proposed,
             "last_message": self.last_message
@@ -97,8 +123,8 @@ class DondGame:
             out["book_val"] = self.values_p0["books"]
             out["hat_val"] = self.values_p0["hats"]
             out["ball_val"] = self.values_p0["balls"]
-
             return out
+
         out["book_val"] = self.values_p1["books"]
         out["hat_val"] = self.values_p1["hats"]
         out["ball_val"] = self.values_p1["balls"]

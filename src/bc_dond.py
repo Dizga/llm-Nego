@@ -66,7 +66,10 @@ def run_bc_dond(cfg):
     os.makedirs(output_directory, exist_ok=True)
 
     logger = BcDondLogger(output_directory)
-    game = DondGame(max_turns=cfg.game.max_turns)
+    game = DondGame(max_turns=cfg.game.max_turns,
+                    setup=cfg.game.setup,
+                    setups_file=cfg.game.setups_file
+                    )
 
     # Get the player/instructor 0
     if cfg.p0.type == "hf":
