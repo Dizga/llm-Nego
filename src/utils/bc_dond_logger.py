@@ -52,25 +52,24 @@ class BcDondLogger:
         """
         self.iteration_stats = {
             "Iteration": self.iteration,
-            "Agreement Percentage": self.metrics['Agreement_reached'].mean() * 100 if not self.metrics['Agreement_reached'].empty else 0,
-            "Score Variance P0": self.metrics['P0_score'].var() if not self.metrics['P0_score'].empty else 0,
-            "Score Variance P1": self.metrics['P1_score'].var() if not self.metrics['P1_score'].empty else 0,
-            "Mean Score P0": self.metrics['P0_score'].mean() if not self.metrics['P0_score'].empty else 0,
-            "Mean Score P1": self.metrics['P1_score'].mean() if not self.metrics['P1_score'].empty else 0
+            "Agreement Percentage": self.metrics['agreement_reached'].mean() * 100 if not self.metrics['agreement_reached'].empty else 0,
+            "Score Variance P0": self.metrics['p0_score'].var() if not self.metrics['p0_score'].empty else 0,
+            "Score Variance P1": self.metrics['p1_score'].var() if not self.metrics['p1_score'].empty else 0,
+            "Mean Score P0": self.metrics['p0_score'].mean() if not self.metrics['p0_score'].empty else 0,
+            "Mean Score P1": self.metrics['p1_score'].mean() if not self.metrics['p1_score'].empty else 0
         }
-        return self.iteration_stats
 
     def log_itr_stats(self):
         """
         Logs statistics for the current iteration and saves them to a CSV file.
         """
-        stats = self.get_itr_stats()
-        iteration = stats['iteration']
+        self.get_itr_stats()
+        iteration = self.iteration_stats['Iteration']
 
-        if iteration in self.statistics['iteration'].values:
-            self.statistics.loc[self.statistics['iteration'] == iteration, :] = pd.DataFrame([stats])
+        if iteration in self.statistics['Iteration'].values:
+            self.statistics.loc[self.statistics['Iteration'] == iteration, :] = pd.DataFrame([self.iteration_stats])
         else:
-            self.statistics = pd.concat([self.statistics, pd.DataFrame([stats])], ignore_index=True)
+            self.statistics = pd.concat([self.statistics, pd.DataFrame([self.iteration_stats])], ignore_index=True)
         self.statistics.to_csv(self.statistics_file, index=False)
 
 
