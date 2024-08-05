@@ -18,21 +18,9 @@ class BcDondLogger:
         """
         self.run_dir = out_dir
         self.datenow = datetime.now().strftime('%Y_%m_%d_%H_%M')
-        
-        columns_metrics = [
-            'p0_score',
-            'p1_score',
-            'quantities',
-            'p0_values',
-            'p1_values',
-            'p0_proposal',
-            'p1_proposal',
-            'reach_agreement',
-            'p0_file',
-            'p1_file'
-        ]
-        self.metrics = pd.DataFrame(columns=columns_metrics)
-        
+
+        self.metrics = pd.DataFrame()
+
         columns_statistics = [
             "Iteration",
             "Agreement Percentage",
@@ -68,7 +56,7 @@ class BcDondLogger:
         """
         self.iteration_stats = {
             "Iteration": self.iteration,
-            "Agreement Percentage": self.metrics['reach_agreement'].mean() * 100 if not self.metrics['reach_agreement'].empty else 0,
+            "Agreement Percentage": self.metrics['agreement_reached'].mean() * 100 if not self.metrics['agreement_reached'].empty else 0,
             "Score Variance P0": self.metrics['p0_score'].var() if not self.metrics['p0_score'].empty else 0,
             "Score Variance P1": self.metrics['p1_score'].var() if not self.metrics['p1_score'].empty else 0,
             "Mean Score P0": self.metrics['p0_score'].mean() if not self.metrics['p0_score'].empty else 0,
@@ -81,8 +69,14 @@ class BcDondLogger:
         Logs statistics for the current iteration and saves them to a CSV file.
         """
         stats = self.get_itr_stats()
-        self.statistics = pd.concat([self.statistics, pd.DataFrame([stats])], ignore_index=True)
+        iteration = stats['iteration']
+
+        if iteration in self.statistics['iteration'].values:
+            self.statistics.loc[self.statistics['iteration'] == iteration, :] = pd.DataFrame([stats])
+        else:
+            self.statistics = pd.concat([self.statistics, pd.DataFrame([stats])], ignore_index=True)
         self.statistics.to_csv(self.statistics_file, index=False)
+
 
     def new_game(self):
         self.game_nb+=1
@@ -112,6 +106,9 @@ class BcDondLogger:
         # Log metrics
         self.metrics = pd.concat([self.metrics, pd.DataFrame([game])], ignore_index=True)
         self.metrics.to_csv(self.metrics_file, index=False)
+
+        # Adjust iteration statistics (even if not finished)
+        self.log_itr_stats()
 
 
     def setup_logging(self, config_file):
