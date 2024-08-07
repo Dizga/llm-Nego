@@ -146,13 +146,18 @@ class DondInstructor():
                     i_take = propose_json["i_take"]
                     other_player_gets = propose_json["other_player_gets"]
                     
-                    if not (isinstance(i_take, list) and len(i_take) == 3 and all(isinstance(x, int) for x in i_take)):
-                        errors.append('The "i_take" value must be a list of 3 integers.')
+                    if not (isinstance(i_take, dict) and 
+                            all(key in i_take for key in ["books", "hats", "balls"]) and 
+                            all(isinstance(i_take[key], int) for key in ["books", "hats", "balls"])):
+                        errors.append('The "i_take" value must be a dictionary with integer values for keys "books", "hats", and "balls".')
                     
-                    if not (isinstance(other_player_gets, list) and len(other_player_gets) == 3 and all(isinstance(x, int) for x in other_player_gets)):
-                        errors.append('The "other_player_gets" value must be a list of 3 integers.')
+                    if not (isinstance(other_player_gets, dict) and 
+                            all(key in other_player_gets for key in ["books", "hats", "balls"]) and 
+                            all(isinstance(other_player_gets[key], int) for key in ["books", "hats", "balls"])):
+                        errors.append('The "other_player_gets" value must be a dictionary with integer values for keys "books", "hats", and "balls".')
             except json.JSONDecodeError:
                 errors.append("The content within <propose>...</propose> is not valid JSON.")
+
         
         # Generate error message or return success
         if errors:
@@ -170,7 +175,7 @@ class DondInstructor():
         Returns:
             tuple: A tuple containing a boolean indicating if it's a proposal and the extracted content.
         """
-        pattern = r'<message>(.*?)</message>|<propose>\{\s*"i_take"\s*:\s*(\[.*?\])\s*,\s*"other_player_gets"\s*:\s*(\[.*?\])\s*\}</propose>'
+        pattern = r'<message>(.*?)</message>|<propose>\{\s*"i_take"\s*:\s*(.*?)\s*,\s*"other_player_gets"\s*:\s*(.*?)\s*\}</propose>'
         match = re.search(pattern, message, re.DOTALL)
 
         if match.group(2):

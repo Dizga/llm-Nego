@@ -73,7 +73,7 @@ class DondGame:
         Returns:
             bool: Whether the game should continue or not.
         """
-        self.turn += 1
+        
         self.last_message = output
 
         if self.has_proposed:
@@ -92,7 +92,8 @@ class DondGame:
         if is_proposal:
             self.has_proposed = True
             self.propose(output)
-            return True  # Continue the game
+        
+        self.turn += 1
 
         if self.turn > self.max_turns:
             return False  # Game ended due to exceeding max turns
@@ -157,9 +158,9 @@ class DondGame:
             proposal (list): The list of proposed quantities for each item.
         """
         if self.current_turn() == "p0":
-            self.p0_prop = {key: value for key, value in zip(self.items, proposal)}
+            self.p0_prop = proposal
         else:
-            self.p1_prop = {key: value for key, value in zip(self.items, proposal)}
+            self.p1_prop = proposal
 
     def render(self):
         """
@@ -192,4 +193,4 @@ class DondGame:
         Returns:
             str: 'p0' if it's player 0's turn, 'p1' if it's player 1's turn.
         """
-        return "p0" if self.turn % 2 == 1 else "p1"
+        return "p0" if self.turn % 2 == 0 else "p1"
