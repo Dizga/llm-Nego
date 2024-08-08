@@ -129,11 +129,19 @@ class BcDondLogger:
         # Adjust iteration statistics (even if not finished)
         self.log_itr_stats()
 
-    def extract_hf_ppo_dataset(self, folder_path: str, full_context=True):
+    def extract_hf_ppo_dataset(self, folder_path: str, p0=True, full_context=True):
         """
         Args:
             file (str): Location of the csv / dataframe for the iteration
         """
+
+        if p0: 
+            gm_messages_path_df_column = "p0_messages_path"
+            mg_rewards_df_column = "p0_return"
+        else: 
+            gm_messages_path_df_column = "p1_messages_path"
+            mg_rewards_df_column = "p1_return"
+
         # get jsons list
         queries = []
         responses = []
@@ -143,12 +151,14 @@ class BcDondLogger:
         games_info_df = pd.read_csv(os.path.join(folder_path, 'games.csv')) 
         games_info = games_info_df.to_dict(orient='records')
 
+        # TODO: only analyse the games from the right player
+
         for game_info in games_info:
 
             # get game returns
-            game_path = os.path.join(folder_path, game_info['path'])
-            minigames_df = pd.read_csv(os.path.join(game_path, 'csv')) 
-            mg_scores = minigames_df['return'].tolist()
+            game_path = game_info[gm_messages_path_df_column]
+            minigames_metrics_df = pd.read_csv(game_info['minigames_metrics_path'])  # get minigames dataframe
+            mg_rewards = minigames_metrics_df[mg_rewards_df_column].tolist()
 
             # get game conversation
             with open(os.path.join(game_path, 'json'), 'r') as file:
@@ -162,7 +172,7 @@ class BcDondLogger:
                 if message['role'] == "assistant":
                     queries.append(context)
                     responses.append(message)
-                    scores.append(mg_scores[count])
+                    scores.append(mg_rewards[count])
                 elif message['is_new_minigame']:
                     count += 1
                 context.append(message)

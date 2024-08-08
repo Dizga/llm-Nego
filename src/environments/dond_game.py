@@ -167,7 +167,13 @@ class DondGame:
         """
         pass
 
-    def export(self):
+    def export_game(self):
+        return {
+            'p0_cumul_score': sum(self.points_p0[id]),
+            'p1_cumul_score': sum(self.points_p1[id]),
+        }
+
+    def export_minigame(self, id=-1):
         """
         Exports the current state of the game as a dictionary.
 
@@ -175,14 +181,16 @@ class DondGame:
             dict: The current state of the game.
         """
         return {
-            'p0_score': self.points_p0,
-            'p1_score': self.points_p1,
-            'quantities': self.quantities,
-            'p0_values': self.values_p0,
-            'p1_values': self.values_p1,
-            'p0_proposal': self.p0_prop,
-            'p1_proposal': self.p1_prop,
-            'agreement_reached': self.agreement_reached,
+            'p0_score': self.points_p0[id],
+            'p1_score': self.points_p1[id],
+            'p0_return': sum(self.points_p0[id:]),
+            'p1_return': sum(self.points_p1[id:]),
+            'quantities': self.quantities[id],
+            'p0_values': self.values_p0[id],
+            'p1_values': self.values_p1[id],
+            'p0_proposal': self.p0_prop[id],
+            'p1_proposal': self.p1_prop[id],
+            'agreement_reached': self.agreement_reached[id],
         }
 
     def current_turn(self):
