@@ -88,6 +88,25 @@ class HfAgent:
         self.model.save_pretrained(path)
         self.tokenizer.save_pretrained(path)
 
+    def encode_jsons(self, data: list) -> list:
+        # Encodes json conversation into list of 
+        return [self.tokenizer(ex) for ex in data]
+
+
+    def train_ppo_json(self, queries: list, responses: list, scores: list):
+        """
+        Args: 
+            queries (List[jsons]): list of converstations [ {user:"...", assistant:" ", ...}, ...] in json format
+            responses (List[jsons]): list of responses in [{assistant: "..."}, {assistant: "...}]
+            scores: (List[torch.LongTensor]): The rewards of the responses, in order. 
+        """
+        queries = self.encode_jsons(queries)
+        responses = self.encode_jsons(responses)
+        stats = self.ppo_trainer.step(queries=queries, responses=responses, scores=scores)
+        # ppo_trainer.log_stats(stats, batch, rewards)
+        
+
+
     def prompt(self, message: str):
         """
         Adds a user message to the conversation history and generates a response.
