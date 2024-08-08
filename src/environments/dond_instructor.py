@@ -48,7 +48,7 @@ class DondInstructor():
             return False
         
         user_message = self.get_usr_message(state)
-        response = self.dond_player.prompt(user_message)
+        response = self.dond_player.prompt(user_message, self.first_turn, False)
 
         valid_response, error_message = self.validate(response)
 
@@ -57,7 +57,7 @@ class DondInstructor():
         while retries < max_retries:
             if valid_response:
                 break
-            response = self.dond_player.prompt(error_message)
+            response = self.dond_player.prompt(error_message, False, True)
             valid_response, error_message = self.validate(response)
             retries += 1
 

@@ -88,7 +88,7 @@ class HfAgent:
         self.model.save_pretrained(path)
         self.tokenizer.save_pretrained(path)
 
-    def prompt(self, message: str):
+    def prompt(self, message: str, is_new_game: bool, is_error: bool) -> str:
         """
         Adds a user message to the conversation history and generates a response.
 
@@ -99,7 +99,7 @@ class HfAgent:
             str: The generated response from the model.
         """
         user_msg = message
-        self.add_message(role="user", message=user_msg)
+        self.add_message(role="user", message=user_msg, is_error=is_error, is_new_game=is_new_game)
 
         text = self.tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
         model_inputs = self.tokenizer([text], return_tensors="pt").to(self.device)
@@ -110,7 +110,7 @@ class HfAgent:
         self.add_message(role="assistant", message=response)
         return response
 
-    def add_message(self, role, message):
+    def add_message(self, role, message, is_error = False, is_new_game = False):
         """
         Adds a message to the conversation history.
 
@@ -118,7 +118,10 @@ class HfAgent:
             role (str): The role of the message sender (e.g., 'user', 'assistant').
             message (str): The message content.
         """
-        self.history.append({"role": role, "content": message})
+        if is_error:
+            # The last assitant message was an error.
+            self.history[-1]["is_error"] = True
+        self.history.append({"role": role, "content": message, "is_error": is_error, "is_new_game": is_new_game})
 
     def reset_messages(self):
         """

@@ -14,7 +14,7 @@ from agents.hf_agent import HfAgent
 from agents.oai_agent import OaiAgent
 
 class BcDondTrainer:
-    def __init__(self, iterations_per_run, games_per_iteration, game, instructor_0, instructor_1, logger):
+    def __init__(self, iterations_per_run, games_per_iteration, game, instructor_0: DondInstructor, instructor_1: DondInstructor, logger):
         self.iterations_per_run = iterations_per_run
         self.games_per_iteration = games_per_iteration
         self.game = game
