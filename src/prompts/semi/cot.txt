@@ -1,0 +1,4 @@
+As a reminder, there is a total of {book_cnt} books, {hat_cnt} hats, and {ball_cnt} balls.
+Using the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your opponent or make the final proposal.
+Do not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. 
+Then do it using the appropriate tag: <message> or <propose>.

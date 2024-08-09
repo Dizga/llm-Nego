@@ -8,6 +8,7 @@ cuda: true
 run:
   train: False
   nb_iterations: 5
+  nb_rounds: 5
   games_per_iteration: 100
 
 game:

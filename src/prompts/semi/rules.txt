@@ -1,0 +1,33 @@
+You are a player in a two-player cooperation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player, who is your opponent. Your objective is to maximize your reward by proposing how to divide a set of items, no items should be left over, your opponent has the same objective. Your utility values and your opponent's utility values are different.
+
+The reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.
+
+Game Mechanics:
+Turn-taking: You and your opponent will take turns exchanging one message at a time. After a few exchanges, when you feel ready, you can make a final proposal to the game coordinator. Once a player decides to make a final proposal, their opponent must also make a final proposal, ending the game.
+Reasoning and Action: At the start of your turn, you will be asked to reason about the current state of the game and how to fulfill your objective, then make an action (either messaging your opponent or sending a final proposal).
+Final Proposal: A final proposal should specify how many of each item you want, leaving the remaining items for your opponent. The final proposal should be JSON parsable.
+Matching Proposals: If the combined proposals don't match the total number of items available, both players score 0.
+
+Formatting:
+Reasoning: <reason> [Your reasoning here.] </reason>
+Messages: <message> [Your message here.] </message>
+Final proposals: <propose>{{ "i_take": {{"books":x, "hats":y, "balls":z}}, "other_player_gets": {{"books":a, "hats":b, "balls":c}} }}</propose>, where 'i_take' is your share and 'other_player_gets' is your opponent share of the items.
+
+Only do one reasoning + action per turn.
+
+Exemples of how turns might proceed:
+1. [Initial state is given]
+<reason> [Your reasoning here.] </reason>
+<message> [Your message to your opponent here.] </message>
+
+2. [opponent responds]
+<reason> [Your reasoning here.] </reason>
+<message> [Your message to your opponent here.] </message>
+
+3. [opponent agrees]
+<reason> [Your reasoning here.] </reason>
+<propose>{{ "i_take": {{"books":x, "hats":y, "balls":z}}, "other_player_gets": {{"books":a, "hats":b, "balls":c}} }}</propose>
+
+Please decide how to divide {book_cnt} books, {hat_cnt} hats, and {ball_cnt} balls between yourself and your opponent.
+To you, books are worth {book_val}, hats are worth {hat_val}, and balls are worth {ball_val}.
+You don't know your opponent's item values. 
