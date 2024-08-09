@@ -48,7 +48,7 @@ class DondInstructor():
             return False
         
         user_message = self.get_usr_message(state)
-        response = self.dond_player.prompt(user_message, self.first_turn, False)
+        response = self.dond_player.prompt(user_message, is_new_game=state['new_round'])
 
         valid_response, error_message = self.validate(response)
 

@@ -7,7 +7,7 @@ import pandas as pd
 import torch
 
 
-class BcDondLogger:
+class DondLogger:
     """
     Logger class for logging game data, metrics, and statistics.
     """
@@ -33,7 +33,7 @@ class BcDondLogger:
         self.statistics_file = os.path.join(self.run_dir, "stats.csv")
         self.iteration_nb = 0
         self.game_nb = 0
-        self.minigame_nb = 0
+        self.round_nb = 0
 
     def new_iteration(self):
         """
@@ -79,20 +79,20 @@ class BcDondLogger:
 
     def new_game(self):
         self.game_nb += 1
-        self.minigame_nb = 0
-        self.minigames_log = pd.DataFrame([])
-        self.minigames_path = os.path.join(self.it_folder, 
+        self.round_nb = 0
+        self.rounds_log = pd.DataFrame([])
+        self.rounds_path = os.path.join(self.it_folder, 
                 f"iter_{self.iteration:02d}_game_{self.game_nb:04d}.json")
         
 
-    def log_game(self, game: dict, p0_history, p1_history):
+    def log_game(self, summary, rounds, p0_history, p1_history):
         """
         Logs game data, saves player histories, and updates metrics.
 
         Args:
             game (dict): A dictionary containing game data.
         """
-
+        
         p0_game_name = f"p0_iter_{self.iteration:02d}_game_{self.game_nb:04d}.json"
         p1_game_name = f"p1_iter_{self.iteration:02d}_game_{self.game_nb:04d}.json"
 
@@ -104,27 +104,31 @@ class BcDondLogger:
         with open(os.path.join(self.it_folder, p1_game_name), 'w') as f:
             json.dump(p1_history, f, indent=4)
 
-        game['p0_path'] = p0_game_name
-        game['p1_path'] = p1_game_name
-        game['minigames_path'] = self.minigames_path
+        summary['p0_path'] = p0_game_name
+        summary['p1_path'] = p1_game_name
+        summary['rounds_path'] = self.rounds_path
 
-        # Log metrics
+        # Log global game metrics
         self.game_log = pd.concat([self.game_log, pd.DataFrame([game])], ignore_index=True)
         self.game_log.to_csv(self.game_log_file, index=False)
+
+        # Log every round
+        for round in rounds:
+            self.log_round(self, round)
 
         # Adjust iteration statistics (even if not finished)
         self.log_itr_stats()
 
-    def log_minigame(self, minigame: dict):
+    def log_round(self, round: dict):
         """
         Logs game data, saves player histories, and updates metrics.
 
         Args:
             game (dict): A dictionary containing game data.
         """
-        # Log minigame metrics
-        self.minigames_log = pd.concat([self.minigames_log, pd.DataFrame([minigame])], ignore_index=True)
-        self.minigames_log.to_csv(self.minigames_path, index=False)
+        # Log round metrics
+        self.rounds_log = pd.concat([self.rounds_log, pd.DataFrame([round])], ignore_index=True)
+        self.rounds_log.to_csv(self.rounds_path, index=False)
 
         # Adjust iteration statistics (even if not finished)
         self.log_itr_stats()
@@ -157,8 +161,8 @@ class BcDondLogger:
 
             # get game returns
             game_path = game_info[gm_messages_path_df_column]
-            minigames_metrics_df = pd.read_csv(game_info['minigames_metrics_path'])  # get minigames dataframe
-            mg_rewards = minigames_metrics_df[mg_rewards_df_column].tolist()
+            rounds_metrics_df = pd.read_csv(game_info['rounds_metrics_path'])  # get rounds dataframe
+            mg_rewards = rounds_metrics_df[mg_rewards_df_column].tolist()
 
             # get game conversation
             with open(os.path.join(game_path, 'json'), 'r') as file:
@@ -173,7 +177,7 @@ class BcDondLogger:
                     queries.append(context)
                     responses.append(message)
                     scores.append(mg_rewards[count])
-                elif message['is_new_minigame']:
+                elif message['is_new_round']:
                     count += 1
                 context.append(message)
 

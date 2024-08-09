@@ -107,7 +107,7 @@ class HfAgent:
         
 
 
-    def prompt(self, message: str):
+    def prompt(self, message: str, is_error = False, is_new_game = False):
         """
         Adds a user message to the conversation history and generates a response.
 

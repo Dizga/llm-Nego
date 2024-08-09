@@ -7,27 +7,38 @@ from hydra.core.hydra_config import HydraConfig
 from omegaconf import OmegaConf
 
 # local imports
-from utils.bc_dond_logger import BcDondLogger
+from src.utils.dond_logger import DondLogger
 from environments.dond_game import DondGame
 from environments.dond_instructor import DondInstructor
 from agents.hf_agent import HfAgent
 from agents.oai_agent import OaiAgent
 
 class BcDondTrainer:
-    def __init__(self, iterations_per_run, games_per_iteration, game, instructor_0: DondInstructor, instructor_1: DondInstructor, logger):
+    def __init__(self, iterations_per_run, 
+                 games_per_iteration, game, 
+                 instructor_0: DondInstructor, 
+                 instructor_1: DondInstructor, 
+                 logger: DondLogger,
+                 train_type = "ppo"
+                 ):
         self.iterations_per_run = iterations_per_run
         self.games_per_iteration = games_per_iteration
         self.game = game
         self.instructor_0 = instructor_0
         self.instructor_1 = instructor_1
         self.logger = logger
+        self.train_type = train_type
 
     def run_iterations(self):
         for _ in range(self.iterations_per_run):
-            self.logger.new_iteration()
+            folder_path = self.logger.new_iteration()
             for _ in range(self.games_per_iteration):
                 self.run_game()
-            self.train_agents()
+            if self.train_type == "ppo":
+                self.train_agents_ppo(folder_path)
+            else:
+                self.train_agents_bc(folder_path)
+
 
     def run_game(self):
         self.logger.log_info("Game started.")
@@ -38,12 +49,20 @@ class BcDondTrainer:
         while True:
             if not self.instructor_0.play_move(): break
             if not self.instructor_1.play_move(): break
-        self.logger.log_game(self.game.export(), self.instructor_0.get_history(), self.instructor_1.get_history())
+        self.logger.log_game(*self.game.export(), self.instructor_0.get_history(), self.instructor_1.get_history())
         self.logger.log_info("Game completed.")
 
+    def train_agents_ppo(self, folder_path):
+        queries, responses, scores = self.logger.extract_hf_ppo_dataset(folder_path, p0=True)
+        self.instructor_0.dond_player.train_ppo_json(self, queries, responses, scores)
 
-    def train_agents(self):
+        queries, responses, scores = self.logger.extract_hf_ppo_dataset(folder_path, p0=False)
+        self.instructor_1.dond_player.train_ppo_json(self, queries, responses, scores)
+
+
+    def train_agents_bc(self):
         """Train the agents on the last iteration."""
+        # TODO: update this function
         metrics = self.logger.metrics # Extract dataframe with data for each game
         mean_score_p0 = self.logger.iteration_stats['Mean Score P0'] # Get the mean score of the current iteration
         mean_score_p1 = self.logger.iteration_stats['Mean Score P1'] # Get the mean score of the current iteration
@@ -57,6 +76,9 @@ class BcDondTrainer:
         self.instructor_0.dond_player.train(p0_filtered_jsons)
         self.instructor_1.dond_player.train(p1_filtered_jsons)
 
+
+
+
 def run_bc_dond(cfg):
     # Run behaviour cloning for the deal-or-no-deal game
 
@@ -65,7 +87,7 @@ def run_bc_dond(cfg):
     output_directory = hydra_cfg['runtime']['output_dir']
     os.makedirs(output_directory, exist_ok=True)
 
-    logger = BcDondLogger(output_directory)
+    logger = DondLogger(output_directory)
     game = DondGame(max_turns=cfg.game.max_turns,
                     setup=cfg.game.setup,
                     setups_file=cfg.game.setups_file
