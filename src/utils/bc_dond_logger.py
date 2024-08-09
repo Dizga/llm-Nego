@@ -4,6 +4,8 @@ import logging
 import logging.config
 from datetime import datetime
 import pandas as pd
+import torch
+
 
 class BcDondLogger:
     """
@@ -29,7 +31,9 @@ class BcDondLogger:
         ]
         self.statistics = pd.DataFrame(columns=columns_statistics)
         self.statistics_file = os.path.join(self.run_dir, "stats.csv")
-        self.iteration = 0
+        self.iteration_nb = 0
+        self.game_nb = 0
+        self.minigame_nb = 0
 
     def new_iteration(self):
         """
@@ -40,8 +44,8 @@ class BcDondLogger:
         self.it_folder = os.path.join(self.run_dir, f"iteration_{self.iteration:02d}")
         os.makedirs(self.it_folder, exist_ok=True)
         # Reset metrics for the new iteration
-        self.metrics = pd.DataFrame()
-        self.metrics_file = os.path.join(self.it_folder, "metrics.csv")
+        self.game_log = pd.DataFrame()
+        self.game_log_file = os.path.join(self.it_folder, "metrics.csv")
 
     def get_itr_stats(self):
         """
@@ -52,11 +56,11 @@ class BcDondLogger:
         """
         self.iteration_stats = {
             "Iteration": self.iteration,
-            "Agreement Percentage": self.metrics['agreement_reached'].mean() * 100 if not self.metrics['agreement_reached'].empty else 0,
-            "Score Variance P0": self.metrics['p0_score'].var() if not self.metrics['p0_score'].empty else 0,
-            "Score Variance P1": self.metrics['p1_score'].var() if not self.metrics['p1_score'].empty else 0,
-            "Mean Score P0": self.metrics['p0_score'].mean() if not self.metrics['p0_score'].empty else 0,
-            "Mean Score P1": self.metrics['p1_score'].mean() if not self.metrics['p1_score'].empty else 0
+            "Agreement Percentage": self.game_log['agreement_reached'].mean() * 100 if not self.game_log['agreement_reached'].empty else 0,
+            "Score Variance P0": self.game_log['p0_score'].var() if not self.game_log['p0_score'].empty else 0,
+            "Score Variance P1": self.game_log['p1_score'].var() if not self.game_log['p1_score'].empty else 0,
+            "Mean Score P0": self.game_log['p0_score'].mean() if not self.game_log['p0_score'].empty else 0,
+            "Mean Score P1": self.game_log['p1_score'].mean() if not self.game_log['p1_score'].empty else 0
         }
 
     def log_itr_stats(self):
@@ -74,7 +78,12 @@ class BcDondLogger:
 
 
     def new_game(self):
-        self.game_nb+=1
+        self.game_nb += 1
+        self.minigame_nb = 0
+        self.minigames_log = pd.DataFrame([])
+        self.minigames_path = os.path.join(self.it_folder, 
+                f"iter_{self.iteration:02d}_game_{self.game_nb:04d}.json")
+        
 
     def log_game(self, game: dict, p0_history, p1_history):
         """
@@ -95,15 +104,81 @@ class BcDondLogger:
         with open(os.path.join(self.it_folder, p1_game_name), 'w') as f:
             json.dump(p1_history, f, indent=4)
 
-        game['p0_file'] = p0_game_name
-        game['p1_file'] = p1_game_name
+        game['p0_path'] = p0_game_name
+        game['p1_path'] = p1_game_name
+        game['minigames_path'] = self.minigames_path
 
         # Log metrics
-        self.metrics = pd.concat([self.metrics, pd.DataFrame([game])], ignore_index=True)
-        self.metrics.to_csv(self.metrics_file, index=False)
+        self.game_log = pd.concat([self.game_log, pd.DataFrame([game])], ignore_index=True)
+        self.game_log.to_csv(self.game_log_file, index=False)
 
         # Adjust iteration statistics (even if not finished)
         self.log_itr_stats()
+
+    def log_minigame(self, minigame: dict):
+        """
+        Logs game data, saves player histories, and updates metrics.
+
+        Args:
+            game (dict): A dictionary containing game data.
+        """
+        # Log minigame metrics
+        self.minigames_log = pd.concat([self.minigames_log, pd.DataFrame([minigame])], ignore_index=True)
+        self.minigames_log.to_csv(self.minigames_path, index=False)
+
+        # Adjust iteration statistics (even if not finished)
+        self.log_itr_stats()
+
+    def extract_hf_ppo_dataset(self, folder_path: str, p0=True, full_context=True):
+        """
+        Args:
+            file (str): Location of the csv / dataframe for the iteration
+        """
+
+        if p0: 
+            gm_messages_path_df_column = "p0_messages_path"
+            mg_rewards_df_column = "p0_return"
+        else: 
+            gm_messages_path_df_column = "p1_messages_path"
+            mg_rewards_df_column = "p1_return"
+
+        # get jsons list
+        queries = []
+        responses = []
+        scores = []
+
+        # get all the games 
+        games_info_df = pd.read_csv(os.path.join(folder_path, 'games.csv')) 
+        games_info = games_info_df.to_dict(orient='records')
+
+        # TODO: only analyse the games from the right player
+
+        for game_info in games_info:
+
+            # get game returns
+            game_path = game_info[gm_messages_path_df_column]
+            minigames_metrics_df = pd.read_csv(game_info['minigames_metrics_path'])  # get minigames dataframe
+            mg_rewards = minigames_metrics_df[mg_rewards_df_column].tolist()
+
+            # get game conversation
+            with open(os.path.join(game_path, 'json'), 'r') as file:
+                game = json.load(file)
+
+            context = []
+            count = 0
+
+            # extract queries, responses and scores
+            for message in game:
+                if message['role'] == "assistant":
+                    queries.append(context)
+                    responses.append(message)
+                    scores.append(mg_rewards[count])
+                elif message['is_new_minigame']:
+                    count += 1
+                context.append(message)
+
+        return queries, responses, scores
+
 
 
     def setup_logging(self, config_file):
