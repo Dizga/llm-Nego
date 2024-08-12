@@ -6,7 +6,9 @@ class DondGame:
     def __init__(self, 
                  max_turns=None,
                  setup="random_read",
-                 setups_file=None):
+                 setups_file=None,
+                 nb_rounds = 10
+                 ):
         """
         Initializes the DoND game.
 
@@ -16,6 +18,7 @@ class DondGame:
         self.max_turns = max_turns
         self.setup = setup
         self.setups_file = setups_file
+        self.nb_rounds = nb_rounds
 
         if self.setups_file is not None:
             self.settings = []
@@ -89,7 +92,7 @@ class DondGame:
             self.game_ended = True
 
     
-    def step(self, output, is_proposal=False):
+    def step(self, output, is_proposal=False)-> bool: 
         """
         Advances the game by one step.
 
@@ -98,7 +101,7 @@ class DondGame:
             is_proposal (bool): Indicates if the output is a proposal.
 
         Returns:
-            bool: Whether the game should continue or not.
+            bool: False if game ended else True.
         """
         
         self.last_message = output

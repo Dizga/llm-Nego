@@ -14,13 +14,16 @@ from agents.hf_agent import HfAgent
 from agents.oai_agent import OaiAgent
 
 class BcDondTrainer:
-    def __init__(self, iterations_per_run, 
-                 games_per_iteration, game, 
+    def __init__(self, 
+                 iterations_per_run, 
+                 games_per_iteration, 
+                 game, 
+                 train_type: str,
                  instructor_0: DondInstructor, 
                  instructor_1: DondInstructor, 
                  logger: DondLogger,
-                 train_type = "ppo"
                  ):
+        
         self.iterations_per_run = iterations_per_run
         self.games_per_iteration = games_per_iteration
         self.game = game
@@ -49,15 +52,21 @@ class BcDondTrainer:
         while True:
             if not self.instructor_0.play_move(): break
             if not self.instructor_1.play_move(): break
-        self.logger.log_game(*self.game.export(), self.instructor_0.get_history(), self.instructor_1.get_history())
+        self.logger.log_game(*self.game.export(), 
+                             self.instructor_0.get_history(), 
+                             self.instructor_1.get_history())
         self.logger.log_info("Game completed.")
 
     def train_agents_ppo(self, folder_path):
+        self.logger.log_info("PPO training started.")
+        # Train player 0
         queries, responses, scores = self.logger.extract_hf_ppo_dataset(folder_path, p0=True)
         self.instructor_0.dond_player.train_ppo_json(self, queries, responses, scores)
 
+        # Train player 1
         queries, responses, scores = self.logger.extract_hf_ppo_dataset(folder_path, p0=False)
         self.instructor_1.dond_player.train_ppo_json(self, queries, responses, scores)
+        self.logger.log_info("PPO training ended.")
 
 
     def train_agents_bc(self):
@@ -79,80 +88,43 @@ class BcDondTrainer:
 
 
 
-def run_bc_dond(cfg):
-    # Run behaviour cloning for the deal-or-no-deal game
-
+def run_bc_dond(cfg): # TODO: change name
+    
     # Make output directory
     hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
     output_directory = hydra_cfg['runtime']['output_dir']
     os.makedirs(output_directory, exist_ok=True)
 
+    # Get input and output handler for DonD
     logger = DondLogger(output_directory)
-    game = DondGame(max_turns=cfg.game.max_turns,
-                    setup=cfg.game.setup,
-                    setups_file=cfg.game.setups_file
-                    )
+
+    # Get instance which handles the game
+    game = DondGame(**cfg.game)
 
     # Get the player/instructor 0
-    if cfg.p0.type == "hf":
-        agent_0 = HfAgent(
-            name="agent_0",
-            device=cfg.device,
-            model=cfg.p0.model,
-            tokenizer=cfg.p0.tokenizer,
-            out_folder=output_directory + "/checkpoints"
-        )
-    elif cfg.p0.type == "oai":
-        agent_0 = HfAgent(
-            name="agent_0",
-            device=cfg.device,
-            model=cfg.p0.model,
-            tokenizer=cfg.p0.tokenizer,
-        )
+    if cfg.p0.type == "hf": agent_0 = HfAgent(**cfg.p0.agent_args)
+    elif cfg.p0.type == "oai": agent_0 = HfAgent(**cfg.p0.agent_args)
     instructor_0 = DondInstructor(
-        game_intro_file=cfg.p0.game_intro_file,
-        chain_of_thought_file=cfg.p0.chain_of_thought,
-        proposal_file=cfg.p0.proposal_file,
-        dond_game=game,
-        dond_player=agent_0,
-        player_type="p0"
+        **cfg.p0.instructor_args, dond_game=game,
+        dond_player=agent_0, player_type="p0"
     )
 
     # Get player/instructor 1
-    if cfg.p1.type == "hf":
-        agent_1 = HfAgent(
-            name="agent_1",
-            device=cfg.device,
-            model=cfg.p1.model,
-            tokenizer=cfg.p1.tokenizer,
-            out_folder=output_directory + "/checkpoints"
-        )
-    elif cfg.p1.type == "oai":
-        agent_1 = OaiAgent(
-            name="agent_1",
-            device=cfg.device,
-            model=cfg.p1.model,
-            tokenizer=cfg.p1.tokenizer,
-        )
+    if cfg.p1.type == "hf": agent_1 = HfAgent(**cfg.p1.agent_args)
+    elif cfg.p1.type == "oai": agent_1 = HfAgent(**cfg.p1.agent_args)
     instructor_1 = DondInstructor(
-        game_intro_file=cfg.p1.game_intro_file,
-        chain_of_thought_file=cfg.p1.chain_of_thought,
-        proposal_file=cfg.p0.proposal_file,
-        dond_game=game,
-        dond_player=agent_1,
-        player_type="p1"
+        **cfg.p0.instructor_args, dond_game=game,
+        dond_player=agent_1, player_type="p1"
     )
 
+    # Start training
     trainer = BcDondTrainer(
-        iterations_per_run=cfg.run.nb_iterations,
-        games_per_iteration=cfg.run.games_per_iteration,
-        game=game,
+        **cfg.training, game=game,
         instructor_0=instructor_0,
         instructor_1=instructor_1,
         logger=logger
     )
     trainer.run_iterations()
-
 
 
 @hydra.main(config_path="../conf", config_name="config")

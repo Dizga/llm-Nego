@@ -35,9 +35,11 @@ class DondLogger:
         self.game_nb = 0
         self.round_nb = 0
 
-    def new_iteration(self):
+    def new_iteration(self)-> str:
         """
         Starts a new iteration, resets metrics, and logs stats for the previous iteration.
+        Returns:
+            Path of folder where data is being logged.
         """
         self.iteration += 1
         self.game_nb = 0
@@ -46,8 +48,9 @@ class DondLogger:
         # Reset metrics for the new iteration
         self.game_log = pd.DataFrame()
         self.game_log_file = os.path.join(self.it_folder, "metrics.csv")
+        return self.it_folder
 
-    def get_itr_stats(self):
+    def set_itr_stats(self):
         """
         Computes statistics for the current iteration.
 
@@ -67,7 +70,7 @@ class DondLogger:
         """
         Logs statistics for the current iteration and saves them to a CSV file.
         """
-        self.get_itr_stats()
+        self.set_itr_stats()
         iteration = self.iteration_stats['Iteration']
 
         if iteration in self.statistics['Iteration'].values:

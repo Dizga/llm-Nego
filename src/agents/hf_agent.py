@@ -103,10 +103,8 @@ class HfAgent:
         queries = self.encode_jsons(queries)
         responses = self.encode_jsons(responses)
         stats = self.ppo_trainer.step(queries=queries, responses=responses, scores=scores)
-        # ppo_trainer.log_stats(stats, batch, rewards)
+        print(stats)
         
-
-
     def prompt(self, message: str, is_error = False, is_new_game = False):
         """
         Adds a user message to the conversation history and generates a response.

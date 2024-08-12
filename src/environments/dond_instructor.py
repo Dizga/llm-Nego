@@ -6,7 +6,14 @@ from environments.dond_game import DondGame
 
 
 class DondInstructor():
-    def __init__(self, game_intro_file, chain_of_thought_file, proposal_file, dond_game:DondGame, dond_player, player_type="p0"):
+    def __init__(self, 
+                 game_intro_file, 
+                 chain_of_thought_file, 
+                 max_retries,
+                 proposal_file, 
+                 dond_game:DondGame, 
+                 dond_player, 
+                 player_type="p0"):
         """
         The Instructor acts as a middle-man between the game and a LLM player.
         Initializes the DoNDInstructor.
@@ -31,6 +38,7 @@ class DondInstructor():
             with open(chain_of_thought_file, 'r') as file:
                 self.chain_of_thought = file.read()
         
+        self.max_retries = max_retries
         self.dond_game = dond_game
         self.dond_player = dond_player
         self.player_type = player_type
@@ -41,35 +49,45 @@ class DondInstructor():
         Plays a move in the DoND game.
 
         Returns:
-            bool: Whether the game should continue or not.
+            bool: False if game ended else True.
         """
+
+        self.first_turn = False
+
+        # Get current state description from DoND game
         state = self.dond_game.get_state()
-        if state is None:
-            return False
+
+        # Stop since game is ended
+        if state["is_ended"]: return False
         
+        # Get the context message to be passed to the model to get its response
         user_message = self.get_usr_message(state)
+
+        # Get response from the model
         response = self.dond_player.prompt(user_message, is_new_game=state['new_round'])
 
+        # Validate the response from the model
         valid_response, error_message = self.validate(response)
 
-        max_retries = float('3')
+        # Allow safety nets which gives retry attempts to the model
+        # which has not correctly formatted its response
         retries = 0
-        while retries < max_retries:
-            if valid_response:
-                break
+        while retries < self.max_retries:
+            if valid_response: break
             response = self.dond_player.prompt(error_message, False, True)
             valid_response, error_message = self.validate(response)
             retries += 1
 
-        if retries == max_retries:
+        # Return dummy message if model refuses to conform to correct format
+        if retries == self.max_retries:
             response="<message></message>"
             #raise ValueError(f"Error validating output after {max_retries} retries.")
 
+        # Process the response
         is_proposal, content = self.extract(response)
 
-        ongoing = self.dond_game.step(content, is_proposal)  # Whether the game is finished or not
-        self.first_turn = False
-        return ongoing
+        # Send response to game
+        return self.dond_game.step(content, is_proposal)  # Whether the game is finished or not
 
     def verificator(self, message):
         """

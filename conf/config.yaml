@@ -5,35 +5,47 @@ hydra:
 
 cuda: true
 
-run:
+training:
   train: False
-  nb_iterations: 5
+  iterations_per_run: 5
   games_per_iteration: 100
+  train_type: "ppo"
 
 game:
   max_turns: 10
   mode: coop # coop
   setup: random_read
   setups_file: src/environments/dond_setups.txt
-  iterations: 1
+  nb_rounds: 3
 
 p0:
   type: hf # hf (HuggingFace) or oai (OpenAI)
-  tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-  model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-  #tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-  #model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-  game_intro_file: "src/prompts/coop/rules.txt"
-  chain_of_thought: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
-  proposal_file: "src/prompts/coop/proposal.txt"
+
+  instructor_args:
+    game_intro_file: "src/prompts/coop/rules.txt"
+    chain_of_thought: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
+    max_retries: 3
+    proposal_file: "src/prompts/coop/proposal.txt"
+  
+  agent_args:
+    name: "agent_0"
+    device: cuda
+    tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
 
 p1:
+
   type: hf # hf (HuggingFace) or oai (OpenAI)
-  tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-  model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-  #tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-  #model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-  game_intro_file: "src/prompts/coop/rules.txt"
-  chain_of_thought: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
-  proposal_file: "src/prompts/coop/proposal.txt"
+
+  instructor_args:
+    game_intro_file: "src/prompts/coop/rules.txt"
+    chain_of_thought: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
+    max_retries: 3
+    proposal_file: "src/prompts/coop/proposal.txt"
+  
+  agent_args:
+    name: "agent_1"
+    device: cuda
+    tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
   
