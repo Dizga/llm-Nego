@@ -6,25 +6,24 @@ hydra:
 cuda: true
 
 training:
-  train: False
-  iterations_per_run: 5
-  games_per_iteration: 100
+  iterations_per_run: 2
+  games_per_iteration: 2
   train_type: "ppo"
 
 game:
-  max_turns: 10
+  max_turns: 2
   mode: coop # coop
   setup: random_read
   setups_file: src/environments/dond_setups.txt
-  nb_rounds: 3
+  nb_rounds: 2
 
 p0:
   type: hf # hf (HuggingFace) or oai (OpenAI)
 
   instructor_args:
     game_intro_file: "src/prompts/coop/rules.txt"
-    chain_of_thought: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
-    max_retries: 3
+    chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
+    max_retries: 2
     proposal_file: "src/prompts/coop/proposal.txt"
   
   agent_args:
@@ -39,8 +38,8 @@ p1:
 
   instructor_args:
     game_intro_file: "src/prompts/coop/rules.txt"
-    chain_of_thought: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
-    max_retries: 3
+    chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
+    max_retries: 2
     proposal_file: "src/prompts/coop/proposal.txt"
   
   agent_args:

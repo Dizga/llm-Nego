@@ -7,7 +7,7 @@ from hydra.core.hydra_config import HydraConfig
 from omegaconf import OmegaConf
 
 # local imports
-from src.utils.dond_logger import DondLogger
+from utils.dond_logger import DondLogger
 from environments.dond_game import DondGame
 from environments.dond_instructor import DondInstructor
 from agents.hf_agent import HfAgent

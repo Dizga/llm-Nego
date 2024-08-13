@@ -41,9 +41,9 @@ class DondLogger:
         Returns:
             Path of folder where data is being logged.
         """
-        self.iteration += 1
+        self.iteration_nb += 1
         self.game_nb = 0
-        self.it_folder = os.path.join(self.run_dir, f"iteration_{self.iteration:02d}")
+        self.it_folder = os.path.join(self.run_dir, f"iteration_{self.iteration_nb:02d}")
         os.makedirs(self.it_folder, exist_ok=True)
         # Reset metrics for the new iteration
         self.game_log = pd.DataFrame()
@@ -58,7 +58,7 @@ class DondLogger:
             dict: A dictionary containing statistics of the current iteration.
         """
         self.iteration_stats = {
-            "Iteration": self.iteration,
+            "Iteration": self.iteration_nb,
             "Agreement Percentage": self.game_log['agreement_reached'].mean() * 100 if not self.game_log['agreement_reached'].empty else 0,
             "Score Variance P0": self.game_log['p0_score'].var() if not self.game_log['p0_score'].empty else 0,
             "Score Variance P1": self.game_log['p1_score'].var() if not self.game_log['p1_score'].empty else 0,
@@ -85,7 +85,7 @@ class DondLogger:
         self.round_nb = 0
         self.rounds_log = pd.DataFrame([])
         self.rounds_path = os.path.join(self.it_folder, 
-                f"iter_{self.iteration:02d}_game_{self.game_nb:04d}.json")
+                f"iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.json")
         
 
     def log_game(self, summary, rounds, p0_history, p1_history):
@@ -96,8 +96,8 @@ class DondLogger:
             game (dict): A dictionary containing game data.
         """
         
-        p0_game_name = f"p0_iter_{self.iteration:02d}_game_{self.game_nb:04d}.json"
-        p1_game_name = f"p1_iter_{self.iteration:02d}_game_{self.game_nb:04d}.json"
+        p0_game_name = f"p0_iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.json"
+        p1_game_name = f"p1_iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.json"
 
         os.makedirs(self.run_dir, exist_ok=True)
 
@@ -112,7 +112,7 @@ class DondLogger:
         summary['rounds_path'] = self.rounds_path
 
         # Log global game metrics
-        self.game_log = pd.concat([self.game_log, pd.DataFrame([game])], ignore_index=True)
+        self.game_log = pd.concat([self.game_log, pd.DataFrame([summary])], ignore_index=True)
         self.game_log.to_csv(self.game_log_file, index=False)
 
         # Log every round

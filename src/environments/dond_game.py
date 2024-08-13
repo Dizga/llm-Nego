@@ -4,6 +4,7 @@ import random
 
 class DondGame:
     def __init__(self, 
+                 mode='coop',
                  max_turns=None,
                  setup="random_read",
                  setups_file=None,
@@ -20,6 +21,8 @@ class DondGame:
         self.setups_file = setups_file
         self.nb_rounds = nb_rounds
 
+        self.items = ['books', 'hats', 'balls']
+
         if self.setups_file is not None:
             self.settings = []
             # Get dataset of game setups from file
@@ -34,7 +37,7 @@ class DondGame:
                     p0_values = {key: value for key, value in zip(self.items, [l[1], l[3], l[5]])}
                     p1_values = {key: value for key, value in zip(self.items, [l2[1], l2[3], l2[5]])}
                     self.settings.append((quantities, p0_values, p1_values))
-
+        self.nb_settings = len(self.settings)
         self.reset()
 
 
@@ -88,7 +91,7 @@ class DondGame:
         self.archive_player_states()
         self.reset_player_states()
         self.new_round = True
-        if self.rounds_player > self.nb_rounds:
+        if self.round_nb > self.nb_rounds:
             self.game_ended = True
 
     
@@ -146,7 +149,7 @@ class DondGame:
         out = {
             'game_ended': self.game_ended,
             "new_round": self.new_round,
-            "round_number": self.round_number,
+            "round_number": self.round_nb,
             "book_cnt": self.quantities["books"],
             "hat_cnt": self.quantities["hats"],
             "ball_cnt": self.quantities["balls"],

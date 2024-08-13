@@ -58,13 +58,13 @@ class DondInstructor():
         state = self.dond_game.get_state()
 
         # Stop since game is ended
-        if state["is_ended"]: return False
+        if state["game_ended"]: return False
         
         # Get the context message to be passed to the model to get its response
         user_message = self.get_usr_message(state)
 
         # Get response from the model
-        response = self.dond_player.prompt(user_message, is_new_game=state['new_round'])
+        response = self.dond_player.prompt(user_message, is_new_game=state['new_round']) # TODO: is_new_game should be is_new_round
 
         # Validate the response from the model
         valid_response, error_message = self.validate(response)
