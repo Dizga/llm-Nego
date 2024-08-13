@@ -74,7 +74,7 @@ class DondInstructor():
         retries = 0
         while retries < self.max_retries:
             if valid_response: break
-            response = self.dond_player.prompt(error_message, False, True)
+            response = self.dond_player.prompt(error_message, is_error=True)
             valid_response, error_message = self.validate(response)
             retries += 1
 
