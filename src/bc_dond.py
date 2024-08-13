@@ -11,7 +11,9 @@ from utils.dond_logger import DondLogger
 from environments.dond_game import DondGame
 from environments.dond_instructor import DondInstructor
 from agents.hf_agent import HfAgent
+from agents.dummy_hf_agent import DummyHfAgent
 from agents.oai_agent import OaiAgent
+
 
 class BcDondTrainer:
     def __init__(self, 
@@ -71,11 +73,11 @@ class BcDondTrainer:
         self.logger.log_info("PPO training started.")
         # Train player 0
         queries, responses, scores = self.logger.extract_hf_ppo_dataset(folder_path, p0=True)
-        self.instructor_0.dond_player.train_ppo_json(self, queries, responses, scores)
+        self.instructor_0.dond_player.train_ppo_json(queries, responses, scores)
 
         # Train player 1
         queries, responses, scores = self.logger.extract_hf_ppo_dataset(folder_path, p0=False)
-        self.instructor_1.dond_player.train_ppo_json(self, queries, responses, scores)
+        self.instructor_1.dond_player.train_ppo_json(queries, responses, scores)
         self.logger.log_info("PPO training ended.")
 
 
@@ -113,6 +115,7 @@ def run_bc_dond(cfg): # TODO: change name
 
     # Get the player/instructor 0
     if cfg.p0.type == "hf": agent_0 = HfAgent(**cfg.p0.agent_args)
+    if cfg.p0.type == "dummy_hf": agent_0 = DummyHfAgent(**cfg.p0.agent_args)
     elif cfg.p0.type == "oai": agent_0 = HfAgent(**cfg.p0.agent_args)
     instructor_0 = DondInstructor(
         **cfg.p0.instructor_args, dond_game=game,
@@ -121,6 +124,7 @@ def run_bc_dond(cfg): # TODO: change name
 
     # Get player/instructor 1
     if cfg.p1.type == "hf": agent_1 = HfAgent(**cfg.p1.agent_args)
+    if cfg.p1.type == "dummy_hf": agent_1 = DummyHfAgent(**cfg.p1.agent_args)
     elif cfg.p1.type == "oai": agent_1 = HfAgent(**cfg.p1.agent_args)
     instructor_1 = DondInstructor(
         **cfg.p0.instructor_args, dond_game=game,

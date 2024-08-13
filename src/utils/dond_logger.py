@@ -47,7 +47,7 @@ class DondLogger:
         os.makedirs(self.it_folder, exist_ok=True)
         # Reset metrics for the new iteration
         self.game_log = pd.DataFrame()
-        self.game_log_file = os.path.join(self.it_folder, "metrics.csv")
+        self.game_log_file = os.path.join(self.it_folder, "games.csv")
         return self.it_folder
 
     def set_itr_stats(self):
@@ -57,27 +57,27 @@ class DondLogger:
         Returns:
             dict: A dictionary containing statistics of the current iteration.
         """
-        self.iteration_stats = {
-            "Iteration": self.iteration_nb,
-            "Agreement Percentage": self.game_log['agreement_reached'].mean() * 100 if not self.game_log['agreement_reached'].empty else 0,
-            "Score Variance P0": self.game_log['p0_score'].var() if not self.game_log['p0_score'].empty else 0,
-            "Score Variance P1": self.game_log['p1_score'].var() if not self.game_log['p1_score'].empty else 0,
-            "Mean Score P0": self.game_log['p0_score'].mean() if not self.game_log['p0_score'].empty else 0,
-            "Mean Score P1": self.game_log['p1_score'].mean() if not self.game_log['p1_score'].empty else 0
-        }
+        # self.iteration_stats = {
+        #     "Iteration": self.iteration_nb,
+        #     "Agreement Percentage": self.game_log['agreement_reached'].mean() * 100 if not self.game_log['agreement_reached'].empty else 0,
+        #     "Score Variance P0": self.game_log['p0_score'].var() if not self.game_log['p0_score'].empty else 0,
+        #     "Score Variance P1": self.game_log['p1_score'].var() if not self.game_log['p1_score'].empty else 0,
+        #     "Mean Score P0": self.game_log['p0_score'].mean() if not self.game_log['p0_score'].empty else 0,
+        #     "Mean Score P1": self.game_log['p1_score'].mean() if not self.game_log['p1_score'].empty else 0
+        # }
 
     def log_itr_stats(self):
         """
         Logs statistics for the current iteration and saves them to a CSV file.
         """
-        self.set_itr_stats()
-        iteration = self.iteration_stats['Iteration']
+        # self.set_itr_stats()
+        # iteration = self.iteration_stats['Iteration']
 
-        if iteration in self.statistics['Iteration'].values:
-            self.statistics.loc[self.statistics['Iteration'] == iteration, :] = pd.DataFrame([self.iteration_stats])
-        else:
-            self.statistics = pd.concat([self.statistics, pd.DataFrame([self.iteration_stats])], ignore_index=True)
-        self.statistics.to_csv(self.statistics_file, index=False)
+        # if iteration in self.statistics['Iteration'].values:
+        #     self.statistics.loc[self.statistics['Iteration'] == iteration, :] = pd.DataFrame([self.iteration_stats])
+        # else:
+        #     self.statistics = pd.concat([self.statistics, pd.DataFrame([self.iteration_stats])], ignore_index=True)
+        # self.statistics.to_csv(self.statistics_file, index=False)
 
 
     def new_game(self):
@@ -85,7 +85,7 @@ class DondLogger:
         self.round_nb = 0
         self.rounds_log = pd.DataFrame([])
         self.rounds_path = os.path.join(self.it_folder, 
-                f"iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.json")
+                f"iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.csv")
         
 
     def log_game(self, summary, rounds, p0_history, p1_history):
@@ -117,7 +117,7 @@ class DondLogger:
 
         # Log every round
         for round in rounds:
-            self.log_round(self, round)
+            self.log_round(round)
 
         # Adjust iteration statistics (even if not finished)
         self.log_itr_stats()
@@ -141,12 +141,14 @@ class DondLogger:
         Args:
             file (str): Location of the csv / dataframe for the iteration
         """
+        
+        gm_messages_path_df_column = "rounds_path"
 
         if p0: 
-            gm_messages_path_df_column = "p0_messages_path"
+            gm_messages_path_df_column = "p0_path"
             mg_rewards_df_column = "p0_return"
         else: 
-            gm_messages_path_df_column = "p1_messages_path"
+            gm_messages_path_df_column = "p1_path"
             mg_rewards_df_column = "p1_return"
 
         # get jsons list
@@ -163,16 +165,17 @@ class DondLogger:
         for game_info in games_info:
 
             # get game returns
-            game_path = game_info[gm_messages_path_df_column]
-            rounds_metrics_df = pd.read_csv(game_info['rounds_metrics_path'])  # get rounds dataframe
+            game_path = game_info['rounds_path']
+            rounds_metrics_df = pd.read_csv(game_path)  # get rounds dataframe
             mg_rewards = rounds_metrics_df[mg_rewards_df_column].tolist()
 
             # get game conversation
-            with open(os.path.join(game_path, 'json'), 'r') as file:
+            conv_path = os.path.join(folder_path, game_info[gm_messages_path_df_column])
+            with open(conv_path, 'r') as file:
                 game = json.load(file)
 
             context = []
-            count = 0
+            count = -1
 
             # extract queries, responses and scores
             for message in game:
