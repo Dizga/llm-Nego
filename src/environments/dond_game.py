@@ -130,7 +130,7 @@ class DondGame:
             if self.verify_props_match():
                 self.set_points()
                 self.agreement_reached = True
-                self.end_round()
+            self.end_round()
             return self.get_state()  
 
         self.has_proposed = is_proposal
