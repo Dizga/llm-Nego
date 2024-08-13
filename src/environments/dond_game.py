@@ -64,6 +64,9 @@ class DondGame:
         self.p1_prop_history = []
         self.points_p0_history = []
         self.points_p1_history = []
+        self.values_p0_history = []
+        self.values_p1_history = []
+        self.quantities_history = []
         self.agreement_reached_history = []
 
         return self.get_state()
@@ -94,6 +97,9 @@ class DondGame:
         self.p1_prop_history.append(self.p1_prop)
         self.points_p0_history.append(self.points_p0)
         self.points_p1_history.append(self.points_p1)
+        self.values_p0_history.append(self.values_p0)
+        self.values_p1_history.append(self.values_p1)
+        self.quantities_history.append(self.quantities)
         self.agreement_reached_history.append(self.agreement_reached)
 
     def end_round(self):
