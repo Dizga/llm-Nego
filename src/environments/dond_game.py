@@ -53,7 +53,22 @@ class DondGame:
         self.quantities = None
         self.has_proposed = False
 
-        # Get hard coded quantities & values
+
+        self.quantities, self.values_p0, self.values_p1 = self.get_new_round_data()
+
+        self.reset_player_states()
+        self.round_nb = 1
+        self.new_round = True
+        self.game_ended = False
+        self.p0_prop_history = []
+        self.p1_prop_history = []
+        self.points_p0_history = []
+        self.points_p1_history = []
+        self.agreement_reached_history = []
+
+        return self.get_state()
+    
+    def get_new_round_data(self):
         if self.setup == "primitive":
             self.quantities = {key: value for key, value in zip(self.items, [5, 4, 3])}
             self.values_p0 = {key: value for key, value in zip(self.items, [5, 4, 3])}
@@ -63,11 +78,6 @@ class DondGame:
         else:
             setting_id = random.randint(0, self.nb_settings-1)
             self.quantities, self.values_p0, self.values_p1 = self.settings[setting_id]
-
-        self.reset_player_states()
-        self.round_nb = 1
-        self.new_round = True
-        self.game_ended = False
 
         return self.quantities, self.values_p0, self.values_p1
     
@@ -88,11 +98,14 @@ class DondGame:
 
     def end_round(self):
         self.round_nb += 1
+        self.turn = 0
+        self.has_proposed = False
         self.archive_player_states()
         self.reset_player_states()
         self.new_round = True
         if self.round_nb > self.nb_rounds:
             self.game_ended = True
+        self.quantities, self.values_p0, self.values_p1 = self.get_new_round_data()
 
     
     def step(self, output, is_proposal=False)-> bool: 
@@ -112,13 +125,13 @@ class DondGame:
         if self.has_proposed:
             if not is_proposal: # player has not made a proposal after other player, automatic loss
                 self.end_round()
-                return self.game_ended
+                return self.get_state()
             self.propose(output)
             if self.verify_props_match():
                 self.set_points()
                 self.agreement_reached = True
                 self.end_round()
-            return self.game_ended  
+            return self.get_state()  
 
         self.has_proposed = is_proposal
 
@@ -130,9 +143,11 @@ class DondGame:
 
         if self.turn > self.max_turns:
             self.end_round()
-            return self.game_ended  # round ended due to exceeding max turns
+            return self.get_state()  # round ended due to exceeding max turns
+        
+        self.new_round = False
 
-        return self.game_ended  # game not ended
+        return self.get_state()  # game not ended
 
     def get_state(self, player="current_turn"):
         """
@@ -161,6 +176,7 @@ class DondGame:
             out["book_val"] = self.values_p0["books"]
             out["hat_val"] = self.values_p0["hats"]
             out["ball_val"] = self.values_p0["balls"]
+            out["last_score"] = self.points_p0
             return out
 
         out["book_val"] = self.values_p1["books"]

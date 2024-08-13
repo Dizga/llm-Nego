@@ -17,7 +17,7 @@ class BcDondTrainer:
     def __init__(self, 
                  iterations_per_run, 
                  games_per_iteration, 
-                 game, 
+                 game: DondGame, 
                  train_type: str,
                  instructor_0: DondInstructor, 
                  instructor_1: DondInstructor, 
@@ -46,12 +46,22 @@ class BcDondTrainer:
     def run_game(self):
         self.logger.log_info("Game started.")
         self.logger.new_game()
+        instructors = [self.instructor_0, self.instructor_1]
         self.instructor_0.new_game()
         self.instructor_1.new_game()
-        self.game.reset()
-        while True:
-            if not self.instructor_0.play_move(): break
-            if not self.instructor_1.play_move(): break
+        game_state = self.game.reset()
+        player_id = 0
+        while not game_state['game_ended']:
+            if game_state['new_round']:
+                self.instructor_0.new_round()
+                self.instructor_1.new_round()
+            is_proposal, content = instructors[player_id].play_move(game_state)
+            game_state = self.game.step(content, is_proposal=is_proposal)
+            player_id = (player_id + 1) % 2
+            
+        # while True:
+        #     if self.instructor_0.play_move(): break
+        #     if self.instructor_1.play_move(): break
         self.logger.log_game(*self.game.export(), 
                              self.instructor_0.get_history(), 
                              self.instructor_1.get_history())

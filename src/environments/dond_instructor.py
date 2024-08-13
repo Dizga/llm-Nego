@@ -44,7 +44,7 @@ class DondInstructor():
         self.player_type = player_type
         self.other_has_proposed = False # whether the other player has made a proposal
 
-    def play_move(self):
+    def play_move(self, state):
         """
         Plays a move in the DoND game.
 
@@ -52,19 +52,19 @@ class DondInstructor():
             bool: False if game ended else True.
         """
 
-        self.first_turn = False
+        
 
         # Get current state description from DoND game
-        state = self.dond_game.get_state()
+        # state = self.dond_game.get_state()
 
         # Stop since game is ended
-        if state["game_ended"]: return False
+        # if state["game_ended"]: return False
         
         # Get the context message to be passed to the model to get its response
         user_message = self.get_usr_message(state)
 
         # Get response from the model
-        response = self.dond_player.prompt(user_message, is_new_game=state['new_round']) # TODO: is_new_game should be is_new_round
+        response = self.dond_player.prompt(user_message, is_new_game=self.first_turn) # TODO: is_new_game should be is_new_round
 
         # Validate the response from the model
         valid_response, error_message = self.validate(response)
@@ -83,11 +83,16 @@ class DondInstructor():
             response="<message></message>"
             #raise ValueError(f"Error validating output after {max_retries} retries.")
 
+        self.first_turn = False
         # Process the response
-        is_proposal, content = self.extract(response)
+        return self.extract(response)
+
 
         # Send response to game
-        return self.dond_game.step(content, is_proposal)  # Whether the game is finished or not
+        # game_state = self.dond_game.step(content, is_proposal)  # Whether the game is finished or not
+        # if game_state['new_round']:
+        #     self.new_round()
+        # return game_state['game_ended']
 
     def verificator(self, message):
         """
@@ -202,6 +207,14 @@ class DondInstructor():
             return True, json.loads(match.group(2))
         else:
             return False, match.group(1)
+        
+    def new_round(self):
+        """
+        Resets round attibutes.
+
+        """
+        self.other_has_proposed = False
+        self.first_turn = True
     
     def new_game(self):
         """
@@ -210,8 +223,7 @@ class DondInstructor():
         Returns:
             list: The message history before resetting.
         """
-        self.other_has_proposed = False
-        self.first_turn = True
+        self.new_round()
         history = self.dond_player.history
         self.dond_player.reset_messages()
         return history
