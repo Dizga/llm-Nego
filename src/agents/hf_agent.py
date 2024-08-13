@@ -3,6 +3,7 @@ import torch
 from datasets import Dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments
 from trl import SFTTrainer
+from trl import AutoModelForCausalLMWithValueHead, PPOConfig, PPOTrainer
 from peft import get_peft_model, LoraConfig, TaskType
 import os
 
@@ -64,6 +65,17 @@ class HfAgent:
             load_best_model_at_end=True
         )
 
+        ppo_config = PPOConfig(
+            model_name="model",
+            learning_rate=1.41e-5,
+        )
+
+        self.ppo_trainer = PPOTrainer(
+            model=AutoModelForCausalLMWithValueHead.from_pretrained(model),
+            config=ppo_config,
+            tokenizer=self.tokenizer,
+        )
+
     def train(self, train_data):
         """
         Trains the model on the provided training data.
@@ -90,7 +102,13 @@ class HfAgent:
 
     def encode_jsons(self, data: list) -> list:
         # Encodes json conversation into list of 
-        return [self.tokenizer(ex) for ex in data]
+        encoded = []
+        for x in data:
+            if isinstance(x, dict): x = [x]
+            e = self.tokenizer.apply_chat_template(x, tokenize=False, add_generation_prompt=True)
+            e = self.tokenizer([e], return_tensors="pt").to(self.device)
+            encoded.append(e)
+        return encoded
 
 
     def train_ppo_json(self, queries: list, responses: list, scores: list):
