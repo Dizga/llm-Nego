@@ -70,8 +70,8 @@ class HfAgent:
         )
 
         ppo_config = PPOConfig(
-            batch_size=18,
-            mini_batch_size=18,
+            batch_size=6,
+            mini_batch_size=6,
             model_name="model",
             learning_rate=1.41e-5,
         )
@@ -121,13 +121,14 @@ class HfAgent:
                 x = [x]
             e = self.tokenizer.apply_chat_template(x, tokenize=False, add_generation_prompt=True)
             e = self.tokenizer(e, return_tensors="pt", padding=True, truncation=True).to(self.device)
-            encoded.append(e.input_ids.T)
-        return torch.stack(encoded)  # Stack the tensors into a single batch tensor
+            encoded.append(e.input_ids.squeeze())
+        return encoded  # Stack the tensors into a single batch tensor
 
     def train_ppo_json(self, queries: list, responses: list, scores: list):
         queries = self.encode_jsons(queries)
+        
         responses = self.encode_jsons(responses)
-        scores = torch.tensor(scores).to(self.device)  # Ensure scores are a tensor
+        scores = [torch.tensor(s) for s in scores] # Ensure scores are a tensor
 
         # Ensure that tensors are properly batched
         stats = self.ppo_trainer.step(queries=queries, responses=responses, scores=scores)
