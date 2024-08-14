@@ -28,17 +28,6 @@ class HfAgent:
         self.name = name
         self.device = device
         self.history = []
-        self.model = AutoModelForCausalLM.from_pretrained(
-            model,
-            torch_dtype="auto",
-            device_map="auto",
-            trust_remote_code=True,
-        )
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)
-        self.tokenizer.pad_token = self.tokenizer.eos_token
-        # if self.tokenizer.pad_token is None:
-        #     self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
-        self.out_folder = out_folder
 
         # Training arguments and model configuration
         self.lora_config = LoraConfig(
@@ -49,6 +38,21 @@ class HfAgent:
             target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
                       "gate_proj", "up_proj", "down_proj"]
         )
+
+        self.model = AutoModelForCausalLMWithValueHead.from_pretrained(
+            model,
+            torch_dtype="auto",
+            device_map="auto",
+            trust_remote_code=True,
+            peft_config=self.lora_config
+        )
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+        # if self.tokenizer.pad_token is None:
+        #     self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+        self.out_folder = out_folder
+
+
         # self.model = get_peft_model(self.model, self.lora_config)
         self.training_args = TrainingArguments(
             output_dir=out_folder,
@@ -66,13 +70,22 @@ class HfAgent:
         )
 
         ppo_config = PPOConfig(
+            batch_size=18,
+            mini_batch_size=18,
             model_name="model",
             learning_rate=1.41e-5,
         )
 
+        from datasets import load_dataset
+
+        dataset = load_dataset("HuggingFaceH4/cherry_picked_prompts", split="train")
+        dataset = dataset.rename_column("prompt", "query")
+        dataset = dataset.remove_columns(["meta", "completion"])
+
         self.ppo_trainer = PPOTrainer(
-            model=AutoModelForCausalLMWithValueHead.from_pretrained(model),
+            model=self.model,
             config=ppo_config,
+            # dataset=dataset,
             tokenizer=self.tokenizer,
         )
 
@@ -101,27 +114,26 @@ class HfAgent:
         self.tokenizer.save_pretrained(path)
 
     def encode_jsons(self, data: list) -> list:
-        # Encodes json conversation into list of 
+        # Encodes JSON conversation into list of tensors
         encoded = []
         for x in data:
-            if isinstance(x, dict): x = [x]
+            if isinstance(x, dict): 
+                x = [x]
             e = self.tokenizer.apply_chat_template(x, tokenize=False, add_generation_prompt=True)
-            e = self.tokenizer([e], return_tensors="pt").to(self.device)
-            encoded.append(e)
-        return encoded
-
+            e = self.tokenizer(e, return_tensors="pt", padding=True, truncation=True).to(self.device)
+            encoded.append(e.input_ids.T)
+        return torch.stack(encoded)  # Stack the tensors into a single batch tensor
 
     def train_ppo_json(self, queries: list, responses: list, scores: list):
-        """
-        Args: 
-            queries (List[jsons]): list of converstations [ {user:"...", assistant:" ", ...}, ...] in json format
-            responses (List[jsons]): list of responses in [{assistant: "..."}, {assistant: "...}]
-            scores: (List[torch.LongTensor]): The rewards of the responses, in order. 
-        """
         queries = self.encode_jsons(queries)
         responses = self.encode_jsons(responses)
+        scores = torch.tensor(scores).to(self.device)  # Ensure scores are a tensor
+
+        # Ensure that tensors are properly batched
         stats = self.ppo_trainer.step(queries=queries, responses=responses, scores=scores)
         print(stats)
+
+
         
     def prompt(self, message: str, is_error = False, is_new_round = False):
         """
