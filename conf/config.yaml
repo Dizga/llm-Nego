@@ -17,34 +17,40 @@ game:
   setups_file: src/environments/dond_setups.txt
   nb_rounds: 2
 
-p0:
-  type: dummy_hf # hf (HuggingFace) or oai (OpenAI)
 
-  instructor_args:
-    game_intro_file: "src/prompts/coop/rules.txt"
-    chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
-    max_retries: 2
-    proposal_file: "src/prompts/coop/proposal.txt"
-  
-  agent_args:
-    name: "agent_0"
-    device: cuda
-    tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-    model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+shared_model: True
 
-p1:
+players:
+  shared_model: True
+  shared_model_name: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+  p0:
+    type: dummy_hf # hf (HuggingFace) or oai (OpenAI)
 
-  type: dummy_hf # hf (HuggingFace) or oai (OpenAI)
+    instructor_args:
+      game_intro_file: "src/prompts/coop/rules.txt"
+      chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
+      max_retries: 2
+      proposal_file: "src/prompts/coop/proposal.txt"
+    
+    agent_args:
+      name: "agent_0"
+      device: cuda
+      tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+      model_name: "meta-llama/Meta-Llama-3.1-8B-Instruct"
 
-  instructor_args:
-    game_intro_file: "src/prompts/coop/rules.txt"
-    chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
-    max_retries: 2
-    proposal_file: "src/prompts/coop/proposal.txt"
-  
-  agent_args:
-    name: "agent_1"
-    device: cuda
-    tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-    model: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-  
+  p1:
+
+    type: dummy_hf # hf (HuggingFace) or oai (OpenAI)
+
+    instructor_args:
+      game_intro_file: "src/prompts/coop/rules.txt"
+      chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
+      max_retries: 2
+      proposal_file: "src/prompts/coop/proposal.txt"
+    
+    agent_args:
+      name: "agent_1"
+      device: cuda
+      tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+      model_name: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    
