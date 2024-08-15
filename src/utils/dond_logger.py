@@ -179,6 +179,7 @@ class DondLogger:
 
             # extract queries, responses and scores
             for message in game:
+                if message['is_error']: continue
                 if message['role'] == "assistant":
                     queries.append(context)
                     responses.append(message)
