@@ -70,22 +70,15 @@ class HfAgent:
         )
 
         ppo_config = PPOConfig(
-            batch_size=6,
-            mini_batch_size=6,
+            batch_size=4,
+            mini_batch_size=4,
             model_name="model",
             learning_rate=1.41e-5,
         )
 
-        from datasets import load_dataset
-
-        dataset = load_dataset("HuggingFaceH4/cherry_picked_prompts", split="train")
-        dataset = dataset.rename_column("prompt", "query")
-        dataset = dataset.remove_columns(["meta", "completion"])
-
         self.ppo_trainer = PPOTrainer(
             model=self.model,
             config=ppo_config,
-            # dataset=dataset,
             tokenizer=self.tokenizer,
         )
 
