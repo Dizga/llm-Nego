@@ -11,7 +11,7 @@ class HfAgent:
     def __init__(self,
                  name="agent",
                  device="cuda",  # cuda or cpu
-                 model="microsoft/Phi-3-mini-128k-instruct",
+                 model_name="microsoft/Phi-3-mini-128k-instruct",
                  tokenizer="microsoft/Phi-3-mini-128k-instruct",
                  out_folder="checkpoints",
                  ) -> None:
@@ -28,19 +28,9 @@ class HfAgent:
         self.name = name
         self.device = device
         self.history = []
-        self.model = AutoModelForCausalLM.from_pretrained(
-            model,
-            torch_dtype="auto",
-            device_map="auto",
-            trust_remote_code=True,
-        )
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)
-        self.tokenizer.pad_token = self.tokenizer.eos_token
-        # if self.tokenizer.pad_token is None:
-        #     self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
-        self.out_folder = out_folder
 
         # Training arguments and model configuration
+
         self.lora_config = LoraConfig(
             task_type=TaskType.CAUSAL_LM,
             r=16,
@@ -49,10 +39,29 @@ class HfAgent:
             target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
                       "gate_proj", "up_proj", "down_proj"]
         )
-        # self.model = get_peft_model(self.model, self.lora_config)
+
+        if model_name is not None:
+            self.model = AutoModelForCausalLMWithValueHead.from_pretrained(
+                model_name,
+                torch_dtype="auto",
+                device_map="auto",
+                trust_remote_code=True,
+                peft_config=self.lora_config
+            )
+            self.model.gradient_checkpointing_enable()
+
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+        # if self.tokenizer.pad_token is None:
+        #     self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+        self.out_folder = out_folder
+
+
+        # Set trainin arguments
         self.training_args = TrainingArguments(
             output_dir=out_folder,
             num_train_epochs=1,
+            fp16=True,
             per_device_train_batch_size=3,
             learning_rate=5e-5,
             weight_decay=0.01,
@@ -65,16 +74,21 @@ class HfAgent:
             load_best_model_at_end=True
         )
 
+
+    def init_ppo_trainer(self):
         ppo_config = PPOConfig(
+            batch_size=4,
+            mini_batch_size=4,
             model_name="model",
             learning_rate=1.41e-5,
         )
 
         self.ppo_trainer = PPOTrainer(
-            model=AutoModelForCausalLMWithValueHead.from_pretrained(model),
+            model=self.model,
             config=ppo_config,
             tokenizer=self.tokenizer,
         )
+
 
     def train(self, train_data):
         """
@@ -101,27 +115,26 @@ class HfAgent:
         self.tokenizer.save_pretrained(path)
 
     def encode_jsons(self, data: list) -> list:
-        # Encodes json conversation into list of 
+        # Encodes JSON conversation into list of tensors
         encoded = []
         for x in data:
-            if isinstance(x, dict): x = [x]
+            if isinstance(x, dict): 
+                x = [x]
             e = self.tokenizer.apply_chat_template(x, tokenize=False, add_generation_prompt=True)
-            e = self.tokenizer([e], return_tensors="pt").to(self.device)
-            encoded.append(e)
-        return encoded
-
+            e = self.tokenizer(e, return_tensors="pt", padding=True, truncation=True).to(self.device)
+            encoded.append(e.input_ids.squeeze())
+        return encoded  # Stack the tensors into a single batch tensor
 
     def train_ppo_json(self, queries: list, responses: list, scores: list):
-        """
-        Args: 
-            queries (List[jsons]): list of converstations [ {user:"...", assistant:" ", ...}, ...] in json format
-            responses (List[jsons]): list of responses in [{assistant: "..."}, {assistant: "...}]
-            scores: (List[torch.LongTensor]): The rewards of the responses, in order. 
-        """
         queries = self.encode_jsons(queries)
         responses = self.encode_jsons(responses)
+        scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in scores] # Ensure scores are a tensor
+
+        # Ensure that tensors are properly batched
         stats = self.ppo_trainer.step(queries=queries, responses=responses, scores=scores)
         print(stats)
+
+
         
     def prompt(self, message: str, is_error = False, is_new_round = False):
         """
