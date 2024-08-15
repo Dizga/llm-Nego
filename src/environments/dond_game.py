@@ -182,12 +182,13 @@ class DondGame:
             out["book_val"] = self.values_p0["books"]
             out["hat_val"] = self.values_p0["hats"]
             out["ball_val"] = self.values_p0["balls"]
-            out["last_score"] = self.points_p0
+            out["last_score"] = self.points_p0_history[-1] if self.points_p0_history else None
             return out
 
         out["book_val"] = self.values_p1["books"]
         out["hat_val"] = self.values_p1["hats"]
         out["ball_val"] = self.values_p1["balls"]
+        out["last_score"] = self.points_p1_history[-1] if self.points_p1_history else None
         return out
 
     def verify_props_match(self):
