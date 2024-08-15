@@ -70,14 +70,19 @@ class BcDondTrainer:
         self.logger.log_info("Game completed.")
 
     def train_agents_ppo(self, folder_path):
+
         self.logger.log_info("PPO training started.")
+        
         # Train player 0
+        self.instructor_0.dond_player.init_ppo_trainer()
         queries, responses, scores = self.logger.extract_hf_ppo_dataset(folder_path, p0=True)
         self.instructor_0.dond_player.train_ppo_json(queries, responses, scores)
 
         # Train player 1
+        self.instructor_1.dond_player.init_ppo_trainer()
         queries, responses, scores = self.logger.extract_hf_ppo_dataset(folder_path, p0=False)
         self.instructor_1.dond_player.train_ppo_json(queries, responses, scores)
+
         self.logger.log_info("PPO training ended.")
 
 
@@ -114,20 +119,23 @@ def run_bc_dond(cfg): # TODO: change name
     game = DondGame(**cfg.game)
 
     # Get the player/instructor 0
-    if cfg.p0.type == "hf": agent_0 = HfAgent(**cfg.p0.agent_args)
-    if cfg.p0.type == "dummy_hf": agent_0 = DummyHfAgent(**cfg.p0.agent_args)
-    elif cfg.p0.type == "oai": agent_0 = HfAgent(**cfg.p0.agent_args)
+    if cfg.players.p0.type == "hf": agent_0 = HfAgent(**cfg.players.p0.agent_args)
+    if cfg.players.p0.type == "dummy_hf": agent_0 = DummyHfAgent(**cfg.players.p0.agent_args)
+    elif cfg.players.p0.type == "oai": agent_0 = HfAgent(**cfg.players.p0.agent_args)
     instructor_0 = DondInstructor(
-        **cfg.p0.instructor_args, dond_game=game,
+        **cfg.players.p0.instructor_args, dond_game=game,
         dond_player=agent_0, player_type="p0"
     )
 
     # Get player/instructor 1
-    if cfg.p1.type == "hf": agent_1 = HfAgent(**cfg.p1.agent_args)
-    if cfg.p1.type == "dummy_hf": agent_1 = DummyHfAgent(**cfg.p1.agent_args)
-    elif cfg.p1.type == "oai": agent_1 = HfAgent(**cfg.p1.agent_args)
+    if cfg.players.shared_model: cfg.players.p1.agent_args.model_name = None
+    if cfg.players.p1.type == "hf": agent_1 = HfAgent(**cfg.players.p1.agent_args)
+    elif cfg.players.p1.type == "dummy_hf": agent_1 = DummyHfAgent(**cfg.players.p1.agent_args)
+    elif cfg.players.p1.type == "oai": agent_1 = HfAgent(**cfg.players.p1.agent_args)
+    if cfg.players.shared_model: agent_1.model = agent_0.model
+
     instructor_1 = DondInstructor(
-        **cfg.p0.instructor_args, dond_game=game,
+        **cfg.players.p0.instructor_args, dond_game=game,
         dond_player=agent_1, player_type="p1"
     )
 
