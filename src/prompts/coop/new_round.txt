@@ -1,4 +1,4 @@
 You scored {last_score} points in this round.
 This is a new round, please decide how to divide {book_cnt} books, {hat_cnt} hats, and {ball_cnt} balls between yourself and your partner.
 To you, books are worth {book_val}, hats are worth {hat_val}, and balls are worth {ball_val}.
-You don't know your partner's item values. 
+You don't know your partner's item values, as they are not the same as in previous rounds.  

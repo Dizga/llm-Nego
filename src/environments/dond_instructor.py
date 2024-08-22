@@ -8,7 +8,8 @@ from environments.dond_game import DondGame
 class DondInstructor():
     def __init__(self, 
                  game_intro_file, 
-                 chain_of_thought_file, 
+                 chain_of_thought_file,
+                 new_round_file,
                  max_retries,
                  proposal_file, 
                  dond_game:DondGame, 
@@ -26,9 +27,13 @@ class DondInstructor():
             player_type (str): The type of player, either "p0" or "p1".
         """
         self.first_turn = True
+        self.is_new_game = True
         
         with open(game_intro_file, 'r') as file:
             self.game_basics = file.read()
+
+        with open(new_round_file, 'r') as file:
+            self.new_round_prompt = file.read()
 
         with open(proposal_file, 'r') as file:
             self.proposal_prompt = file.read()
@@ -84,6 +89,7 @@ class DondInstructor():
             #raise ValueError(f"Error validating output after {max_retries} retries.")
 
         self.first_turn = False
+        self.is_new_game = False
         # Process the response
         return self.extract(response)
 
@@ -118,8 +124,10 @@ class DondInstructor():
             str: The constructed user message.
         """
         user_message = ""
-        if self.first_turn:
+        if self.is_new_game:
             user_message += self.game_basics.format(**state)
+        elif self.first_turn:
+            user_message += self.new_round_prompt.format(**state)
         if state.get("has_proposed"):
             self.other_has_proposed = True
             user_message += self.proposal_prompt.format(**state)
@@ -224,6 +232,7 @@ class DondInstructor():
             list: The message history before resetting.
         """
         self.new_round()
+        self.is_new_game = True
         history = self.dond_player.history
         self.dond_player.reset_messages()
         return history

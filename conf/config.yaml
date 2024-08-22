@@ -28,6 +28,7 @@ players:
 
     instructor_args:
       game_intro_file: "src/prompts/coop/rules.txt"
+      new_round_file: "src/prompts/coop/new_round.txt"
       chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
       max_retries: 2
       proposal_file: "src/prompts/coop/proposal.txt"
@@ -44,6 +45,7 @@ players:
 
     instructor_args:
       game_intro_file: "src/prompts/coop/rules.txt"
+      new_round_file: "src/prompts/coop/new_round.txt"
       chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
       max_retries: 2
       proposal_file: "src/prompts/coop/proposal.txt"
