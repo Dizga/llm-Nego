@@ -40,7 +40,7 @@ class HfAgent:
                       "gate_proj", "up_proj", "down_proj"]
         )
 
-        if model_name is not None:
+        if model_name is not "shared":
             self.model = AutoModelForCausalLMWithValueHead.from_pretrained(
                 model_name,
                 torch_dtype="auto",
@@ -72,28 +72,6 @@ class HfAgent:
             evaluation_strategy="steps",
             eval_steps=500,
             load_best_model_at_end=True
-        )
-
-
-    def init_ppo_trainer(self):
-        ppo_config = PPOConfig(
-            batch_size=2,
-            mini_batch_size=2,
-            model_name="model",
-            learning_rate=1.41e-5,
-        )
-
-        from datasets import load_dataset
-
-        dataset = load_dataset("HuggingFaceH4/cherry_picked_prompts", split="train")
-        dataset = dataset.rename_column("prompt", "query")
-        dataset = dataset.remove_columns(["meta", "completion"])
-
-        self.ppo_trainer = PPOTrainer(
-            model=self.model,
-            config=ppo_config,
-            # dataset=dataset,
-            tokenizer=self.tokenizer,
         )
 
 
@@ -131,6 +109,22 @@ class HfAgent:
             e = self.tokenizer(e, return_tensors="pt", padding=True, truncation=True).to(self.device)
             encoded.append(e.input_ids.squeeze())
         return encoded  # Stack the tensors into a single batch tensor
+    
+    def init_ppo_trainer(self, nb_epochs, batch_size):
+
+        ppo_config = PPOConfig(
+            batch_size=2,
+            model_name="model",
+            learning_rate=1.41e-5,
+        )
+
+        from datasets import load_dataset
+
+        self.ppo_trainer = PPOTrainer(
+            model=self.model,
+            config=ppo_config,
+            tokenizer=self.tokenizer,
+        )
 
     def train_ppo_json(self, queries: list, responses: list, scores: list):
         queries = self.encode_jsons(queries)[0:2]
@@ -142,7 +136,6 @@ class HfAgent:
         print(stats)
 
 
-        
     def prompt(self, message: str, is_error = False, is_new_round = False):
         """
         Adds a user message to the conversation history and generates a response.
