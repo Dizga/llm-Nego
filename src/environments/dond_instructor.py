@@ -12,7 +12,7 @@ class DondInstructor():
                  max_retries,
                  proposal_file, 
                  dond_game:DondGame, 
-                 dond_player, 
+                 agent, 
                  player_type="p0"):
         """
         The Instructor acts as a middle-man between the game and a LLM player.
@@ -22,7 +22,7 @@ class DondInstructor():
             game_intro_file (str): Path to the file containing game introduction.
             chain_of_thought_file (str): Path to the file containing chain of thought instructions.
             dond_game (DoND): The DoND game instance.
-            dond_player (NegoAgent): The LLM player instance.
+            agent (NegoAgent): The LLM player instance.
             player_type (str): The type of player, either "p0" or "p1".
         """
         self.first_turn = True
@@ -40,7 +40,7 @@ class DondInstructor():
         
         self.max_retries = max_retries
         self.dond_game = dond_game
-        self.dond_player = dond_player
+        self.agent = agent
         self.player_type = player_type
         self.other_has_proposed = False # whether the other player has made a proposal
 
@@ -64,7 +64,7 @@ class DondInstructor():
         user_message = self.get_usr_message(state)
 
         # Get response from the model
-        response = self.dond_player.prompt(user_message, is_new_round=self.first_turn) # TODO: is_new_round should be is_new_round
+        response = self.agent.prompt(user_message, is_new_round=self.first_turn) # TODO: is_new_round should be is_new_round
 
         # Validate the response from the model
         valid_response, error_message = self.validate(response)
@@ -74,7 +74,7 @@ class DondInstructor():
         retries = 0
         while retries < self.max_retries:
             if valid_response: break
-            response = self.dond_player.prompt(error_message, is_error=True)
+            response = self.agent.prompt(error_message, is_error=True)
             valid_response, error_message = self.validate(response)
             retries += 1
 
@@ -224,9 +224,9 @@ class DondInstructor():
             list: The message history before resetting.
         """
         self.new_round()
-        history = self.dond_player.history
-        self.dond_player.reset_messages()
+        history = self.agent.history
+        self.agent.reset_messages()
         return history
     
     def get_history(self):
-        return self.dond_player.history
+        return self.agent.history

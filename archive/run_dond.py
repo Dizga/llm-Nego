@@ -55,8 +55,8 @@ class DoNDTrainer(TwoPlayerNegotiationTrainer):
         p1_filtered_files = [self.logger.it_folder + '/' + element for element in filtered_p1['p1_file'].tolist()]
         p0_filtered_jsons = [json.load(open(file_path, 'r')) for file_path in p0_filtered_files]
         p1_filtered_jsons = [json.load(open(file_path, 'r')) for file_path in p1_filtered_files]
-        self.instructor_0.dond_player.train(p0_filtered_jsons)
-        self.instructor_1.dond_player.train(p1_filtered_jsons)
+        self.instructor_0.agent.train(p0_filtered_jsons)
+        self.instructor_1.agent.train(p1_filtered_jsons)
 
 @hydra.main(config_path="../conf", config_name="config")
 def run_dond(cfg):
@@ -80,7 +80,7 @@ def run_dond(cfg):
         chain_of_thought_file=cfg.p0.chain_of_thought,
         proposal_file=cfg.p0.proposal_file,
         dond_game=game,
-        dond_player=agent_0,
+        agent=agent_0,
         player_type="p0"
     )
 
@@ -95,7 +95,7 @@ def run_dond(cfg):
         chain_of_thought_file=cfg.p1.chain_of_thought,
         proposal_file=cfg.p0.proposal_file,
         dond_game=game,
-        dond_player=agent_1,
+        agent=agent_1,
         player_type="p1"
     )
 

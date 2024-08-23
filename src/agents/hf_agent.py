@@ -40,7 +40,7 @@ class HfAgent:
                       "gate_proj", "up_proj", "down_proj"]
         )
 
-        if model_name is not "shared":
+        if model_name != "shared":
             self.model = AutoModelForCausalLMWithValueHead.from_pretrained(
                 model_name,
                 torch_dtype="auto",
@@ -110,10 +110,11 @@ class HfAgent:
             encoded.append(e.input_ids.squeeze())
         return encoded  # Stack the tensors into a single batch tensor
     
-    def init_ppo_trainer(self, nb_epochs, batch_size):
+    def init_ppo_trainer(self, batch_size):
 
         ppo_config = PPOConfig(
-            batch_size=2,
+            batch_size=batch_size,
+            mini_batch_size=batch_size,
             model_name="model",
             learning_rate=1.41e-5,
         )

@@ -17,33 +17,23 @@ from agents.oai_agent import OaiAgent
 
 class DondIterationRunner:
     def __init__(self, 
-                 iterations_per_run, 
                  games_per_iteration, 
                  game: DondGame, 
-                 train_type: str,
                  instructor_0: DondInstructor, 
                  instructor_1: DondInstructor, 
                  logger: DondLogger,
                  ):
 
-        self.iterations_per_run = iterations_per_run
         self.games_per_iteration = games_per_iteration
         self.game = game
         self.instructor_0 = instructor_0
         self.instructor_1 = instructor_1
         self.logger = logger
-        self.train_type = train_type
 
-    def run_iterations(self):
-        for _ in range(self.iterations_per_run):
-            folder_path = self.logger.new_iteration()
-            for _ in range(self.games_per_iteration):
-                self.run_game()
-            if self.train_type == "ppo":
-                self.train_agents_ppo(folder_path)
-            else:
-                self.train_agents_bc(folder_path)
-
+    def run_iteration(self):
+        self.logger.new_iteration()
+        for _ in range(self.games_per_iteration):
+            self.run_game()
 
     def run_game(self):
         self.logger.log_info("Game started.")

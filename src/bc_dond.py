@@ -74,14 +74,14 @@ class BcDondTrainer:
         self.logger.log_info("PPO training started.")
         
         # Train player 0
-        self.instructor_0.dond_player.init_ppo_trainer()
+        self.instructor_0.agent.init_ppo_trainer()
         queries, responses, scores = self.logger.extract_hf_ppo_dataset(folder_path, p0=True)
-        self.instructor_0.dond_player.train_ppo_json(queries, responses, scores)
+        self.instructor_0.agent.train_ppo_json(queries, responses, scores)
 
         # Train player 1
-        self.instructor_1.dond_player.init_ppo_trainer()
+        self.instructor_1.agent.init_ppo_trainer()
         queries, responses, scores = self.logger.extract_hf_ppo_dataset(folder_path, p0=False)
-        self.instructor_1.dond_player.train_ppo_json(queries, responses, scores)
+        self.instructor_1.agent.train_ppo_json(queries, responses, scores)
 
         self.logger.log_info("PPO training ended.")
 
@@ -99,8 +99,8 @@ class BcDondTrainer:
         p1_filtered_files = [self.logger.it_folder + '/' + element for element in filtered_p1['p1_file'].tolist()]
         p0_filtered_jsons = [json.load(open(file_path, 'r')) for file_path in p0_filtered_files]
         p1_filtered_jsons = [json.load(open(file_path, 'r')) for file_path in p1_filtered_files]
-        self.instructor_0.dond_player.train(p0_filtered_jsons)
-        self.instructor_1.dond_player.train(p1_filtered_jsons)
+        self.instructor_0.agent.train(p0_filtered_jsons)
+        self.instructor_1.agent.train(p1_filtered_jsons)
 
 
 
@@ -124,7 +124,7 @@ def run_bc_dond(cfg): # TODO: change name
     elif cfg.players.p0.type == "oai": agent_0 = HfAgent(**cfg.players.p0.agent_args)
     instructor_0 = DondInstructor(
         **cfg.players.p0.instructor_args, dond_game=game,
-        dond_player=agent_0, player_type="p0"
+        agent=agent_0, player_type="p0"
     )
 
     # Get player/instructor 1
@@ -136,7 +136,7 @@ def run_bc_dond(cfg): # TODO: change name
 
     instructor_1 = DondInstructor(
         **cfg.players.p0.instructor_args, dond_game=game,
-        dond_player=agent_1, player_type="p1"
+        agent=agent_1, player_type="p1"
     )
 
     # Start training

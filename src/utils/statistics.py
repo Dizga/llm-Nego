@@ -34,6 +34,7 @@ def log_itr_stats(self):
     """
     Logs statistics for the current iteration and saves them to a CSV file.
     """
+    
     # self.set_itr_stats()
     # iteration = self.iteration_stats['Iteration']
 

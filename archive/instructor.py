@@ -15,7 +15,7 @@ class Instructor:
         pass
 
 class DoNDInstructor(Instructor):
-    def __init__(self, game_intro_file, chain_of_thought_file, proposal_file, dond_game:DoND, dond_player:NegoAgent, player_type="p0"):
+    def __init__(self, game_intro_file, chain_of_thought_file, proposal_file, dond_game:DoND, agent:NegoAgent, player_type="p0"):
         """
         Initializes the DoNDInstructor.
 
@@ -23,7 +23,7 @@ class DoNDInstructor(Instructor):
             game_intro_file (str): Path to the file containing game introduction.
             chain_of_thought_file (str): Path to the file containing chain of thought instructions.
             dond_game (DoND): The DoND game instance.
-            dond_player (NegoAgent): The LLM player instance.
+            agent (NegoAgent): The LLM player instance.
             player_type (str): The type of player, either "p0" or "p1".
         """
         self.first_turn = True
@@ -40,7 +40,7 @@ class DoNDInstructor(Instructor):
                 self.chain_of_thought = file.read()
         
         self.dond_game = dond_game
-        self.dond_player = dond_player
+        self.agent = agent
         self.player_type = player_type
         self.other_has_proposed = False # whether the other player has made a proposal
 
@@ -56,7 +56,7 @@ class DoNDInstructor(Instructor):
             return False
         
         user_message = self.get_usr_message(state)
-        response = self.dond_player.prompt(user_message)
+        response = self.agent.prompt(user_message)
 
         valid_response, error_message = self.validate(response)
 
@@ -65,7 +65,7 @@ class DoNDInstructor(Instructor):
         while retries < max_retries:
             if valid_response:
                 break
-            response = self.dond_player.prompt(error_message)
+            response = self.agent.prompt(error_message)
             valid_response, error_message = self.validate(response)
             retries += 1
 
@@ -197,9 +197,9 @@ class DoNDInstructor(Instructor):
         """
         self.other_has_proposed = False
         self.first_turn = True
-        history = self.dond_player.history
-        self.dond_player.reset_messages()
+        history = self.agent.history
+        self.agent.reset_messages()
         return history
     
     def get_history(self):
-        return self.dond_player.history
+        return self.agent.history

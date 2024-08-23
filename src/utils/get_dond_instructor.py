@@ -15,17 +15,18 @@ from agents.dummy_hf_agent import DummyHfAgent
 from agents.oai_agent import OaiAgent
 
 
-def get_dond_player(
+def get_agent(
         dond_game,
         agent_args,
+        type,
         player_args
     ):
-    if type == "hf": agent_0 = HfAgent(**agent_args)
-    if type == "dummy_hf": agent_0 = DummyHfAgent(**agent_args)
-    elif type == "oai": agent_0 = HfAgent(**agent_args)
+    if type == "hf": agent = HfAgent(**agent_args)
+    elif type == "dummy_hf": agent = DummyHfAgent(**agent_args)
+    elif type == "oai": agent = OaiAgent(**agent_args)
     instructor = DondInstructor(
         **player_args, 
         dond_game=dond_game,
-        dond_player=agent_0, 
+        agent=agent, 
     )
-    return instructor()
+    return instructor

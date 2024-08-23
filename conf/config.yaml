@@ -5,12 +5,9 @@ hydra:
 
 cuda: true
 
-training:
-  iterations_per_run: 2
+playing:
+  nb_iterations: 2
   games_per_iteration: 2
-  train_type: "ppo"
-  ppo_args:
-    nb_epochs: 10
 
 game:
   max_turns: 2
@@ -19,34 +16,34 @@ game:
   setups_file: src/environments/dond_setups.txt
   nb_rounds: 2
 
-shared_model: True
 
 p0:
-  instructor_args:
+  player_args:
     game_intro_file: "src/prompts/coop/rules.txt"
     chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
     max_retries: 2
     proposal_file: "src/prompts/coop/proposal.txt"
-  
+  type: dummy_hf
   agent_args:
-    type: dummy_hf
     name: "agent_0"
     device: cuda
     tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
     model_name: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-
 p1:
-
-  instructor_args:
+  player_args:
     game_intro_file: "src/prompts/coop/rules.txt"
     chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
     max_retries: 2
     proposal_file: "src/prompts/coop/proposal.txt"
-  
+  type: dummy_hf
   agent_args:
-    type: dummy_hf
     name: "agent_1"
     device: cuda
     tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-    model_name: "meta-llama/Meta-Llama-3.1-8B-Instruct" # use "shared" if inherit player 0 model
+    model_name: "shared" # use "shared" if inherit player 0 model
     
+training:
+  train_type: "ppo"
+  nb_epochs: 2
+  ppo_trainer_args:
+    batch_size: 2

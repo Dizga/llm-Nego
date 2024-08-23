@@ -5,6 +5,7 @@ from datetime import datetime
 import os
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import OmegaConf
+import pandas as pd
 
 # local imports
 from utils.dond_logger import DondLogger
@@ -16,7 +17,7 @@ from agents.oai_agent import OaiAgent
 
 
 
-def extract_hf_ppo_dataset(self, folder_path: str, p0=True, full_context=True):
+def extract_hf_ppo_dataset(folder_path: str, p0=True, full_context=True):
         """
         Args:
             file (str): Location of the csv / dataframe for the iteration
