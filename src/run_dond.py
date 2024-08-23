@@ -17,7 +17,7 @@ class DondTrainer:
         self.train_type = train_type
 
     def play_games(self, iterations, games_per_iteration):
-        for iteration in range(iterations):
+        for _ in range(iterations):
             folder_path = self.logger.new_iteration()
             for _ in range(games_per_iteration):
                 self._play_single_game()
@@ -28,6 +28,7 @@ class DondTrainer:
         self.logger.log_info("Game started.")
         self.logger.new_game()
         game_state = self.game.reset()
+        self._start_new_game()
         player_id = 0
 
         while not game_state['game_ended']:
@@ -41,6 +42,10 @@ class DondTrainer:
                              self.instructors[0].get_history(), 
                              self.instructors[1].get_history())
         self.logger.log_info("Game completed.")
+
+    def _start_new_game(self):
+        for instructor in self.instructors:
+            instructor.new_game()
 
     def _start_new_round(self):
         for instructor in self.instructors:
@@ -71,10 +76,10 @@ def setup_instructors(cfg, game):
         elif player_cfg.type == "dummy_hf":
             agent = DummyHfAgent(**player_cfg.agent_args)
         elif player_cfg.type == "oai":
-            agent = OaiAgent(**player_cfg.agent_args)
+            agent = OaiAgent(player_cfg.agent_args.model_name)
         agents.append(agent)
     
-    if cfg.players.shared_model:
+    if cfg.players.shared_model and player_cfg.type != "oai":
         agents[1].model = agents[0].model
 
     instructors = [
