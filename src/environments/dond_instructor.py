@@ -206,7 +206,7 @@ class DondInstructor():
         Returns:
             tuple: A tuple containing a boolean indicating if it's a proposal and the extracted content.
         """
-        pattern = r'<message>(.*?)</message>|<propose>\{\s*"i_take"\s*:\s*(.*?)\s*,\s*"other_player_gets"\s*:\s*(.*?)\s*\}</propose>'
+        pattern = r'<message>(.*?)</message>|<propose>\s*\{\s*"i_take"\s*:\s*(.*?)\s*,\s*"other_player_gets"\s*:\s*(.*?)\s*\}\s*</propose>'
         match = re.search(pattern, message, re.DOTALL)
 
         if match.group(2):

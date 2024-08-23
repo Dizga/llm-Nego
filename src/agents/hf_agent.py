@@ -77,8 +77,8 @@ class HfAgent:
 
     def init_ppo_trainer(self):
         ppo_config = PPOConfig(
-            batch_size=4,
-            mini_batch_size=4,
+            batch_size=2,
+            mini_batch_size=2,
             model_name="model",
             learning_rate=1.41e-5,
         )
@@ -130,9 +130,14 @@ class HfAgent:
         responses = self.encode_jsons(responses)
         scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in scores] # Ensure scores are a tensor
 
-        # Ensure that tensors are properly batched
-        stats = self.ppo_trainer.step(queries=queries, responses=responses, scores=scores)
-        print(stats)
+        for start_idx in range(0, len(queries), self.ppo_trainer.config.batch_size):
+            end_idx = start_idx + self.ppo_trainer.config.batch_size
+            queries_batch = queries[start_idx:end_idx]
+            responses_batch = responses[start_idx:end_idx]
+            scores_batch = scores[start_idx:end_idx]
+
+            stats = self.ppo_trainer.step(queries=queries_batch, responses=responses_batch, scores=scores_batch)
+            print(stats)
 
 
         

@@ -9,6 +9,8 @@ training:
   iterations_per_run: 2
   games_per_iteration: 2
   train_type: "ppo"
+  skip_game_play: False
+  load_folder: ""
 
 game:
   max_turns: 2
