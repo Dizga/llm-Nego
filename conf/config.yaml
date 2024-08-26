@@ -6,20 +6,20 @@ hydra:
 cuda: true
 
 playing:
-  nb_iterations: 2
-  games_per_iteration: 2
+  nb_iterations: 10
+  games_per_iteration: 10
 
 game:
-  max_turns: 2
+  max_turns: 10
   mode: coop # coop
   setup: random_read
   setups_file: src/environments/dond_setups.txt
-  nb_rounds: 2
+  nb_rounds: 1
 
 
 player_0:
 
-  type: dummy_hf
+  type: hf
 
   player_args:
     game_intro_file: "src/prompts/coop/rules.txt"
@@ -63,7 +63,7 @@ player_0:
 
 player_1:
 
-  type: dummy_hf
+  type: "same_as_player_0"
 
   player_args:
     game_intro_file: "same_as_player_0"
