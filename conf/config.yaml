@@ -31,14 +31,13 @@ player_0:
     name: "agent_0"
     device: cuda
     tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-    share_model: False
+    inherit_model: False
     
     model_args: 
-        model_name: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+        pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
         torch_dtype: "auto"
         device_map: "auto"
         trust_remote_code: True
-        peft_config: self.lora_config
 
     lora_args:
         task_type: TaskType.CAUSAL_LM
@@ -50,7 +49,7 @@ player_0:
     model_training_args:
       output_dir: out_folder
       num_train_epochs: 1
-      fplayer_16: True
+      fp16: True
       per_device_train_batch_size: 3
       learning_rate: 5e-5
       weight_decay: 0.01
@@ -76,7 +75,7 @@ player_1:
     name: "agent_1"
     device: "same_as_player_0"
     tokenizer: "same_as_player_0"
-    share_model: True
+    inherit_model: True
     model_args: "same_as_player_0"
     lora_args: "same_as_player_0"
     model_training_args: "same_as_player_0"
@@ -85,4 +84,10 @@ training:
   train_type: "ppo"
   nb_epochs: 2
   ppo_trainer_args:
-    batch_size: 2
+    batch_size: "auto"
+    mini_batch_size: 2
+    model_name: "model"
+    learning_rate: 1.41e-5
+
+
+

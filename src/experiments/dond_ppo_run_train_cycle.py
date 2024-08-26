@@ -34,10 +34,10 @@ def dond_ppo_run_train_cycle(cfg):
     dond_game = DondGame(**cfg.game)
 
     player_0 = get_agent(dond_game, **cfg.player_0)
-    inherit_args(cfg.player_1, cfg.player_0, "same_as_player_0")
+    inherit_args(cfg.player_0, cfg.player_1, "same_as_player_0")
     player_1 = get_agent(dond_game, **cfg.player_1)
 
-    if cfg.player_1.agent_args.model_name == "shared": 
+    if cfg.player_1.agent_args.inherit_model: 
         player_1.agent.model = player_0.agent.model
 
     iteration_runner = DondIterationRunner(

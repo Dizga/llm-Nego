@@ -37,12 +37,11 @@ def train_agent_ppo(
     responses = responses + responses_player_1
     scores = scores + scores_player_1
 
+    bs = len(queries) - (len(queries) % ppo_trainer_args.mini_batch_size)
+    queries, responses, scores = queries[:bs], responses[:bs], scores[:bs] 
+    ppo_trainer_args.batch_size = bs
+
     # Initiate training 
     for _ in range(nb_epochs):
-        bs = ppo_trainer_args.batch_size
-        agent.init_ppo_trainer(batch_size=bs)
-
-        for xb in zip(batch(queries, bs), batch(responses, bs), batch(scores, bs)):
-            b_queries, b_responses, b_scores = xb
-            if len(b_queries) != bs: break
-            agent.train_ppo_json(queries=b_queries, responses=b_responses, scores=b_scores)
+        agent.init_ppo_trainer(ppo_trainer_args)
+        agent.train_ppo_json(queries=queries, responses=responses, scores=scores)

@@ -13,7 +13,7 @@ class HfAgent:
                  name="agent",
                  device="cuda",  # cuda or cpu
                  tokenizer="microsoft/Phi-3-mini-128k-instruct",
-                 share_model=False,
+                 inherit_model=False,
                  model_args=None,
                  lora_args= None,
                  model_training_args= None,
@@ -36,8 +36,8 @@ class HfAgent:
         # Training arguments and model configuration
         self.lora_config = LoraConfig(**lora_args)
 
-        if not share_model:
-            self.model = AutoModelForCausalLMWithValueHead.from_pretrained(**model_args)
+        if not inherit_model:
+            self.model = AutoModelForCausalLMWithValueHead.from_pretrained(**model_args, peft_config=self.lora_config)
             self.model.gradient_checkpointing_enable()
 
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)
@@ -86,14 +86,9 @@ class HfAgent:
             encoded.append(e.input_ids.squeeze())
         return encoded  # Stack the tensors into a single batch tensor
     
-    def init_ppo_trainer(self, batch_size):
+    def init_ppo_trainer(self, ppo_training_args):
 
-        ppo_config = PPOConfig(
-            batch_size=batch_size,
-            mini_batch_size=batch_size,
-            model_name="model",
-            learning_rate=1.41e-5,
-        )
+        ppo_config = PPOConfig(**ppo_training_args)
 
         from datasets import load_dataset
 
@@ -104,13 +99,12 @@ class HfAgent:
         )
 
     def train_ppo_json(self, queries: list, responses: list, scores: list):
-        queries = self.encode_jsons(queries)[0:2]
-        responses = self.encode_jsons(responses)[0:2]
-        scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in scores][0:2] # Ensure scores are a tensor
+        queries = self.encode_jsons(queries)
+        responses = self.encode_jsons(responses)
+        scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in scores]
 
         # Ensure that tensors are properly batched
         stats = self.ppo_trainer.step(queries=queries, responses=responses, scores=scores)
-        print(stats)
 
 
     def prompt(self, message: str, is_error = False, is_new_round = False):

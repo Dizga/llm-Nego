@@ -8,7 +8,7 @@ import sys
 import os
 
 from experiments.dond_ppo_run_train_cycle import dond_ppo_run_train_cycle
-
+from experiments.bc_dond import run_bc_dond
 
 @hydra.main(config_path="../conf", config_name="config")
 def main(cfg):
