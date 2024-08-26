@@ -6,6 +6,7 @@ import openai
 from agents.hf_agent import HfAgent
 
 class OaiAgent(HfAgent):
+    
     def __init__(self,
                  name="openai_agent",
                  api_key="",

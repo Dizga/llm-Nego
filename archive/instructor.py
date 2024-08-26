@@ -4,27 +4,27 @@ import regex as re
 from DoND import DoND
 from agents import NegoAgent
 
-class Instructor:
+class Player:
     """
-    The Instructor acts as a middle-man between the game and a LLM player.
+    The Player acts as a middle-man between the game and a LLM player.
     """
     def __init__(self):
         """
-        Initializes the Instructor.
+        Initializes the Player.
         """
         pass
 
-class DoNDInstructor(Instructor):
-    def __init__(self, game_intro_file, chain_of_thought_file, proposal_file, dond_game:DoND, agent:NegoAgent, player_type="p0"):
+class DoNDPlayer(Player):
+    def __init__(self, game_intro_file, chain_of_thought_file, proposal_file, dond_game:DoND, agent:NegoAgent, player_type="player_0"):
         """
-        Initializes the DoNDInstructor.
+        Initializes the DoNDPlayer.
 
         Args:
             game_intro_file (str): Path to the file containing game introduction.
             chain_of_thought_file (str): Path to the file containing chain of thought instructions.
             dond_game (DoND): The DoND game instance.
             agent (NegoAgent): The LLM player instance.
-            player_type (str): The type of player, either "p0" or "p1".
+            player_type (str): The type of player, either "player_0" or "player_1".
         """
         self.first_turn = True
         

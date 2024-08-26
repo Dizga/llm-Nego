@@ -5,19 +5,21 @@ from datetime import datetime
 import os
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import OmegaConf
+import os
+
 
 # local imports
 from utils.dond_logger import DondLogger
 from utils.dond_iteration_runner import DondIterationRunner
-
 from environments.dond_game import DondGame
-from environments.dond_instructor import DondInstructor
+from environments.dond_player import DondPlayer
 from agents.hf_agent import HfAgent
 from agents.dummy_hf_agent import DummyHfAgent
 from agents.oai_agent import OaiAgent
-from utils.get_dond_instructor import get_agent
+from utils.get_dond_player import get_agent
 from utils.statistics import *
 from utils.train_ppo_agent import train_agent_ppo
+from utils.inherit_args import inherit_args
 
 
 def dond_ppo_run_train_cycle(cfg): 
@@ -31,17 +33,18 @@ def dond_ppo_run_train_cycle(cfg):
 
     dond_game = DondGame(**cfg.game)
 
-    player_0 = get_agent(dond_game, **cfg.p0)
-    player_1 = get_agent(dond_game, **cfg.p1)
+    player_0 = get_agent(dond_game, **cfg.player_0)
+    inherit_args(cfg.player_1, cfg.player_0, "same_as_player_0")
+    player_1 = get_agent(dond_game, **cfg.player_1)
 
-    if cfg.p1.agent_args.model_name == "shared": 
+    if cfg.player_1.agent_args.model_name == "shared": 
         player_1.agent.model = player_0.agent.model
 
     iteration_runner = DondIterationRunner(
         cfg.playing.games_per_iteration, 
         game=dond_game,
-        instructor_0=player_0,
-        instructor_1=player_1,
+        player_0=player_0,
+        player_1=player_1,
         logger=logger
     )
 
@@ -62,10 +65,4 @@ def dond_ppo_run_train_cycle(cfg):
         logger.log_info("Ended PPO training.")
 
 
-@hydra.main(config_path="../conf", config_name="config")
-def main(cfg):
-    if os.path.exists('conf/local.yaml'):
-        local_cfg = OmegaConf.load('conf/local.yaml')
-        cfg = OmegaConf.merge(cfg, local_cfg)
-    dond_ppo_run_train_cycle(cfg)
-if __name__ == "__main__": main()
+

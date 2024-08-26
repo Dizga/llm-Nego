@@ -8,11 +8,15 @@ from peft import get_peft_model, LoraConfig, TaskType
 import os
 
 class HfAgent:
+    
     def __init__(self,
                  name="agent",
                  device="cuda",  # cuda or cpu
-                 model_name="microsoft/Phi-3-mini-128k-instruct",
                  tokenizer="microsoft/Phi-3-mini-128k-instruct",
+                 share_model=False,
+                 model_args=None,
+                 lora_args= None,
+                 model_training_args= None,
                  out_folder="checkpoints",
                  ) -> None:
         """
@@ -30,24 +34,10 @@ class HfAgent:
         self.history = []
 
         # Training arguments and model configuration
+        self.lora_config = LoraConfig(**lora_args)
 
-        self.lora_config = LoraConfig(
-            task_type=TaskType.CAUSAL_LM,
-            r=16,
-            lora_alpha=32,
-            lora_dropout=0.1,
-            target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
-                      "gate_proj", "up_proj", "down_proj"]
-        )
-
-        if model_name != "shared":
-            self.model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                model_name,
-                torch_dtype="auto",
-                device_map="auto",
-                trust_remote_code=True,
-                peft_config=self.lora_config
-            )
+        if not share_model:
+            self.model = AutoModelForCausalLMWithValueHead.from_pretrained(**model_args)
             self.model.gradient_checkpointing_enable()
 
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)
@@ -58,21 +48,7 @@ class HfAgent:
 
 
         # Set trainin arguments
-        self.training_args = TrainingArguments(
-            output_dir=out_folder,
-            num_train_epochs=1,
-            fp16=True,
-            per_device_train_batch_size=3,
-            learning_rate=5e-5,
-            weight_decay=0.01,
-            logging_dir=os.path.join(out_folder, 'models', 'logs'),
-            logging_steps=10,
-            save_total_limit=2,
-            save_steps=500,
-            evaluation_strategy="steps",
-            eval_steps=500,
-            load_best_model_at_end=True
-        )
+        self.training_args = TrainingArguments(**model_training_args)
 
 
     def train(self, train_data):

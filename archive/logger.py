@@ -20,26 +20,26 @@ class Logger:
         self.datenow = datetime.now().strftime('%Y_%m_%d_%H_%M')
         
         columns_metrics = [
-            'p0_score',
-            'p1_score',
+            'player_0_score',
+            'player_1_score',
             'quantities',
-            'p0_values',
-            'p1_values',
-            'p0_proposal',
-            'p1_proposal',
+            'player_0_values',
+            'player_1_values',
+            'player_0_proposal',
+            'player_1_proposal',
             'reach_agreement',
-            'p0_file',
-            'p1_file'
+            'player_0_file',
+            'player_1_file'
         ]
         self.metrics = pd.DataFrame(columns=columns_metrics)
         
         columns_statistics = [
             "Iteration",
             "Agreement Percentage",
-            "Score Variance P0",
-            "Score Variance P1",
-            "Mean Score P0",
-            "Mean Score P1"
+            "Score Variance player_0",
+            "Score Variance player_1",
+            "Mean Score player_0",
+            "Mean Score player_1"
         ]
         self.statistics = pd.DataFrame(columns=columns_statistics)
         self.statistics_file = os.path.join(self.run_dir, "stats.csv")
@@ -69,10 +69,10 @@ class Logger:
         self.iteration_stats = {
             "Iteration": self.iteration,
             "Agreement Percentage": self.metrics['reach_agreement'].mean() * 100 if not self.metrics['reach_agreement'].empty else 0,
-            "Score Variance P0": self.metrics['p0_score'].var() if not self.metrics['p0_score'].empty else 0,
-            "Score Variance P1": self.metrics['p1_score'].var() if not self.metrics['p1_score'].empty else 0,
-            "Mean Score P0": self.metrics['p0_score'].mean() if not self.metrics['p0_score'].empty else 0,
-            "Mean Score P1": self.metrics['p1_score'].mean() if not self.metrics['p1_score'].empty else 0
+            "Score Variance player_0": self.metrics['player_0_score'].var() if not self.metrics['player_0_score'].empty else 0,
+            "Score Variance player_1": self.metrics['player_1_score'].var() if not self.metrics['player_1_score'].empty else 0,
+            "Mean Score player_0": self.metrics['player_0_score'].mean() if not self.metrics['player_0_score'].empty else 0,
+            "Mean Score player_1": self.metrics['player_1_score'].mean() if not self.metrics['player_1_score'].empty else 0
         }
         return self.iteration_stats
 
@@ -87,7 +87,7 @@ class Logger:
     def new_game(self):
         self.game_nb+=1
 
-    def log_game(self, game: dict, p0_history, p1_history):
+    def log_game(self, game: dict, player_0_history, player_1_history):
         """
         Logs game data, saves player histories, and updates metrics.
 
@@ -95,19 +95,19 @@ class Logger:
             game (dict): A dictionary containing game data.
         """
 
-        p0_game_name = f"p0_iter_{self.iteration:02d}_game_{self.game_nb:04d}.json"
-        p1_game_name = f"p1_iter_{self.iteration:02d}_game_{self.game_nb:04d}.json"
+        player_0_game_name = f"player_0_iter_{self.iteration:02d}_game_{self.game_nb:04d}.json"
+        player_1_game_name = f"player_1_iter_{self.iteration:02d}_game_{self.game_nb:04d}.json"
 
         os.makedirs(self.run_dir, exist_ok=True)
 
-        with open(os.path.join(self.it_folder, p0_game_name), 'w') as f:
-            json.dump(p0_history, f, indent=4)
+        with open(os.path.join(self.it_folder, player_0_game_name), 'w') as f:
+            json.dump(player_0_history, f, indent=4)
 
-        with open(os.path.join(self.it_folder, p1_game_name), 'w') as f:
-            json.dump(p1_history, f, indent=4)
+        with open(os.path.join(self.it_folder, player_1_game_name), 'w') as f:
+            json.dump(player_1_history, f, indent=4)
 
-        game['p0_file'] = p0_game_name
-        game['p1_file'] = p1_game_name
+        game['player_0_file'] = player_0_game_name
+        game['player_1_file'] = player_1_game_name
 
         # Log metrics
         self.metrics = pd.concat([self.metrics, pd.DataFrame([game])], ignore_index=True)

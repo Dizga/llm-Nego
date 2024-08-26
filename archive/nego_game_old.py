@@ -107,7 +107,7 @@ def chat_with_gpt3(messages):
     )
     return response.choices[0].message.content
 
-p1_messages = [{"role": "user", "content": instruction_prompt}]
+player_1_messages = [{"role": "user", "content": instruction_prompt}]
 p2_messages = [{"role": "system", "content": instruction_prompt}]
 messages = {
     1: [{"role": "user", "content": instruction_prompt}],
@@ -162,38 +162,38 @@ current_proposal = None
 for turn in range(1, num_turns + 1):
     player_2 = False
     prompt = generate_prompt(turn, state["item_quantities"], state["player1_utility_values"], state["player2_utility_values"], state["opponent_proposal"])
-    p1_messages.append({"role": "user", "content": prompt}) 
+    player_1_messages.append({"role": "user", "content": prompt}) 
 
-    p1_response = chat_with_local_llm(p1_messages)
-    p1_messages.append({"role": "assistant", "content": p1_response})
-    p1_messages.append({"role": "user", "content": prompt_parsable_output})
+    player_1_response = chat_with_local_llm(player_1_messages)
+    player_1_messages.append({"role": "assistant", "content": player_1_response})
+    player_1_messages.append({"role": "user", "content": prompt_parsable_output})
 
     retries = 0
     while retries < max_retries:
-        p1_response_json = chat_with_local_llm(p1_messages)
-        p1_messages.append({"role": "assistant", "content": p1_response_json})
+        player_1_response_json = chat_with_local_llm(player_1_messages)
+        player_1_messages.append({"role": "assistant", "content": player_1_response_json})
 
         try:
-            p1_proposal = json.loads(p1_response_json)
+            player_1_proposal = json.loads(player_1_response_json)
             break
         except json.JSONDecodeError:
             retries += 1
             print(f"Error decoding JSON from Player {current_player} response. Retry {retries} of {max_retries}.")
-            p1_messages.append({"role": "user", "content": "Invalid response. Please try again and return a valid JSON string."})
+            player_1_messages.append({"role": "user", "content": "Invalid response. Please try again and return a valid JSON string."})
     
     if retries == max_retries:
         print("Error decoding JSON from local LLM response.")
-        print(p1_response_json)
+        print(player_1_response_json)
         break
 
-    if p1_proposal["accept_opponent_proposal"]:
+    if player_1_proposal["accept_opponent_proposal"]:
         current_proposal = p2_proposal
         print("Game ended with acceptance.")
         print(p2_proposal)
         break
 
     player_2 = True
-    prompt = generate_prompt(turn, state["item_quantities"], state["player2_utility_values"], state["player1_utility_values"], p1_proposal["my_proposal"])
+    prompt = generate_prompt(turn, state["item_quantities"], state["player2_utility_values"], state["player1_utility_values"], player_1_proposal["my_proposal"])
     p2_messages.append({"role": "user", "content": prompt})
 
     chatgpt_response = chat_with_gpt3(p2_messages)
@@ -210,15 +210,15 @@ for turn in range(1, num_turns + 1):
         break
 
     if p2_proposal["accept_opponent_proposal"]:
-        current_proposal = p1_proposal
+        current_proposal = player_1_proposal
         print("Game ended with acceptance.")
-        print(p1_proposal)
+        print(player_1_proposal)
         break
 
     state["opponent_proposal"] = p2_proposal["my_proposal"]
 
     print(f"Turn {turn} ended.")
-    print(f"Local Model Response: {p1_proposal}")
+    print(f"Local Model Response: {player_1_proposal}")
     print(f"ChatGPT Response: {p2_proposal}")
 
 print("Game finished.")

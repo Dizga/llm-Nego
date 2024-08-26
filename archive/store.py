@@ -1,16 +1,16 @@
 import json
 import pandas as pd
   
-def add_run_to_store(p1_type, p2_type, p1_convo, p2_convo, p1_reward, p2_reward, p1_behavior, p2_behavior, propositions, state_type):
+def add_run_to_store(player_1_type, p2_type, player_1_convo, p2_convo, player_1_reward, p2_reward, player_1_behavior, p2_behavior, propositions, state_type):
     runs_df = load_dataframe_from_hdf()
     run_data = {
-        "P1 type": p1_type,
+        "player_1 type": player_1_type,
         "P2 type": p2_type,
-        "P1 Convo": p1_convo,
+        "player_1 Convo": player_1_convo,
         "P2 Convo": p2_convo,
-        "P1 reward": p1_reward,
+        "player_1 reward": player_1_reward,
         "P2 reward": p2_reward,
-        "P1 behavior": p1_behavior.value,
+        "player_1 behavior": player_1_behavior.value,
         "P2 behavior": p2_behavior.value,
         "Propositions": propositions,
         "State type": state_type,

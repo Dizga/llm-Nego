@@ -34,9 +34,9 @@ class DondGame:
                     l = [int(item) for item in lines[i].split()]
                     l2 = [int(item) for item in lines[i+1].split()]
                     quantities = {key: value for key, value in zip(self.items, [l[0], l[2], l[4]])}
-                    p0_values = {key: value for key, value in zip(self.items, [l[1], l[3], l[5]])}
-                    p1_values = {key: value for key, value in zip(self.items, [l2[1], l2[3], l2[5]])}
-                    self.settings.append((quantities, p0_values, p1_values))
+                    player_0_values = {key: value for key, value in zip(self.items, [l[1], l[3], l[5]])}
+                    player_1_values = {key: value for key, value in zip(self.items, [l2[1], l2[3], l2[5]])}
+                    self.settings.append((quantities, player_0_values, player_1_values))
         self.nb_settings = len(self.settings)
         self.reset()
 
@@ -54,18 +54,18 @@ class DondGame:
         self.has_proposed = False
 
 
-        self.quantities, self.values_p0, self.values_p1 = self.get_new_round_data()
+        self.quantities, self.values_player_0, self.values_player_1 = self.get_new_round_data()
 
         self.reset_player_states()
         self.round_nb = 1
         self.new_round = True
         self.game_ended = False
-        self.p0_prop_history = []
-        self.p1_prop_history = []
-        self.points_p0_history = []
-        self.points_p1_history = []
-        self.values_p0_history = []
-        self.values_p1_history = []
+        self.player_0_prop_history = []
+        self.player_1_prop_history = []
+        self.points_player_0_history = []
+        self.points_player_1_history = []
+        self.values_player_0_history = []
+        self.values_player_1_history = []
         self.quantities_history = []
         self.agreement_reached_history = []
 
@@ -74,31 +74,31 @@ class DondGame:
     def get_new_round_data(self):
         if self.setup == "primitive":
             self.quantities = {key: value for key, value in zip(self.items, [5, 4, 3])}
-            self.values_p0 = {key: value for key, value in zip(self.items, [5, 4, 3])}
-            self.values_p1 = {key: value for key, value in zip(self.items, [3, 4, 5])}
+            self.values_player_0 = {key: value for key, value in zip(self.items, [5, 4, 3])}
+            self.values_player_1 = {key: value for key, value in zip(self.items, [3, 4, 5])}
 
         # Pick random trio of quantities & values from dataset
         else:
             setting_id = random.randint(0, self.nb_settings-1)
-            self.quantities, self.values_p0, self.values_p1 = self.settings[setting_id]
+            self.quantities, self.values_player_0, self.values_player_1 = self.settings[setting_id]
 
-        return self.quantities, self.values_p0, self.values_p1
+        return self.quantities, self.values_player_0, self.values_player_1
     
     def reset_player_states(self):
-        self.p0_prop = {}
-        self.p1_prop = {}
-        self.points_p0 = 0
-        self.points_p1 = 0
+        self.player_0_prop = {}
+        self.player_1_prop = {}
+        self.points_player_0 = 0
+        self.points_player_1 = 0
         self.agreement_reached = False
         self.last_message = ""
 
     def archive_player_states(self):
-        self.p0_prop_history.append(self.p0_prop)
-        self.p1_prop_history.append(self.p1_prop)
-        self.points_p0_history.append(self.points_p0)
-        self.points_p1_history.append(self.points_p1)
-        self.values_p0_history.append(self.values_p0)
-        self.values_p1_history.append(self.values_p1)
+        self.player_0_prop_history.append(self.player_0_prop)
+        self.player_1_prop_history.append(self.player_1_prop)
+        self.points_player_0_history.append(self.points_player_0)
+        self.points_player_1_history.append(self.points_player_1)
+        self.values_player_0_history.append(self.values_player_0)
+        self.values_player_1_history.append(self.values_player_1)
         self.quantities_history.append(self.quantities)
         self.agreement_reached_history.append(self.agreement_reached)
 
@@ -111,7 +111,7 @@ class DondGame:
         self.new_round = True
         if self.round_nb > self.nb_rounds:
             self.game_ended = True
-        self.quantities, self.values_p0, self.values_p1 = self.get_new_round_data()
+        self.quantities, self.values_player_0, self.values_player_1 = self.get_new_round_data()
 
     
     def step(self, output, is_proposal=False)-> bool: 
@@ -160,7 +160,7 @@ class DondGame:
         Retrieves the current state of the game.
 
         Args:
-            player (str): The player whose state is to be retrieved ('p0', 'p1', or 'current_turn').
+            player (str): The player whose state is to be retrieved ('player_0', 'player_1', or 'current_turn').
 
         Returns:
             dict: The current state of the game.
@@ -178,16 +178,16 @@ class DondGame:
             "has_proposed": self.has_proposed,
             "last_message": self.last_message
         }
-        if player == "p0":
-            out["book_val"] = self.values_p0["books"]
-            out["hat_val"] = self.values_p0["hats"]
-            out["ball_val"] = self.values_p0["balls"]
-            out["last_score"] = self.points_p0
+        if player == "player_0":
+            out["book_val"] = self.values_player_0["books"]
+            out["hat_val"] = self.values_player_0["hats"]
+            out["ball_val"] = self.values_player_0["balls"]
+            out["last_score"] = self.points_player_0
             return out
 
-        out["book_val"] = self.values_p1["books"]
-        out["hat_val"] = self.values_p1["hats"]
-        out["ball_val"] = self.values_p1["balls"]
+        out["book_val"] = self.values_player_1["books"]
+        out["hat_val"] = self.values_player_1["hats"]
+        out["ball_val"] = self.values_player_1["balls"]
         return out
 
     def verify_props_match(self):
@@ -198,7 +198,7 @@ class DondGame:
             bool: True if the proposals match, False otherwise.
         """
         for item in self.items:
-            if self.p0_prop[item] + self.p1_prop[item] != self.quantities[item]:
+            if self.player_0_prop[item] + self.player_1_prop[item] != self.quantities[item]:
                 return False
         return True
 
@@ -206,8 +206,8 @@ class DondGame:
         """
         Sets the points for both players based on their proposals.
         """
-        self.points_p0 = sum(self.values_p0[item] * self.p0_prop[item] for item in self.items)
-        self.points_p1 = sum(self.values_p1[item] * self.p1_prop[item] for item in self.items)
+        self.points_player_0 = sum(self.values_player_0[item] * self.player_0_prop[item] for item in self.items)
+        self.points_player_1 = sum(self.values_player_1[item] * self.player_1_prop[item] for item in self.items)
 
     def propose(self, proposal: list):
         """
@@ -216,10 +216,10 @@ class DondGame:
         Args:
             proposal (list): The list of proposed quantities for each item.
         """
-        if self.current_turn() == "p0":
-            self.p0_prop = proposal
+        if self.current_turn() == "player_0":
+            self.player_0_prop = proposal
         else:
-            self.p1_prop = proposal
+            self.player_1_prop = proposal
 
     def render(self):
         """
@@ -239,8 +239,8 @@ class DondGame:
 
     def export_summary(self):
         return {
-            'p0_total_reward': sum(self.points_p0_history),
-            'p1_total_reward': sum(self.points_p1_history),
+            'player_0_total_reward': sum(self.points_player_0_history),
+            'player_1_total_reward': sum(self.points_player_1_history),
         }
 
     def export_round(self, id=-1):
@@ -252,15 +252,15 @@ class DondGame:
         """
         return {
             'round_id': id,
-            'p0_score': self.points_p0_history[id],
-            'p1_score': self.points_p1_history[id],
-            'p0_return': sum(self.points_p0_history[id:]),
-            'p1_return': sum(self.points_p1_history[id:]),
+            'player_0_score': self.points_player_0_history[id],
+            'player_1_score': self.points_player_1_history[id],
+            'player_0_return': sum(self.points_player_0_history[id:]),
+            'player_1_return': sum(self.points_player_1_history[id:]),
             'quantities': self.quantities_history[id],
-            'p0_values': self.values_p0_history[id],
-            'p1_values': self.values_p1_history[id],
-            'p0_proposal': self.p0_prop_history[id],
-            'p1_proposal': self.p1_prop_history[id],
+            'player_0_values': self.values_player_0_history[id],
+            'player_1_values': self.values_player_1_history[id],
+            'player_0_proposal': self.player_0_prop_history[id],
+            'player_1_proposal': self.player_1_prop_history[id],
             'agreement_reached': self.agreement_reached_history[id],
         }
 
@@ -269,6 +269,6 @@ class DondGame:
         Determines the current player's turn.
 
         Returns:
-            str: 'p0' if it's player 0's turn, 'p1' if it's player 1's turn.
+            str: 'player_0' if it's player 0's turn, 'player_1' if it's player 1's turn.
         """
-        return "p0" if self.turn % 2 == 0 else "p1"
+        return "player_0" if self.turn % 2 == 0 else "player_1"

@@ -5,7 +5,7 @@ import regex as re
 from environments.dond_game import DondGame
 
 
-class DondInstructor():
+class DondPlayer():
     def __init__(self, 
                  game_intro_file, 
                  chain_of_thought_file, 
@@ -13,17 +13,17 @@ class DondInstructor():
                  proposal_file, 
                  dond_game:DondGame, 
                  agent, 
-                 player_type="p0"):
+                 player_type="player_0"):
         """
-        The Instructor acts as a middle-man between the game and a LLM player.
-        Initializes the DoNDInstructor.
+        The Player acts as a middle-man between the game and a LLM player.
+        Initializes the DoNDPlayer.
 
         Args:
             game_intro_file (str): Path to the file containing game introduction.
             chain_of_thought_file (str): Path to the file containing chain of thought instructions.
             dond_game (DoND): The DoND game instance.
             agent (NegoAgent): The LLM player instance.
-            player_type (str): The type of player, either "p0" or "p1".
+            player_type (str): The type of player, either "player_0" or "player_1".
         """
         self.first_turn = True
         

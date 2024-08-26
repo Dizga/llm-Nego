@@ -10,7 +10,7 @@ from omegaconf import OmegaConf
 # local imports
 from utils.dond_logger import DondLogger
 from environments.dond_game import DondGame
-from environments.dond_instructor import DondInstructor
+from environments.dond_player import DondPlayer
 from agents.hf_agent import HfAgent
 from agents.dummy_hf_agent import DummyHfAgent
 from agents.oai_agent import OaiAgent
@@ -31,11 +31,11 @@ def train_agent_ppo(
                     ):
 
     # Extract training dataset from folder raw data
-    queries, responses, scores = extract_hf_ppo_dataset(folder_path, p0=True)
-    queries_p1, responses_p1, scores_p1 = extract_hf_ppo_dataset(folder_path, p0=False)
-    queries = queries + queries_p1
-    responses = responses + responses_p1
-    scores = scores + scores_p1
+    queries, responses, scores = extract_hf_ppo_dataset(folder_path, player_0=True)
+    queries_player_1, responses_player_1, scores_player_1 = extract_hf_ppo_dataset(folder_path, player_0=False)
+    queries = queries + queries_player_1
+    responses = responses + responses_player_1
+    scores = scores + scores_player_1
 
     # Initiate training 
     for _ in range(nb_epochs):

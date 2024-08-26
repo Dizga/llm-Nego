@@ -17,30 +17,69 @@ game:
   nb_rounds: 2
 
 
-p0:
+player_0:
+
+  type: dummy_hf
+
   player_args:
     game_intro_file: "src/prompts/coop/rules.txt"
     chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
     max_retries: 2
     proposal_file: "src/prompts/coop/proposal.txt"
-  type: dummy_hf
+
   agent_args:
     name: "agent_0"
     device: cuda
     tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-    model_name: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-p1:
-  player_args:
-    game_intro_file: "src/prompts/coop/rules.txt"
-    chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
-    max_retries: 2
-    proposal_file: "src/prompts/coop/proposal.txt"
+    share_model: False
+    
+    model_args: 
+        model_name: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+        torch_dtype: "auto"
+        device_map: "auto"
+        trust_remote_code: True
+        peft_config: self.lora_config
+
+    lora_args:
+        task_type: TaskType.CAUSAL_LM
+        r: 16
+        lora_alpha: 2
+        lora_dropout: 0.1
+        target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+
+    model_training_args:
+      output_dir: out_folder
+      num_train_epochs: 1
+      fplayer_16: True
+      per_device_train_batch_size: 3
+      learning_rate: 5e-5
+      weight_decay: 0.01
+      logging_dir: os.path.join(out_folder, 'models', 'logs')
+      logging_steps: 10
+      save_total_limit: 2
+      save_steps: 500
+      evaluation_strategy: "steps"
+      eval_steps: 500
+      load_best_model_at_end: True
+
+player_1:
+
   type: dummy_hf
+
+  player_args:
+    game_intro_file: "same_as_player_0"
+    chain_of_thought_file: "same_as_player_0"
+    max_retries: "same_as_player_0"
+    proposal_file: "same_as_player_0"
+
   agent_args:
     name: "agent_1"
-    device: cuda
-    tokenizer: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-    model_name: "shared" # use "shared" if inherit player 0 model
+    device: "same_as_player_0"
+    tokenizer: "same_as_player_0"
+    share_model: True
+    model_args: "same_as_player_0"
+    lora_args: "same_as_player_0"
+    model_training_args: "same_as_player_0"
     
 training:
   train_type: "ppo"

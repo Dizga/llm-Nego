@@ -10,14 +10,14 @@ import pandas as pd
 # local imports
 from utils.dond_logger import DondLogger
 from environments.dond_game import DondGame
-from environments.dond_instructor import DondInstructor
+from environments.dond_player import DondPlayer
 from agents.hf_agent import HfAgent
 from agents.dummy_hf_agent import DummyHfAgent
 from agents.oai_agent import OaiAgent
 
 
 
-def extract_hf_ppo_dataset(folder_path: str, p0=True, full_context=True):
+def extract_hf_ppo_dataset(folder_path: str, player_0=True, full_context=True):
         """
         Args:
             file (str): Location of the csv / dataframe for the iteration
@@ -25,12 +25,12 @@ def extract_hf_ppo_dataset(folder_path: str, p0=True, full_context=True):
         
         gm_messages_path_df_column = "rounds_path"
 
-        if p0: 
-            gm_messages_path_df_column = "p0_path"
-            mg_rewards_df_column = "p0_return"
+        if player_0: 
+            gm_messages_path_df_column = "player_0_path"
+            mg_rewards_df_column = "player_0_return"
         else: 
-            gm_messages_path_df_column = "p1_path"
-            mg_rewards_df_column = "p1_return"
+            gm_messages_path_df_column = "player_1_path"
+            mg_rewards_df_column = "player_1_return"
 
         # get jsons list
         queries = []

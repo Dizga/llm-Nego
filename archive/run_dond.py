@@ -6,7 +6,7 @@ from agents import NegoAgent
 import hydra
 from datetime import datetime
 import os
-from instructor import DoNDInstructor
+from Player import DoNDPlayer
 from hydra.core.hydra_config import HydraConfig
 
 class TwoPlayerNegotiationTrainer:
@@ -14,8 +14,8 @@ class TwoPlayerNegotiationTrainer:
         self.iterations_per_run = iterations_per_run
         self.games_per_iteration = games_per_iteration
         self.game = game
-        self.instructor_0 = player_0
-        self.instructor_1 = player_1
+        self.player_0 = player_0
+        self.player_1 = player_1
         self.logger = logger
 
     def train_agents(self):
@@ -31,13 +31,13 @@ class TwoPlayerNegotiationTrainer:
     def run_game(self):
         self.logger.log_info("Game started.")
         self.logger.new_game()
-        self.instructor_0.new_game()
-        self.instructor_1.new_game()
+        self.player_0.new_game()
+        self.player_1.new_game()
         self.game.reset()
         while True:
-            if not self.instructor_0.play_move(): break
-            if not self.instructor_1.play_move(): break
-        self.logger.log_game(self.game.export(), self.instructor_0.get_history(), self.instructor_1.get_history())
+            if not self.player_0.play_move(): break
+            if not self.player_1.play_move(): break
+        self.logger.log_game(self.game.export(), self.player_0.get_history(), self.player_1.get_history())
         self.logger.log_info("Game completed.")
 
         
@@ -46,17 +46,17 @@ class DoNDTrainer(TwoPlayerNegotiationTrainer):
     def train_agents(self):
         """Train the agents on the last iteration."""
         metrics = self.logger.metrics # Extract dataframe with data for each game
-        mean_score_p0 = self.logger.iteration_stats['Mean Score P0'] # Get the mean score of the current iteration
-        mean_score_p1 = self.logger.iteration_stats['Mean Score P1'] # Get the mean score of the current iteration
+        mean_score_player_0 = self.logger.iteration_stats['Mean Score player_0'] # Get the mean score of the current iteration
+        mean_score_player_1 = self.logger.iteration_stats['Mean Score player_1'] # Get the mean score of the current iteration
         # Filter games with score better than the mean score
-        filtered_p0 = metrics[metrics['p0_score'] >= mean_score_p0]
-        filtered_p1 = metrics[metrics['p1_score'] >= mean_score_p1]
-        p0_filtered_files = [self.logger.it_folder + '/' + element for element in filtered_p0['p0_file'].tolist()]
-        p1_filtered_files = [self.logger.it_folder + '/' + element for element in filtered_p1['p1_file'].tolist()]
-        p0_filtered_jsons = [json.load(open(file_path, 'r')) for file_path in p0_filtered_files]
-        p1_filtered_jsons = [json.load(open(file_path, 'r')) for file_path in p1_filtered_files]
-        self.instructor_0.agent.train(p0_filtered_jsons)
-        self.instructor_1.agent.train(p1_filtered_jsons)
+        filtered_player_0 = metrics[metrics['player_0_score'] >= mean_score_player_0]
+        filtered_player_1 = metrics[metrics['player_1_score'] >= mean_score_player_1]
+        player_0_filtered_files = [self.logger.it_folder + '/' + element for element in filtered_player_0['player_0_file'].tolist()]
+        player_1_filtered_files = [self.logger.it_folder + '/' + element for element in filtered_player_1['player_1_file'].tolist()]
+        player_0_filtered_jsons = [json.load(open(file_path, 'r')) for file_path in player_0_filtered_files]
+        player_1_filtered_jsons = [json.load(open(file_path, 'r')) for file_path in player_1_filtered_files]
+        self.player_0.agent.train(player_0_filtered_jsons)
+        self.player_1.agent.train(player_1_filtered_jsons)
 
 @hydra.main(config_path="../conf", config_name="config")
 def run_dond(cfg):
@@ -72,31 +72,31 @@ def run_dond(cfg):
     agent_0 = NegoAgent(
         name="agent_0",
         device=cfg.device,
-        model=cfg.p0.model,
-        tokenizer=cfg.p0.tokenizer,
+        model=cfg.player_0.model,
+        tokenizer=cfg.player_0.tokenizer,
     )
-    player_0 = DoNDInstructor(
-        game_intro_file=cfg.p0.game_intro_file,
-        chain_of_thought_file=cfg.p0.chain_of_thought,
-        proposal_file=cfg.p0.proposal_file,
+    player_0 = DoNDPlayer(
+        game_intro_file=cfg.player_0.game_intro_file,
+        chain_of_thought_file=cfg.player_0.chain_of_thought,
+        proposal_file=cfg.player_0.proposal_file,
         dond_game=game,
         agent=agent_0,
-        player_type="p0"
+        player_type="player_0"
     )
 
     agent_1 = NegoAgent(
         name="agent_1",
         device=cfg.device,
-        model=cfg.p1.model,
-        tokenizer=cfg.p1.tokenizer,
+        model=cfg.player_1.model,
+        tokenizer=cfg.player_1.tokenizer,
     )
-    player_1 = DoNDInstructor(
-        game_intro_file=cfg.p1.game_intro_file,
-        chain_of_thought_file=cfg.p1.chain_of_thought,
-        proposal_file=cfg.p0.proposal_file,
+    player_1 = DoNDPlayer(
+        game_intro_file=cfg.player_1.game_intro_file,
+        chain_of_thought_file=cfg.player_1.chain_of_thought,
+        proposal_file=cfg.player_0.proposal_file,
         dond_game=game,
         agent=agent_1,
-        player_type="p1"
+        player_type="player_1"
     )
 
     trainer = DoNDTrainer(

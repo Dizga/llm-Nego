@@ -25,16 +25,16 @@ class DoND:
         self.turn = 0
         self.items = ['books', 'hats', 'balls']
         self.quantities = {key: value for key, value in zip(self.items, [5, 4, 3])}
-        self.values_p0 = {key: value for key, value in zip(self.items, [5, 4, 3])}
-        self.values_p1 = {key: value for key, value in zip(self.items, [3, 4, 5])}
+        self.values_player_0 = {key: value for key, value in zip(self.items, [5, 4, 3])}
+        self.values_player_1 = {key: value for key, value in zip(self.items, [3, 4, 5])}
         self.has_proposed = False
-        self.p0_prop = {}
-        self.p1_prop = {}
-        self.points_p0 = 0
-        self.points_p1 = 0
+        self.player_0_prop = {}
+        self.player_1_prop = {}
+        self.points_player_0 = 0
+        self.points_player_1 = 0
         self.agreement_reached = False
         self.last_message = ""
-        return self.quantities, self.values_p0, self.values_p1
+        return self.quantities, self.values_player_0, self.values_player_1
 
     def step(self, output: str | list, is_proposal=False):
         """
@@ -77,7 +77,7 @@ class DoND:
         Retrieves the current state of the game.
 
         Args:
-            player (str): The player whose state is to be retrieved ('p0', 'p1', or 'current_turn').
+            player (str): The player whose state is to be retrieved ('player_0', 'player_1', or 'current_turn').
 
         Returns:
             dict: The current state of the game.
@@ -93,15 +93,15 @@ class DoND:
             "has_proposed": self.has_proposed,
             "last_message": self.last_message
         }
-        if player == "p0":
-            out["book_val"] = self.values_p0["books"]
-            out["hat_val"] = self.values_p0["hats"]
-            out["ball_val"] = self.values_p0["balls"]
+        if player == "player_0":
+            out["book_val"] = self.values_player_0["books"]
+            out["hat_val"] = self.values_player_0["hats"]
+            out["ball_val"] = self.values_player_0["balls"]
 
             return out
-        out["book_val"] = self.values_p1["books"]
-        out["hat_val"] = self.values_p1["hats"]
-        out["ball_val"] = self.values_p1["balls"]
+        out["book_val"] = self.values_player_1["books"]
+        out["hat_val"] = self.values_player_1["hats"]
+        out["ball_val"] = self.values_player_1["balls"]
         return out
 
     def verify_props_match(self):
@@ -112,7 +112,7 @@ class DoND:
             bool: True if the proposals match, False otherwise.
         """
         for item in self.items:
-            if self.p0_prop[item] + self.p1_prop[item] != self.quantities[item]:
+            if self.player_0_prop[item] + self.player_1_prop[item] != self.quantities[item]:
                 return False
         return True
 
@@ -120,8 +120,8 @@ class DoND:
         """
         Sets the points for both players based on their proposals.
         """
-        self.points_p0 = sum(self.values_p0[item] * self.p0_prop[item] for item in self.items)
-        self.points_p1 = sum(self.values_p1[item] * self.p1_prop[item] for item in self.items)
+        self.points_player_0 = sum(self.values_player_0[item] * self.player_0_prop[item] for item in self.items)
+        self.points_player_1 = sum(self.values_player_1[item] * self.player_1_prop[item] for item in self.items)
 
     def propose(self, proposal: list):
         """
@@ -130,10 +130,10 @@ class DoND:
         Args:
             proposal (list): The list of proposed quantities for each item.
         """
-        if self.current_turn() == "p0":
-            self.p0_prop = {key: value for key, value in zip(self.items, proposal)}
+        if self.current_turn() == "player_0":
+            self.player_0_prop = {key: value for key, value in zip(self.items, proposal)}
         else:
-            self.p1_prop = {key: value for key, value in zip(self.items, proposal)}
+            self.player_1_prop = {key: value for key, value in zip(self.items, proposal)}
 
     def render(self):
         """
@@ -149,13 +149,13 @@ class DoND:
             dict: The current state of the game.
         """
         return {
-            'p0_score': self.points_p0,
-            'p1_score': self.points_p1,
+            'player_0_score': self.points_player_0,
+            'player_1_score': self.points_player_1,
             'quantities': self.quantities,
-            'p0_values': self.values_p0,
-            'p1_values': self.values_p1,
-            'p0_proposal': self.p0_prop,
-            'p1_proposal': self.p1_prop,
+            'player_0_values': self.values_player_0,
+            'player_1_values': self.values_player_1,
+            'player_0_proposal': self.player_0_prop,
+            'player_1_proposal': self.player_1_prop,
             'agreement_reached': self.agreement_reached,
         }
 
@@ -164,6 +164,6 @@ class DoND:
         Determines the current player's turn.
 
         Returns:
-            str: 'p0' if it's player 0's turn, 'p1' if it's player 1's turn.
+            str: 'player_0' if it's player 0's turn, 'player_1' if it's player 1's turn.
         """
-        return "p0" if self.turn % 2 == 1 else "p1"
+        return "player_0" if self.turn % 2 == 1 else "player_1"

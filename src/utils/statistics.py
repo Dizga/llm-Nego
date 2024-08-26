@@ -9,7 +9,7 @@ from omegaconf import OmegaConf
 # local imports
 from utils.dond_logger import DondLogger
 from environments.dond_game import DondGame
-from environments.dond_instructor import DondInstructor
+from environments.dond_player import DondPlayer
 from agents.hf_agent import HfAgent
 from agents.dummy_hf_agent import DummyHfAgent
 from agents.oai_agent import OaiAgent
@@ -24,10 +24,10 @@ def set_itr_stats(self):
     # self.iteration_stats = {
     #     "Iteration": self.iteration_nb,
     #     "Agreement Percentage": self.game_log['agreement_reached'].mean() * 100 if not self.game_log['agreement_reached'].empty else 0,
-    #     "Score Variance P0": self.game_log['p0_score'].var() if not self.game_log['p0_score'].empty else 0,
-    #     "Score Variance P1": self.game_log['p1_score'].var() if not self.game_log['p1_score'].empty else 0,
-    #     "Mean Score P0": self.game_log['p0_score'].mean() if not self.game_log['p0_score'].empty else 0,
-    #     "Mean Score P1": self.game_log['p1_score'].mean() if not self.game_log['p1_score'].empty else 0
+    #     "Score Variance player_0": self.game_log['player_0_score'].var() if not self.game_log['player_0_score'].empty else 0,
+    #     "Score Variance player_1": self.game_log['player_1_score'].var() if not self.game_log['player_1_score'].empty else 0,
+    #     "Mean Score player_0": self.game_log['player_0_score'].mean() if not self.game_log['player_0_score'].empty else 0,
+    #     "Mean Score player_1": self.game_log['player_1_score'].mean() if not self.game_log['player_1_score'].empty else 0
     # }
 
 def log_itr_stats(self):

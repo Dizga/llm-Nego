@@ -48,7 +48,7 @@ class DondLogger:
                 f"iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.csv")
         
 
-    def log_game(self, summary, rounds, p0_history, p1_history):
+    def log_game(self, summary, rounds, player_0_history, player_1_history):
         """
         Logs game data, saves player histories, and updates metrics.
 
@@ -56,19 +56,19 @@ class DondLogger:
             game (dict): A dictionary containing game data.
         """
         
-        p0_game_name = f"p0_iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.json"
-        p1_game_name = f"p1_iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.json"
+        player_0_game_name = f"player_0_iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.json"
+        player_1_game_name = f"player_1_iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.json"
 
         os.makedirs(self.run_dir, exist_ok=True)
 
-        with open(os.path.join(self.it_folder, p0_game_name), 'w') as f:
-            json.dump(p0_history, f, indent=4)
+        with open(os.path.join(self.it_folder, player_0_game_name), 'w') as f:
+            json.dump(player_0_history, f, indent=4)
 
-        with open(os.path.join(self.it_folder, p1_game_name), 'w') as f:
-            json.dump(p1_history, f, indent=4)
+        with open(os.path.join(self.it_folder, player_1_game_name), 'w') as f:
+            json.dump(player_1_history, f, indent=4)
 
-        summary['p0_path'] = p0_game_name
-        summary['p1_path'] = p1_game_name
+        summary['player_0_path'] = player_0_game_name
+        summary['player_1_path'] = player_1_game_name
         summary['rounds_path'] = self.rounds_path
 
         # Log global game metrics
