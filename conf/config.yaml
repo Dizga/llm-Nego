@@ -88,6 +88,8 @@ training:
     mini_batch_size: 2
     model_name: "model"
     learning_rate: 1.41e-5
+    gradient_checkpointing: False
+    gradient_accumulation_steps: 1
 
 
 

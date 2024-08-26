@@ -41,7 +41,11 @@ def train_agent_ppo(
     queries, responses, scores = queries[:bs], responses[:bs], scores[:bs] 
     ppo_trainer_args.batch_size = bs
 
+    # Get model checkpoint directory
+    path = os.path.join(folder_path, 'lora_checkpoints')
+    os.makedirs(path, exist_ok=True)
+
     # Initiate training 
     for _ in range(nb_epochs):
         agent.init_ppo_trainer(ppo_trainer_args)
-        agent.train_ppo_json(queries=queries, responses=responses, scores=scores)
+        agent.train_ppo_json(model_checkp_dir=path, queries=queries, responses=responses, scores=scores)
