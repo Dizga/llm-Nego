@@ -60,6 +60,7 @@ def extract_hf_ppo_dataset(folder_path: str, player_0=True, full_context=True):
 
             # extract queries, responses and scores
             for message in game:
+                if message['is_error']: continue
                 if message['role'] == "assistant":
                     queries.append(context)
                     responses.append(message)

@@ -23,7 +23,7 @@ def get_agent(
     ):
     if type == "hf": agent = HfAgent(**agent_args)
     elif type == "dummy_hf": agent = DummyHfAgent(**agent_args)
-    elif type == "oai": agent = OaiAgent(**agent_args)
+    elif type == "oai": agent = OaiAgent(agent_args.model_args.pretrained_model_name_or_path)
     Player = DondPlayer(
         **player_args, 
         dond_game=dond_game,
