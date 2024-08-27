@@ -11,7 +11,7 @@ playing:
 
 game:
   rounds_per_game: 1
-  max_turns: 10
+  max_turns: 50
   mode: coop # coop
   setup: random_read
   setups_file: src/environments/dond_setups.txt
