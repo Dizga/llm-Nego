@@ -11,8 +11,7 @@ class DondPlayer():
                  chain_of_thought_file, 
                  new_round_file,
                  max_retries,
-                 proposal_file, 
-                 dond_game:DondGame, 
+                 proposal_file,
                  agent, 
                  player_type="player_0"):
         """
@@ -44,7 +43,6 @@ class DondPlayer():
                 self.chain_of_thought = file.read()
         
         self.max_retries = max_retries
-        self.dond_game = dond_game
         self.agent = agent
         self.player_type = player_type
         self.other_has_proposed = False # whether the other player has made a proposal
@@ -57,13 +55,6 @@ class DondPlayer():
             bool: False if game ended else True.
         """
 
-        
-
-        # Get current state description from DoND game
-        # state = self.dond_game.get_state()
-
-        # Stop since game is ended
-        # if state["game_ended"]: return False
         
         # Get the context message to be passed to the model to get its response
         user_message = self.get_usr_message(state)
@@ -93,12 +84,6 @@ class DondPlayer():
         # Process the response
         return self.extract(response)
 
-
-        # Send response to game
-        # game_state = self.dond_game.step(content, is_proposal)  # Whether the game is finished or not
-        # if game_state['new_round']:
-        #     self.new_round()
-        # return game_state['game_ended']
 
     def verificator(self, message):
         """

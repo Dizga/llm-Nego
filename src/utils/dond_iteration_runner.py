@@ -18,16 +18,14 @@ from agents.oai_agent import OaiAgent
 class DondIterationRunner:
     def __init__(self, 
                  games_per_iteration, 
-                 game: DondGame, 
-                 player_0: DondPlayer, 
-                 player_1: DondPlayer, 
+                 game: DondGame,
+                 players: list[DondPlayer],
                  logger: DondLogger,
                  ):
 
         self.games_per_iteration = games_per_iteration
         self.game = game
-        self.player_0 = player_0
-        self.player_1 = player_1
+        self.players = players
         self.logger = logger
 
     def run_iteration(self):
@@ -38,21 +36,26 @@ class DondIterationRunner:
     def run_game(self):
         self.logger.log_info("Game started.")
         self.logger.new_game()
-        players = [self.player_0, self.player_1]
-        self.player_0.new_game()
-        self.player_1.new_game()
+        self._start_new_game()
         game_state = self.game.reset()
         player_id = 0
         while not game_state['game_ended']:
             if game_state['new_round']:
-                self.player_0.new_round()
-                self.player_1.new_round()
-            is_proposal, content = players[player_id].play_move(game_state)
+                self._start_new_round()
+            is_proposal, content = self.players[player_id].play_move(game_state)
             game_state = self.game.step(content, is_proposal=is_proposal)
             player_id = (player_id + 1) % 2
             
         # while True:
         self.logger.log_game(*self.game.export(), 
-                             self.player_0.get_history(), 
-                             self.player_1.get_history())
+                             self.players[0].get_history(), 
+                             self.players[1].get_history())
         self.logger.log_info("Game completed.")
+
+    def _start_new_game(self):
+        for player in self.players:
+            player.new_game()
+
+    def _start_new_round(self):
+        for player in self.players:
+            player.new_round()
