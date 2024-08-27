@@ -8,7 +8,11 @@ class DondGame:
                  max_turns=None,
                  setup="random_read",
                  setups_file=None,
-                 rounds_per_game = 10
+                 rounds_per_game = 10,
+                 items = None,
+                 player_0_values = None,
+                 player_1_values = None,
+                 quantities = None,
                  ):
         """
         Initializes the DoND game.
@@ -16,14 +20,15 @@ class DondGame:
         Args:
             max_turns (int): The maximum number of turns allowed in the game.
         """
+        self.mode = mode
         self.max_turns = max_turns
         self.setup = setup
         self.setups_file = setups_file
         self.rounds_per_game = rounds_per_game
 
-        self.items = ['books', 'hats', 'balls']
 
-        if self.setups_file is not None:
+        if self.setup == "random_read":
+            self.items = ['books', 'hats', 'balls']
             self.settings = []
             # Get dataset of game setups from file
             with open(self.setups_file) as f:
@@ -37,7 +42,15 @@ class DondGame:
                     player_0_values = {key: value for key, value in zip(self.items, [l[1], l[3], l[5]])}
                     player_1_values = {key: value for key, value in zip(self.items, [l2[1], l2[3], l2[5]])}
                     self.settings.append((quantities, player_0_values, player_1_values))
-        self.nb_settings = len(self.settings)
+            self.nb_settings = len(self.settings)
+            
+        
+        elif self.setup == "manual":
+            self.items = items
+            self.quantities = {key: value for key, value in zip(self.items, quantities)}
+            self.values_player_0 = {key: value for key, value in zip(self.items, player_0_values)}
+            self.values_player_1 = {key: value for key, value in zip(self.items, player_1_values)}
+
         self.reset()
 
 
@@ -49,14 +62,12 @@ class DondGame:
             tuple: The quantities of items and the values for player 0 and player 1.
         """
         self.turn = 0
-        self.items = ['books', 'hats', 'balls']
-        self.quantities = None
         self.has_proposed = False
 
+        # changes the quantities and values of the players
+        self.set_new_game_settings()
 
-        self.quantities, self.values_player_0, self.values_player_1 = self.get_new_round_data()
-
-        self.reset_player_states()
+        self.reset_player_bookkeeping()
         self.round_nb = 1
         self.new_round = True
         self.game_ended = False
@@ -71,20 +82,18 @@ class DondGame:
 
         return self.get_state()
     
-    def get_new_round_data(self):
-        if self.setup == "primitive":
-            self.quantities = {key: value for key, value in zip(self.items, [5, 4, 3])}
-            self.values_player_0 = {key: value for key, value in zip(self.items, [5, 4, 3])}
-            self.values_player_1 = {key: value for key, value in zip(self.items, [3, 4, 5])}
+    def set_new_game_settings(self):
+
+        if self.setup == "manual":
+            return
 
         # Pick random trio of quantities & values from dataset
-        else:
+        elif self.setup == "random_read":
             setting_id = random.randint(0, self.nb_settings-1)
             self.quantities, self.values_player_0, self.values_player_1 = self.settings[setting_id]
 
-        return self.quantities, self.values_player_0, self.values_player_1
     
-    def reset_player_states(self):
+    def reset_player_bookkeeping(self):
         self.player_0_prop = {}
         self.player_1_prop = {}
         self.points_player_0 = 0
@@ -107,11 +116,11 @@ class DondGame:
         self.turn = 0
         self.has_proposed = False
         self.archive_player_states()
-        self.reset_player_states()
+        self.reset_player_bookkeeping()
         self.new_round = True
         if self.round_nb > self.rounds_per_game:
             self.game_ended = True
-        self.quantities, self.values_player_0, self.values_player_1 = self.get_new_round_data()
+        self.set_new_game_settings()
 
     
     def step(self, output, is_proposal=False)-> bool: 
@@ -171,23 +180,18 @@ class DondGame:
             'game_ended': self.game_ended,
             "new_round": self.new_round,
             "round_number": self.round_nb,
-            "book_cnt": self.quantities["books"],
-            "hat_cnt": self.quantities["hats"],
-            "ball_cnt": self.quantities["balls"],
+            "quantities": self.quantities,
             "agreement_reached": self.agreement_reached,
             "has_proposed": self.has_proposed,
             "last_message": self.last_message
         }
         if player == "player_0":
-            out["book_val"] = self.values_player_0["books"]
-            out["hat_val"] = self.values_player_0["hats"]
-            out["ball_val"] = self.values_player_0["balls"]
+            out["values"] = self.values_player_0
             out["last_score"] = self.points_player_0
             return out
 
-        out["book_val"] = self.values_player_1["books"]
-        out["hat_val"] = self.values_player_1["hats"]
-        out["ball_val"] = self.values_player_1["balls"]
+        out["values"] = self.values_player_1
+        out["last_score"] = self.points_player_1
         return out
 
     def verify_props_match(self):
@@ -210,9 +214,9 @@ class DondGame:
         points_player_1 = sum(self.values_player_1[item] * self.player_1_prop[item] for item in self.items)
 
         if self.mode == "coop":
-            sum = points_player_0 + points_player_1
-            self.points_player_0 = sum
-            self.points_player_1 = sum
+            total = points_player_0 + points_player_1
+            self.points_player_0 = total
+            self.points_player_1 = total
 
         elif self.mode == "semicomp":
             self.points_player_0 = points_player_0

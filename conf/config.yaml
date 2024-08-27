@@ -7,7 +7,7 @@ cuda: true
 
 playing:
   nb_iterations: 10
-  games_per_iteration: 10
+  games_per_iteration: 100
 
 game:
   rounds_per_game: 1

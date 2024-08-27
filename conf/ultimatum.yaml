@@ -1,0 +1,10 @@
+defaults:
+  - semicomp
+
+game:
+  setup: manual
+  items: ['gold']
+  player_0_values: [10]
+  player_1_values: [10]
+  quantities: [1000]
+

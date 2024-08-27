@@ -1,6 +1,6 @@
 import json
 import regex as re
-
+import copy
 # local imports
 from environments.dond_game import DondGame
 
@@ -117,6 +117,13 @@ class DondPlayer():
         Returns:
             str: The constructed user message.
         """
+
+        # Create dummy proposal to include in game explanation
+        dummy_proposal = copy.deepcopy(state['quantities'])
+        for key in dummy_proposal: dummy_proposal[key] = "..."
+        state['dummy_proposal'] = dummy_proposal
+
+
         user_message = ""
         if self.first_turn:
             user_message += self.game_basics.format(**state)
@@ -168,15 +175,15 @@ class DondPlayer():
                 else:
                     i_take = propose_json["i_take"]
                     other_player_gets = propose_json["other_player_gets"]
-                    
+                    # TODO: generalise this code to arbitrary items
                     if not (isinstance(i_take, dict) and 
-                            all(key in i_take for key in ["books", "hats", "balls"]) and 
-                            all(isinstance(i_take[key], int) for key in ["books", "hats", "balls"])):
+                            all(key in i_take for key in self.dond_game.items) and 
+                            all(isinstance(i_take[key], int) for key in self.dond_game.items)):
                         errors.append('The "i_take" value must be a dictionary with integer values for keys "books", "hats", and "balls".')
                     
                     if not (isinstance(other_player_gets, dict) and 
-                            all(key in other_player_gets for key in ["books", "hats", "balls"]) and 
-                            all(isinstance(other_player_gets[key], int) for key in ["books", "hats", "balls"])):
+                            all(key in other_player_gets for key in self.dond_game.items) and 
+                            all(isinstance(other_player_gets[key], int) for key in self.dond_game.items)):
                         errors.append('The "other_player_gets" value must be a dictionary with integer values for keys "books", "hats", and "balls".')
             except json.JSONDecodeError:
                 errors.append("The content within <propose>...</propose> is not valid JSON.")

@@ -11,7 +11,7 @@ Matching Proposals: If the combined proposals don't match the total number of it
 Formatting:
 Reasoning: <reason> [Your reasoning here.] </reason>
 Messages: <message> [Your message here.] </message>
-Final proposals: <propose>{{ "i_take": {{"books":x, "hats":y, "balls":z}}, "other_player_gets": {{"books":a, "hats":b, "balls":c}} }}</propose>, where 'i_take' is your share and 'other_player_gets' is your partner share of the items.
+Final proposals: <propose>{{ "i_take": {dummy_proposal}, "other_player_gets": {dummy_proposal} }}</propose>, where 'i_take' is your share and 'other_player_gets' is your partner share of the items.
 
 Only do one reasoning + action per turn.
 
@@ -26,8 +26,8 @@ Exemples of how turns might proceed:
 
 3. [Partner agrees]
 <reason> [Your reasoning here.] </reason>
-<propose>{{ "i_take": {{"books":x, "hats":y, "balls":z}}, "other_player_gets": {{"books":a, "hats":b, "balls":c}} }}</propose>
+<propose>{{ "i_take": {dummy_proposal}, "other_player_gets": {dummy_proposal} }}</propose>
 
-Please decide how to divide {book_cnt} books, {hat_cnt} hats, and {ball_cnt} balls between yourself and your partner.
-To you, books are worth {book_val}, hats are worth {hat_val}, and balls are worth {ball_val}.
+Please decide how to divide {quantities} between yourself and your partner.
+Your item values are {values}
 You don't know your partner's item values. 
