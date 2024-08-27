@@ -10,11 +10,11 @@ playing:
   games_per_iteration: 10
 
 game:
+  rounds_per_game: 1
   max_turns: 10
   mode: coop # coop
   setup: random_read
   setups_file: src/environments/dond_setups.txt
-  nb_rounds: 1
 
 
 player_0:
@@ -82,7 +82,7 @@ player_1:
     
 training:
   train_type: "ppo"
-  nb_epochs: 2
+  nb_epochs: 1
   ppo_trainer_args:
     batch_size: "auto"
     mini_batch_size: 2

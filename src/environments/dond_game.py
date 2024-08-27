@@ -8,7 +8,7 @@ class DondGame:
                  max_turns=None,
                  setup="random_read",
                  setups_file=None,
-                 nb_rounds = 10
+                 rounds_per_game = 10
                  ):
         """
         Initializes the DoND game.
@@ -19,7 +19,7 @@ class DondGame:
         self.max_turns = max_turns
         self.setup = setup
         self.setups_file = setups_file
-        self.nb_rounds = nb_rounds
+        self.rounds_per_game = rounds_per_game
 
         self.items = ['books', 'hats', 'balls']
 
@@ -109,7 +109,7 @@ class DondGame:
         self.archive_player_states()
         self.reset_player_states()
         self.new_round = True
-        if self.round_nb > self.nb_rounds:
+        if self.round_nb > self.rounds_per_game:
             self.game_ended = True
         self.quantities, self.values_player_0, self.values_player_1 = self.get_new_round_data()
 
@@ -206,8 +206,17 @@ class DondGame:
         """
         Sets the points for both players based on their proposals.
         """
-        self.points_player_0 = sum(self.values_player_0[item] * self.player_0_prop[item] for item in self.items)
-        self.points_player_1 = sum(self.values_player_1[item] * self.player_1_prop[item] for item in self.items)
+        points_player_0 = sum(self.values_player_0[item] * self.player_0_prop[item] for item in self.items)
+        points_player_1 = sum(self.values_player_1[item] * self.player_1_prop[item] for item in self.items)
+
+        if self.mode == "coop":
+            sum = points_player_0 + points_player_1
+            self.points_player_0 = sum
+            self.points_player_1 = sum
+
+        elif self.mode == "semicomp":
+            self.points_player_0 = points_player_0
+            self.points_player_1 = points_player_0
 
     def propose(self, proposal: list):
         """
@@ -232,7 +241,7 @@ class DondGame:
         Export game and round metrics.
         """
         rounds = []
-        for round_id in range(self.nb_rounds):
+        for round_id in range(self.rounds_per_game):
             rounds.append(self.export_round(round_id))
         summary = self.export_summary()
         return summary, rounds
