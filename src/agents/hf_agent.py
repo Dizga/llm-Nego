@@ -7,7 +7,9 @@ from trl import AutoModelForCausalLMWithValueHead, PPOConfig, PPOTrainer
 from peft import get_peft_model, LoraConfig, TaskType
 import os
 
-class HfAgent:
+from agents.base_agent import BaseAgent
+
+class HfAgent(BaseAgent):
     
     def __init__(self,
                  name="agent",
@@ -29,9 +31,9 @@ class HfAgent:
             tokenizer (str): The tokenizer to be used, specified by the tokenizer name or path.
             out_folder (str): The output folder for saving models and logs.
         """
+        super().__init__()
         self.name = name
         self.device = device
-        self.history = []
 
         # Training arguments and model configuration
         self.lora_config = LoraConfig(**lora_args)
@@ -130,31 +132,3 @@ class HfAgent:
 
         self.add_message(role="assistant", message=response)
         return response
-
-    def add_message(self, role, message, is_error = False, is_new_round = False):
-        """
-        Adds a message to the conversation history.
-
-        Args:
-            role (str): The role of the message sender (e.g., 'user', 'assistant').
-            message (str): The message content.
-        """
-        if is_error:
-            # The last assitant message was an error.
-            self.history[-1]["is_error"] = True
-        self.history.append({"role": role, "content": message, "is_error": is_error, "is_new_round": is_new_round})
-
-    def reset_messages(self):
-        """
-        Resets the conversation history.
-        """
-        self.history = []
-
-    def add_system_message(self, message):
-        """
-        Adds a system message to the conversation history.
-
-        Args:
-            message (str): The system message content.
-        """
-        self.add_message("user", message)

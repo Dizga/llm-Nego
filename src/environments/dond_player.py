@@ -9,6 +9,7 @@ class DondPlayer():
     def __init__(self, 
                  game_intro_file, 
                  chain_of_thought_file, 
+                 new_round_file,
                  max_retries,
                  proposal_file, 
                  dond_game:DondGame, 
@@ -26,9 +27,13 @@ class DondPlayer():
             player_type (str): The type of player, either "player_0" or "player_1".
         """
         self.first_turn = True
+        self.is_new_game = True
         
         with open(game_intro_file, 'r') as file:
             self.game_basics = file.read()
+
+        with open(new_round_file, 'r') as file:
+            self.new_round_prompt = file.read()
 
         with open(proposal_file, 'r') as file:
             self.proposal_prompt = file.read()
@@ -84,6 +89,7 @@ class DondPlayer():
             #raise ValueError(f"Error validating output after {max_retries} retries.")
 
         self.first_turn = False
+        self.is_new_game = False
         # Process the response
         return self.extract(response)
 
@@ -118,8 +124,10 @@ class DondPlayer():
             str: The constructed user message.
         """
         user_message = ""
-        if self.first_turn:
+        if self.is_new_game:
             user_message += self.game_basics.format(**state)
+        elif self.first_turn:
+            user_message += self.new_round_prompt.format(**state)
         if state.get("has_proposed"):
             self.other_has_proposed = True
             user_message += self.proposal_prompt.format(**state)
@@ -147,12 +155,12 @@ class DondPlayer():
         
         # Check if message or propose tag exists, but not both
         has_message = "<message>" in response and "</message>" in response
-        has_propose = "<propose>" in response and "</propose>" in response
+        has_propose = "<finalize>" in response and "</finalize>" in response
         
         if has_message and has_propose:
-            errors.append("Response contains both <message>...</message> and <propose>...</propose> tags. Only one is allowed per response.")
+            errors.append("Response contains both <message>...</message> and <finalize>...</finalize> tags. Only one is allowed per response.")
         elif not has_message and not has_propose:
-            errors.append("Response must contain either <message>...</message> or <propose>...</propose> tag. Do not forget the closing tag.")
+            errors.append("Response must contain either <message>...</message> or <finalize>...</finalize> tag. Do not forget the closing tag.")
 
         if self.other_has_proposed:
             if not has_propose:
@@ -160,11 +168,11 @@ class DondPlayer():
         
         # Check if propose tag is JSON parsable and follows the specified format
         if has_propose:
-            propose_content = response.split("<propose>")[1].split("</propose>")[0].strip()
+            propose_content = response.split("<finalize>")[1].split("</finalize>")[0].strip()
             try:
                 propose_json = json.loads(propose_content)
                 if not all(key in propose_json for key in ["i_take", "other_player_gets"]):
-                    errors.append('The <propose> tag must contain JSON with keys "i_take" and "other_player_gets".')
+                    errors.append('The <finalize> tag must contain JSON with keys "i_take" and "other_player_gets".')
                 else:
                     i_take = propose_json["i_take"]
                     other_player_gets = propose_json["other_player_gets"]
@@ -179,7 +187,7 @@ class DondPlayer():
                             all(isinstance(other_player_gets[key], int) for key in ["books", "hats", "balls"])):
                         errors.append('The "other_player_gets" value must be a dictionary with integer values for keys "books", "hats", and "balls".')
             except json.JSONDecodeError:
-                errors.append("The content within <propose>...</propose> is not valid JSON.")
+                errors.append("The content within <finalize>...</finalize> is not valid JSON.")
 
         
         # Generate error message or return success
@@ -198,7 +206,7 @@ class DondPlayer():
         Returns:
             tuple: A tuple containing a boolean indicating if it's a proposal and the extracted content.
         """
-        pattern = r'<message>(.*?)</message>|<propose>\{\s*"i_take"\s*:\s*(.*?)\s*,\s*"other_player_gets"\s*:\s*(.*?)\s*\}</propose>'
+        pattern = r'<message>(.*?)</message>|<finalize>\s*\{\s*"i_take"\s*:\s*(.*?)\s*,\s*"other_player_gets"\s*:\s*(.*?)\s*\}\s*</finalize>'
         match = re.search(pattern, message, re.DOTALL)
 
         if match.group(2):
@@ -224,6 +232,7 @@ class DondPlayer():
             list: The message history before resetting.
         """
         self.new_round()
+        self.is_new_game = True
         history = self.agent.history
         self.agent.reset_messages()
         return history

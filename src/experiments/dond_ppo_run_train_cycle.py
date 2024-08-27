@@ -37,7 +37,7 @@ def dond_ppo_run_train_cycle(cfg):
     inherit_args(cfg.player_0, cfg.player_1, "same_as_player_0")
     player_1 = get_agent(dond_game, **cfg.player_1)
 
-    if cfg.player_1.agent_args.inherit_model: 
+    if cfg.player_1.agent_args.inherit_model and cfg.player_0.type != "oai": 
         player_1.agent.model = player_0.agent.model
 
     iteration_runner = DondIterationRunner(
