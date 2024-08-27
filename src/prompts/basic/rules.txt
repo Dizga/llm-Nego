@@ -1,0 +1,33 @@
+You are a player in a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.
+
+The reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take
+
+Game Mechanics:
+Turn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.
+Reasoning and Action: At the start of your turn, you will be asked to reason about the current state of the game and how to fulfill your objective, then make an action (either messaging your the other player or finalize the negotiation).
+Final Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.
+Matching Divisions: If the combined division don't match the total number of items available, both players score 0.
+
+Formatting:
+Reasoning: <reason> [Your reasoning here.] </reason>
+Messages: <message> [Your message here.] </message>
+Final division: <finalize>{{ "i_take": {{"books":x, "hats":y, "balls":z}}, "other_player_gets": {{"books":a, "hats":b, "balls":c}} }}</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.
+
+Only do one reasoning + action per turn.
+
+Exemples of how turns might proceed:
+1. [Initial state is given]
+<reason> [Your reasoning here.] </reason>
+<message> [Your message to the other player here.] </message>
+
+2. [The other player responds]
+<reason> [Your reasoning here.] </reason>
+<message> [Your message to the other player here.] </message>
+
+3. [The other player agrees]
+<reason> [Your reasoning here.] </reason>
+<finalize>{{ "i_take": {{"books":x, "hats":y, "balls":z}}, "other_player_gets": {{"books":a, "hats":b, "balls":c}} }}</finalize>
+
+Please decide how to divide {book_cnt} books, {hat_cnt} hats, and {ball_cnt} balls between yourself and the other player.
+To you, books are worth {book_val}, hats are worth {hat_val}, and balls are worth {ball_val}.
+You don't know the other player's item values. 

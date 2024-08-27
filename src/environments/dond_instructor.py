@@ -155,12 +155,12 @@ class DondInstructor():
         
         # Check if message or propose tag exists, but not both
         has_message = "<message>" in response and "</message>" in response
-        has_propose = "<propose>" in response and "</propose>" in response
+        has_propose = "<finalize>" in response and "</finalize>" in response
         
         if has_message and has_propose:
-            errors.append("Response contains both <message>...</message> and <propose>...</propose> tags. Only one is allowed per response.")
+            errors.append("Response contains both <message>...</message> and <finalize>...</finalize> tags. Only one is allowed per response.")
         elif not has_message and not has_propose:
-            errors.append("Response must contain either <message>...</message> or <propose>...</propose> tag. Do not forget the closing tag.")
+            errors.append("Response must contain either <message>...</message> or <finalize>...</finalize> tag. Do not forget the closing tag.")
 
         if self.other_has_proposed:
             if not has_propose:
@@ -168,11 +168,11 @@ class DondInstructor():
         
         # Check if propose tag is JSON parsable and follows the specified format
         if has_propose:
-            propose_content = response.split("<propose>")[1].split("</propose>")[0].strip()
+            propose_content = response.split("<finalize>")[1].split("</finalize>")[0].strip()
             try:
                 propose_json = json.loads(propose_content)
                 if not all(key in propose_json for key in ["i_take", "other_player_gets"]):
-                    errors.append('The <propose> tag must contain JSON with keys "i_take" and "other_player_gets".')
+                    errors.append('The <finalize> tag must contain JSON with keys "i_take" and "other_player_gets".')
                 else:
                     i_take = propose_json["i_take"]
                     other_player_gets = propose_json["other_player_gets"]
@@ -187,7 +187,7 @@ class DondInstructor():
                             all(isinstance(other_player_gets[key], int) for key in ["books", "hats", "balls"])):
                         errors.append('The "other_player_gets" value must be a dictionary with integer values for keys "books", "hats", and "balls".')
             except json.JSONDecodeError:
-                errors.append("The content within <propose>...</propose> is not valid JSON.")
+                errors.append("The content within <finalize>...</finalize> is not valid JSON.")
 
         
         # Generate error message or return success
@@ -206,7 +206,7 @@ class DondInstructor():
         Returns:
             tuple: A tuple containing a boolean indicating if it's a proposal and the extracted content.
         """
-        pattern = r'<message>(.*?)</message>|<propose>\s*\{\s*"i_take"\s*:\s*(.*?)\s*,\s*"other_player_gets"\s*:\s*(.*?)\s*\}\s*</propose>'
+        pattern = r'<message>(.*?)</message>|<finalize>\s*\{\s*"i_take"\s*:\s*(.*?)\s*,\s*"other_player_gets"\s*:\s*(.*?)\s*\}\s*</finalize>'
         match = re.search(pattern, message, re.DOTALL)
 
         if match.group(2):

@@ -29,11 +29,11 @@ players:
     type: dummy_hf # hf (HuggingFace) or oai (OpenAI)
 
     instructor_args:
-      game_intro_file: "src/prompts/coop/rules.txt"
-      new_round_file: "src/prompts/coop/new_round.txt"
-      chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
+      game_intro_file: "src/prompts/basic/rules.txt"
+      new_round_file: "src/prompts/basic/new_round.txt"
+      chain_of_thought_file: "src/prompts/basic/cot.txt" # false if none, else link to txt file 
       max_retries: 2
-      proposal_file: "src/prompts/coop/proposal.txt"
+      proposal_file: "src/prompts/basic/proposal.txt"
     
     agent_args:
       name: "agent_0"
@@ -46,11 +46,11 @@ players:
     type: dummy_hf # hf (HuggingFace) or oai (OpenAI)
 
     instructor_args:
-      game_intro_file: "src/prompts/coop/rules.txt"
-      new_round_file: "src/prompts/coop/new_round.txt"
-      chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
+      game_intro_file: "src/prompts/basic/rules.txt"
+      new_round_file: "src/prompts/basic/new_round.txt"
+      chain_of_thought_file: "src/prompts/basic/cot.txt" # false if none, else link to txt file 
       max_retries: 2
-      proposal_file: "src/prompts/coop/proposal.txt"
+      proposal_file: "src/prompts/basic/proposal.txt"
     
     agent_args:
       name: "agent_1"
