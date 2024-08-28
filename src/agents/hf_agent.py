@@ -86,9 +86,10 @@ class HfAgent:
             encoded.append(e.input_ids.squeeze())
         return encoded  # Stack the tensors into a single batch tensor
     
-    def init_ppo_trainer(self, ppo_training_args):
-
+    def init_ppo_trainer(self, out_directory, ppo_training_args):
+        ppo_training_args['project_kwargs'] = {'logging_dir': out_directory}
         ppo_config = PPOConfig(**ppo_training_args)
+        
 
         self.ppo_trainer = PPOTrainer(
             model=self.model,

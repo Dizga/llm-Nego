@@ -46,7 +46,7 @@ def train_agent_ppo(
 
     # Initiate training 
     for _ in range(nb_epochs):
-        agent.init_ppo_trainer(ppo_trainer_args)
+        agent.init_ppo_trainer(os.path.join(folder_path, 'tensorboard'), ppo_trainer_args)
         stats = agent.train_ppo_json(
                              directory=folder_path,
                              queries=queries, 

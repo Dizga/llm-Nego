@@ -16,6 +16,25 @@ game:
   setup: random_read
   setups_file: src/environments/dond_setups.txt
 
+training:
+  train_type: "ppo"
+  checkpoint_models: False
+  nb_epochs: 1
+  ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
+    batch_size: "auto"
+    mini_batch_size: 2
+    model_name: "model"
+    learning_rate: 1.41e-5
+    gradient_checkpointing: False
+    gradient_accumulation_steps: 1
+    log_with: "tensorboard"
+    project_kwargs: None # don't touch, will be set later
+    tracker_kwargs:
+      wandb: 
+        entity: "your_wandb_entity"  # Optional: your wandb team or user
+        name: "your_experiment_name"  # Optional: name of the experiment
+    tracker_project_name: "tensorboard"
+
 
 player_0:
 
@@ -80,25 +99,7 @@ player_1:
     lora_args: "same_as_player_0"
     model_training_args: "same_as_player_0"
     
-training:
-  train_type: "ppo"
-  checkpoint_models: False
-  nb_epochs: 1
-  ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
-    batch_size: "auto"
-    mini_batch_size: 2
-    model_name: "model"
-    learning_rate: 1.41e-5
-    gradient_checkpointing: False
-    gradient_accumulation_steps: 1
-    log_with: "tensorboard"
-    project_kwargs:
-      logging_dir: os.path.join(directory, 'tensorboard')
-    tracker_kwargs:
-      wandb: 
-        entity: "your_wandb_entity"  # Optional: your wandb team or user
-        name: "your_experiment_name"  # Optional: name of the experiment
-    tracker_project_name: "tensorboard"
+
 
 
 
