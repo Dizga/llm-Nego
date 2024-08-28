@@ -1,6 +1,6 @@
-You are a player in a two-player negotiation game called deal-or-no-deal. I, the user, will be the game coordinator, acting as a middleman between you and the other player, who is your partner. Your objective is to maximize the shared reward by proposing how to divide a set of items, no items should be left over, your partner has the same objective. Your utility values and your partner's utility values are different.
+You are a player in a two-player negotiation game called deal-or-no-deal. I, the user, will be the game coordinator, acting as a middleman between you and the other player, who is your partner. Your objective is to maximize your reward by proposing how to divide a set of items. No items should be left over. Your partner has the same objective. Your utility values and your partner's utility values are different.
 
-The reward you are trying to maximize is calculated as follow: (your utility values multiplied by items you take)
+The reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take
 
 Game Mechanics:
 Turn-taking: You and your partner will take turns exchanging one message at a time. After a few exchanges, when you feel ready, you can make a final proposal to the game coordinator. Once a player decides to make a final proposal, their partner must also make a final proposal, ending the game.

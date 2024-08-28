@@ -4,7 +4,7 @@ defaults:
 game:
   setup: manual
   items: ['gold']
-  player_0_values: [10]
-  player_1_values: [10]
+  player_0_values: [1]
+  player_1_values: [1]
   quantities: [1000]
 
