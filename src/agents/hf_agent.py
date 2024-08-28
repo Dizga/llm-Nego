@@ -96,14 +96,23 @@ class HfAgent:
             tokenizer=self.tokenizer,
         )
 
-    def train_ppo_json(self, model_checkp_dir, queries: list, responses: list, scores: list):
+    def train_ppo_json(self, 
+                       directory,
+                       queries: list, 
+                       responses: list, 
+                       scores: list):
+        
         queries = self.encode_jsons(queries)
         responses = self.encode_jsons(responses)
         scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in scores]
 
         # Ensure that tensors are properly batched
         stats = self.ppo_trainer.step(queries=queries, responses=responses, scores=scores)
+        self.ppo_trainer.log_stats(stats=stats, 
+                                    batch={'query': queries, 'response': responses}, 
+                                    rewards=scores)
 
+    def checkpoint_model(self, model_checkp_dir):
         self.model.pretrained_model.base_model.save_pretrained(model_checkp_dir)
         self.tokenizer.save_pretrained(model_checkp_dir)
 

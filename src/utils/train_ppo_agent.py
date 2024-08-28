@@ -6,7 +6,7 @@ from datetime import datetime
 import os
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import OmegaConf
-
+import torch
 # local imports
 from utils.dond_logger import DondLogger
 from environments.dond_game import DondGame
@@ -27,7 +27,6 @@ def train_agent_ppo(
                     folder_path,
                     ppo_trainer_args,
                     nb_epochs,
-                    logger
                     ):
 
     # Extract training dataset from folder raw data
@@ -48,4 +47,12 @@ def train_agent_ppo(
     # Initiate training 
     for _ in range(nb_epochs):
         agent.init_ppo_trainer(ppo_trainer_args)
-        agent.train_ppo_json(model_checkp_dir=path, queries=queries, responses=responses, scores=scores)
+        stats = agent.train_ppo_json(
+                             directory=folder_path,
+                             queries=queries, 
+                             responses=responses, 
+                             scores=scores, 
+                            )
+        
+    return stats
+        

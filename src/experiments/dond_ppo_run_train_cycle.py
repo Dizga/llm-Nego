@@ -6,10 +6,11 @@ import os
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import OmegaConf
 import os
+import logging
+import logging.config
 
 
 # local imports
-from utils.dond_logger import DondLogger
 from utils.dond_iteration_runner import DondIterationRunner
 from environments.dond_game import DondGame
 from environments.dond_player import DondPlayer
@@ -29,7 +30,6 @@ def dond_ppo_run_train_cycle(cfg):
     output_directory = hydra_cfg['runtime']['output_dir']
     os.makedirs(output_directory, exist_ok=True)
 
-    logger = DondLogger(output_directory)
 
     dond_game = DondGame(**cfg.game)
 
@@ -41,33 +41,40 @@ def dond_ppo_run_train_cycle(cfg):
         player_1.agent.model = player_0.agent.model
 
     iteration_runner = DondIterationRunner(
+        output_directory,
         cfg.playing.games_per_iteration, 
         game=dond_game,
         player_0=player_0,
         player_1=player_1,
-        logger=logger
     )
-
 
 
     for _ in range(cfg.playing.nb_iterations):
         
         # Play games
-        logger.log_info(f"Started playing {cfg.playing.games_per_iteration} games.")
+        logging.info(f"Started playing {cfg.playing.games_per_iteration} games.")
         iteration_runner.run_iteration()
-        logger.log_info(f"Completed the {cfg.playing.games_per_iteration} games.")
+        logging.info(f"Completed the {cfg.playing.games_per_iteration} games.")
 
-        # Compute statistics for games played
-        compute_dond_statistics(logger.it_folder)
+        compute_dond_statistics(iteration_runner.it_folder)
 
         # Train on games played
-        logger.log_info("Started PPO training.")
-        train_agent_ppo(agent=player_0.agent, 
-                        ppo_trainer_args=cfg.training.ppo_trainer_args, 
-                        folder_path=logger.it_folder, 
-                        nb_epochs=cfg.training.nb_epochs,
-                        logger=logger)
-        logger.log_info("Ended PPO training.")
+        logging.info(f"Started {cfg.training.train_type} training.")
+
+        if cfg.training.train_type == "ppo":
+            train_agent_ppo(agent=player_0.agent, 
+                            ppo_trainer_args=cfg.training.ppo_trainer_args, 
+                            folder_path=iteration_runner.it_folder, 
+                            nb_epochs=cfg.training.nb_epochs,
+                            )
+        elif cfg.training.train_type == "bc":
+            # TODO
+            pass
+
+        if cfg.training.checkpoint_models: # Export LoRA model weights
+            player_0.agent.checkpoint_model(iteration_runner.it_folder)
+
+        logging.info(f"Ended {cfg.training.train_type} training.")
 
 
 
