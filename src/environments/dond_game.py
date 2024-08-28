@@ -220,7 +220,7 @@ class DondGame:
 
         elif self.mode == "semicomp":
             self.points_player_0 = points_player_0
-            self.points_player_1 = points_player_0
+            self.points_player_1 = points_player_1
 
     def propose(self, proposal: list):
         """
