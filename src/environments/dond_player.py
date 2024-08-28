@@ -208,10 +208,14 @@ class DondPlayer():
         pattern = r'<message>(.*?)</message>|<propose>\{\s*"i_take"\s*:\s*(.*?)\s*,\s*"other_player_gets"\s*:\s*(.*?)\s*\}</propose>'
         match = re.search(pattern, message, re.DOTALL)
 
-        if match != None and match.group(2):
+        if match == None:
+            return False, ""
+        
+        elif match.group(2):
             # Extract json from proposal
             print(json.loads(match.group(2)))
             return True, json.loads(match.group(2))
+        
         else:
             return False, match.group(1)
         

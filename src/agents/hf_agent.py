@@ -16,7 +16,7 @@ class HfAgent:
                  inherit_model=False,
                  model_args=None,
                  lora_args= None,
-                 model_training_args= None,
+                 model_training_args = None,
                  out_folder="checkpoints",
                  ) -> None:
         """
