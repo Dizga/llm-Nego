@@ -4,7 +4,7 @@ defaults:
 
 playing:
   nb_iterations: 1
-  games_per_iteration: 100
+  games_per_iteration: 10
 
 
 

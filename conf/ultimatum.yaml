@@ -1,5 +1,5 @@
 defaults:
-  - semicomp
+  - defaults
 
 game:
   setup: manual

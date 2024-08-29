@@ -1,0 +1,9 @@
+defaults:
+  - config
+
+game:
+  mode: coop
+
+player_0:
+  player_args:
+    game_intro_file: "src/prompts/coop/rules.txt"
