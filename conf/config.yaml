@@ -22,7 +22,7 @@ training:
   nb_epochs: 1 # Number of passes on entire dataset.
   ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
     # For batch size vs mini confusion https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_trainer.py#L647)
-    batch_size: 10 # Amount of examples loaded on the GPU. Must be divisable by mini_batch_size.
+    batch_size: 1 # Amount of examples loaded on the GPU. Must be divisable by mini_batch_size.
     mini_batch_size: 1 # Number of examples fed in parallel to the model before taking gradient step.
     ppo_epochs: 1 # Default: 4. Number of optimisation epochs per batch of samples
     model_name: "model"
@@ -55,6 +55,8 @@ player_0:
         torch_dtype: "auto"
         device_map: "auto"
         trust_remote_code: True
+
+    bits_and_bytes_args:
         load_in_8bit: True
 
     lora_args:

@@ -6,42 +6,43 @@ Your utility values and your partner's utility values are different.
 No rules prevent you to share your utilities with the other player.
 
 Reward:
-The reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take
+    The reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take
 
 Game Mechanics:
 
     Turn-taking: 
-    You and your partner will take turns exchanging one message at a time. 
-    After a few exchanges, when you feel ready, you can make a final proposal to the game coordinator. 
-    Once a player decides to make a final proposal, their partner must also make a final proposal, ending the game. 
+        You and your partner will take turns exchanging one message at a time. 
+        After a few exchanges, when you feel ready, you can make a final proposal to the game coordinator. 
+        Once a player decides to make a final proposal, their partner must also make a final proposal, ending the game. 
 
     Reasoning and Action: 
-    At the start of your turn, you will be asked to reason about the current state of the game and how to fulfill your objective, then make an action (either messaging your partner or sending a final proposal).
-    At every one of your turns, you must send both a reasoning and an accompanying action.
+
+        At the start of your turn, you will be asked to reason about the current state of the game and how to fulfill your objective, then make an action (either messaging your partner or sending a final proposal).
+        At every one of your turns, you must send both a reasoning and an accompanying action.
 
         Reasoning:
-        For yourself. 
-        Your reasoning will not be shared to the other player.
+            For yourself. 
+            Your reasoning will not be shared to the other player.
 
         Actions: 
-        Two actions are possible. Messages or Final Proposals.
+            Two actions are possible. Messages or Final Proposals.
 
             Messages:
-            Messages are send to the other player.
-            There are no rules concerning the information which is allowed to be shared.
-            No messages are allowed between proposals.
-            If a final proposal has been made, the other player must respond with a final proposal.
+                Messages are sent to the other player to communicate.
+                There are no rules concerning the information which is allowed to be shared.
+                No messages are allowed between proposals.
+                If a final proposal has been made, the other player must respond with a final proposal.
 
             Final Proposal: 
-            A final proposal should specify how many of each item you want, leaving the remaining items for your partner. 
-            The proposal mechanics are different from the ones for messages. 
-            The other player will not see the terms of the official proposal you made and vice versa. 
-            Only the fact that a proposal has been made will be shared. 
-            Of course, both players are free to describe a proposal plan in their messages.
-            The final proposal should be JSON parsable.
+                A final proposal should specify how many of each item you want, leaving the remaining items for your partner. 
+                The proposal mechanics are different from the ones for messages. 
+                The other player will not see the terms of the official proposal you made and vice versa. 
+                Only the fact that a proposal has been made will be shared. 
+                Of course, both players are free to describe a proposal plan in their messages.
+                The final proposal should be JSON parsable.
 
                 Matching Proposals: 
-                If the combined proposals don't match the total number of items available, both players score 0. 
+                    If the combined proposals don't match the total number of items available, both players score 0. 
 
 Formatting:
 Reasoning: <reason> [Your reasoning here.] </reason>

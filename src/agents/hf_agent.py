@@ -1,7 +1,7 @@
 from typing import Any
 import torch
 from datasets import Dataset
-from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments
+from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments, BitsAndBytesConfig
 from trl import SFTTrainer
 from trl import AutoModelForCausalLMWithValueHead, PPOConfig, PPOTrainer
 from peft import get_peft_model, LoraConfig, TaskType
@@ -18,6 +18,7 @@ class HfAgent:
                  tokenizer="microsoft/Phi-3-mini-128k-instruct",
                  inherit_model=False,
                  model_args=None,
+                 bits_and_bytes_args=None,
                  lora_args= None,
                  model_training_args = None,
                  out_folder="checkpoints",
@@ -40,7 +41,11 @@ class HfAgent:
         self.lora_config = LoraConfig(**lora_args)
 
         if not inherit_model:
-            self.model = AutoModelForCausalLMWithValueHead.from_pretrained(**model_args, peft_config=self.lora_config)
+            self.quantization_conf = BitsAndBytesConfig(**bits_and_bytes_args)
+            self.model = AutoModelForCausalLMWithValueHead.from_pretrained(**model_args, 
+                                                                           peft_config=self.lora_config,
+                                                                           quantization_config=self.quantization_conf
+                                                                           )
             self.model.gradient_checkpointing_enable()
 
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)

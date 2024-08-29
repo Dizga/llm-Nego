@@ -15,6 +15,9 @@ from agents.dummy_hf_agent import DummyHfAgent
 from agents.oai_agent import OaiAgent
 from utils.extract_dond_ppo_dataset import extract_hf_ppo_dataset
 
+def delete_tensor_list(list):
+    for el in list: 
+        del el
 
 def batch(iterable, n=1):
     l = len(iterable)
@@ -55,5 +58,11 @@ def train_agent_ppo(
                                 responses=batch_responses, 
                                 scores=batch_scores, 
                                 )
+    # Ensure garbage collection is performed
+    delete_tensor_list(queries)
+    delete_tensor_list(responses)
+    delete_tensor_list(scores)
+    torch.cuda.empty_cache()
+
     return stats
         
