@@ -7,7 +7,6 @@ from hydra.core.hydra_config import HydraConfig
 from omegaconf import OmegaConf
 
 # local imports
-from utils.dond_logger import DondLogger
 from environments.dond_game import DondGame
 from environments.dond_player import DondPlayer
 from agents.hf_agent import HfAgent
@@ -22,8 +21,7 @@ class BcDondTrainer:
                  game: DondGame, 
                  train_type: str,
                  player_0: DondPlayer, 
-                 player_1: DondPlayer, 
-                 logger: DondLogger,
+                 player_1: DondPlayer
                  ):
 
         self.iterations_per_run = iterations_per_run
@@ -31,7 +29,6 @@ class BcDondTrainer:
         self.game = game
         self.player_0 = player_0
         self.player_1 = player_1
-        self.logger = logger
         self.train_type = train_type
 
     def run_iterations(self):
@@ -113,7 +110,6 @@ def run_bc_dond(cfg): # TODO: change name
     os.makedirs(output_directory, exist_ok=True)
 
     # Get input and output handler for DonD
-    logger = DondLogger(output_directory)
 
     # Get instance which handles the game
     game = DondGame(**cfg.game)

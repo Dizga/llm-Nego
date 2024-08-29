@@ -1,0 +1,28 @@
+defaults:
+  - config
+
+
+playing:
+  nb_iterations: 1
+  games_per_iteration: 100
+
+
+
+player_0:
+  type: dummy_hf
+
+  player_args:
+    game_intro_file: "src/prompts/semicomp/rules.txt"
+    chain_of_thought_file: "src/prompts/semicomp/cot.txt" # false if none, else link to txt file 
+    proposal_file: "src/prompts/semicomp/proposal.txt"
+    max_retries: 1
+
+
+game:
+  rounds_per_game: 1
+  max_turns: 10
+  setup: manual
+  items: ['gold']
+  player_0_values: [1]
+  player_1_values: [1]
+  quantities: [1000]

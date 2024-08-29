@@ -8,7 +8,6 @@ from hydra.core.hydra_config import HydraConfig
 from omegaconf import OmegaConf
 import torch
 # local imports
-from utils.dond_logger import DondLogger
 from environments.dond_game import DondGame
 from environments.dond_player import DondPlayer
 from agents.hf_agent import HfAgent
@@ -36,23 +35,25 @@ def train_agent_ppo(
     responses = responses + responses_player_1
     scores = scores + scores_player_1
 
-    bs = len(queries) - (len(queries) % ppo_trainer_args.mini_batch_size)
-    queries, responses, scores = queries[:bs], responses[:bs], scores[:bs] 
-    ppo_trainer_args.batch_size = bs
+    ds = len(queries)
+    bs = ppo_trainer_args.batch_size
+    nb_batches = ds // bs
 
     # Get model checkpoint directory
     path = os.path.join(folder_path, 'lora_checkpoints')
     os.makedirs(path, exist_ok=True)
 
     # Initiate training 
+    agent.init_ppo_trainer(os.path.join(folder_path, 'tensorboard'), ppo_trainer_args)
     for _ in range(nb_epochs):
-        agent.init_ppo_trainer(os.path.join(folder_path, 'tensorboard'), ppo_trainer_args)
-        stats = agent.train_ppo_json(
-                             directory=folder_path,
-                             queries=queries, 
-                             responses=responses, 
-                             scores=scores, 
-                            )
-        
+        for b in range(nb_batches):
+            beg, end = (b*bs, (b+1)*bs)
+            batch_queries, batch_responses, batch_scores = queries[beg:end], responses[beg:end], scores[beg:end]
+            stats = agent.train_ppo_json(
+                                directory=folder_path,
+                                queries=batch_queries, 
+                                responses=batch_responses, 
+                                scores=batch_scores, 
+                                )
     return stats
         

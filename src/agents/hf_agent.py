@@ -7,6 +7,9 @@ from trl import AutoModelForCausalLMWithValueHead, PPOConfig, PPOTrainer
 from peft import get_peft_model, LoraConfig, TaskType
 import os
 
+from utils.log_gpu_usage import log_gpu_usage
+
+
 class HfAgent:
     
     def __init__(self,
@@ -82,7 +85,7 @@ class HfAgent:
             if isinstance(x, dict): 
                 x = [x]
             e = self.tokenizer.apply_chat_template(x, tokenize=False, add_generation_prompt=True)
-            e = self.tokenizer(e, return_tensors="pt", padding=True, truncation=True).to(self.device)
+            e = self.tokenizer(e, return_tensors="pt", padding=True, truncation=True)
             encoded.append(e.input_ids.squeeze())
         return encoded  # Stack the tensors into a single batch tensor
     
@@ -105,10 +108,10 @@ class HfAgent:
         
         queries = self.encode_jsons(queries)
         responses = self.encode_jsons(responses)
-        scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in scores]
-
-        # Ensure that tensors are properly batched
+        scores = [torch.tensor(s, dtype=torch.float) for s in scores]
+        log_gpu_usage()
         stats = self.ppo_trainer.step(queries=queries, responses=responses, scores=scores)
+        log_gpu_usage()
         self.ppo_trainer.log_stats(stats=stats, 
                                     batch={'query': queries, 'response': responses}, 
                                     rewards=scores)

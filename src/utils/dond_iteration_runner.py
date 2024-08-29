@@ -15,6 +15,7 @@ from environments.dond_player import DondPlayer
 from agents.hf_agent import HfAgent
 from agents.dummy_hf_agent import DummyHfAgent
 from agents.oai_agent import OaiAgent
+from utils.log_gpu_usage import log_gpu_usage
 
 
 class DondIterationRunner:

@@ -6,12 +6,12 @@ hydra:
 cuda: true
 
 playing:
-  nb_iterations: 10
-  games_per_iteration: 3
+  nb_iterations: 50
+  games_per_iteration: 5
 
 game:
   rounds_per_game: 1
-  max_turns: 50
+  max_turns: 10
   mode: coop # coop
   setup: random_read
   setups_file: src/environments/dond_setups.txt
@@ -19,14 +19,16 @@ game:
 training:
   train_type: "ppo"
   checkpoint_models: False
-  nb_epochs: 1
+  nb_epochs: 1 # Number of passes on entire dataset.
   ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
-    batch_size: "auto"
-    mini_batch_size: 1
+    # For batch size vs mini confusion https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_trainer.py#L647)
+    batch_size: 10 # Amount of examples loaded on the GPU. Must be divisable by mini_batch_size.
+    mini_batch_size: 1 # Number of examples fed in parallel to the model before taking gradient step.
+    ppo_epochs: 1 # Default: 4. Number of optimisation epochs per batch of samples
     model_name: "model"
     learning_rate: 1.41e-5
-    gradient_checkpointing: False # whether to keep all activations in memory at once
-    gradient_accumulation_steps: 1 # how many mini-batch to process before gradient step
+    gradient_checkpointing: False # Whether to keep all activations in memory at once.
+    gradient_accumulation_steps: 5 # Default: 1. Number of minibatch gradient step before accumulation
     log_with: "tensorboard"
     project_kwargs: None # don't touch, will be set later
     tracker_project_name: "tensorboard"

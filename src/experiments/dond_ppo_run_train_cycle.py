@@ -21,6 +21,7 @@ from utils.get_dond_player import get_agent
 from utils.train_ppo_agent import train_agent_ppo
 from utils.inherit_args import inherit_args
 from utils.dond_statistics import compute_dond_statistics
+from utils.log_gpu_usage import log_gpu_usage
 
 
 def dond_ppo_run_train_cycle(cfg): 
@@ -53,13 +54,17 @@ def dond_ppo_run_train_cycle(cfg):
         
         # Play games
         logging.info(f"Started playing {cfg.playing.games_per_iteration} games.")
+        log_gpu_usage()
         iteration_runner.run_iteration()
         logging.info(f"Completed the {cfg.playing.games_per_iteration} games.")
+        log_gpu_usage()
+
 
         compute_dond_statistics(iteration_runner.it_folder)
 
         # Train on games played
         logging.info(f"Started {cfg.training.train_type} training.")
+
 
         if cfg.training.train_type == "ppo":
             train_agent_ppo(agent=player_0.agent, 
