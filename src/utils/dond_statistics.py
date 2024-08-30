@@ -29,14 +29,14 @@ def compute_dond_statistics(folder_path):
             df['player_1_proposal'] = df['player_1_proposal'].apply(eval)
 
             # Compute statistics for this file
-            total_returns['player_0'].append(df['player_0_score'].sum())
-            total_returns['player_1'].append(df['player_1_score'].sum())
+            total_returns['player_0'].append(df['player_0_reward'].sum())
+            total_returns['player_1'].append(df['player_1_reward'].sum())
 
             
             for _, row in df.iterrows():
                 round_id = row['round_id']
-                round_scores['player_0'][round_id].append(row['player_0_score'])
-                round_scores['player_1'][round_id].append(row['player_1_score'])
+                round_scores['player_0'][round_id].append(row['player_0_reward'])
+                round_scores['player_1'][round_id].append(row['player_1_reward'])
 
             agreements_reached.extend(df['agreement_reached'])
             num_rounds += len(df)

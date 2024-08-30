@@ -179,6 +179,7 @@ class DondGame:
         out = {
             'game_ended': self.game_ended,
             "new_round": self.new_round,
+            "current_turn": self.current_turn(),
             "round_number": self.round_nb,
             "quantities": self.quantities,
             "agreement_reached": self.agreement_reached,
@@ -242,13 +243,12 @@ class DondGame:
 
     def export(self):
         """
-        Export game and round metrics.
+        Export round metrics.
         """
         rounds = []
         for round_id in range(self.rounds_per_game):
             rounds.append(self.export_round(round_id))
-        summary = self.export_summary()
-        return summary, rounds
+        return rounds
 
     def export_summary(self):
         return {
@@ -265,10 +265,8 @@ class DondGame:
         """
         return {
             'round_id': id,
-            'player_0_score': self.points_player_0_history[id],
-            'player_1_score': self.points_player_1_history[id],
-            'player_0_return': sum(self.points_player_0_history[id:]),
-            'player_1_return': sum(self.points_player_1_history[id:]),
+            'player_0_reward': self.points_player_0_history[id],
+            'player_1_reward': self.points_player_1_history[id],
             'quantities': self.quantities_history[id],
             'player_0_values': self.values_player_0_history[id],
             'player_1_values': self.values_player_1_history[id],

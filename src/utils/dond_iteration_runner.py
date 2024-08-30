@@ -61,7 +61,7 @@ class DondIterationRunner:
             player_id = (player_id + 1) % 2
             
         # while True:
-        self.log_game(*self.game.export(), 
+        self.log_game(self.game.export(), 
                              self.player_0.get_history(), 
                              self.player_1.get_history())
         logging.info("Game completed.")
@@ -89,35 +89,25 @@ class DondIterationRunner:
                 f"iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.csv")
         
 
-    def log_game(self, summary, rounds, player_0_history, player_1_history):
+    def log_game(self, game, player_0_history, player_1_history):
         """
         Logs game data, saves player histories, and updates metrics.
 
         Args:
-            game (dict): A dictionary containing game data.
+            game List(dict): A list of dictionaries, each containing the data of a round.
         """
         
+        # Export the conversations
         player_0_game_name = f"player_0_iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.json"
         player_1_game_name = f"player_1_iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.json"
-
         os.makedirs(self.run_dir, exist_ok=True)
-
         with open(os.path.join(self.it_folder, player_0_game_name), 'w') as f:
             json.dump(player_0_history, f, indent=4)
-
         with open(os.path.join(self.it_folder, player_1_game_name), 'w') as f:
             json.dump(player_1_history, f, indent=4)
 
-        summary['player_0_path'] = player_0_game_name
-        summary['player_1_path'] = player_1_game_name
-        summary['rounds_path'] = self.rounds_path
-
-        # Log global game metrics
-        self.game_log = pd.concat([self.game_log, pd.DataFrame([summary])], ignore_index=True)
-        self.game_log.to_csv(self.game_log_file, index=False)
-
         # Log every round
-        for round in rounds: self.log_round(round)
+        for round in game: self.log_round(round)
 
 
     def log_round(self, round: dict):

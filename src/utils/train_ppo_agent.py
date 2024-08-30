@@ -53,7 +53,6 @@ def train_agent_ppo(
             beg, end = (b*bs, (b+1)*bs)
             batch_queries, batch_responses, batch_scores = queries[beg:end], responses[beg:end], scores[beg:end]
             stats = agent.train_ppo_json(
-                                directory=folder_path,
                                 queries=batch_queries, 
                                 responses=batch_responses, 
                                 scores=batch_scores, 
