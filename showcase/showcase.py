@@ -25,7 +25,7 @@ def showcase(file_or_string):
             style = "bright_red"
             role = 'Context'
         elif message["role"] == "assistant":
-            style = "bright_blue"
+            style = "bright_yellow"
             role = 'Assistant'
         else:
             style = "bright_green"
