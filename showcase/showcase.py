@@ -21,8 +21,15 @@ def showcase(file_or_string):
     table.add_column("Content")
 
     for message in conversation:
-        style = "blue" if message["role"] == "assistant" else "green"
-        role = 'Player' if message["role"] == "assistant" else 'Moderator'
+        if message["role"] == "context":
+            style = "cyan"
+            role = 'Researcher'
+        elif message["role"] == "assistant":
+            style = "bright_blue"
+            role = 'Player'
+        else:
+            style = "bright_green"
+            role = 'Intermediary'
         table.add_row(role, message["content"], style=style)
 
     console.print(table)
@@ -33,6 +40,11 @@ def showcase(file_or_string):
     <style>
         body {
             font-size: 12px;
+            background-color: black;
+            color: white;
+        }
+        .terminal {
+            background-color: black;
         }
     </style>
     """
@@ -41,4 +53,4 @@ def showcase(file_or_string):
     table_name = 'player_example.html'
     with open(table_name, "w") as f:
         f.write(html)
-    print(f"HTML file '{table_name}' created successfully.")
+
