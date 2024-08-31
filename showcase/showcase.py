@@ -16,19 +16,19 @@ def showcase(file_or_string):
     console = Console(record=True)
 
     # Create a table to display the conversation
-    table = Table(show_header=True, header_style="bold magenta")
-    table.add_column("Role", width=12)
-    table.add_column("Content")
+    table = Table(show_header=True, style="purple", header_style="bold magenta", padding=(1, 2))
+    table.add_column("Role", width=12, justify="center")
+    table.add_column("Content", justify="left")
 
     for message in conversation:
         if message["role"] == "context":
-            style = "red"
+            style = "bright_red"
             role = 'Context'
         elif message["role"] == "assistant":
-            style = "blue"
+            style = "bright_blue"
             role = 'Assistant'
         else:
-            style = "green"
+            style = "bright_green"
             role = 'User'
         table.add_row(role, message["content"], style=style)
 
@@ -37,23 +37,28 @@ def showcase(file_or_string):
     # Export the table to HTML
     html = console.export_html()
     
-    # Add custom CSS for the background color
+    # Add custom CSS for the background color, text color, font size, and spacing
     custom_css = """
     <style>
         body, html {
-            font-size: 12px;
-            background-color: red !important;
-            color: red !important;
+            font-size: 24px;  /* Increased font size */
+            background-color: #ffcccc !important;  /* Lighter red background */
+            color: white !important;
             margin: 0;
             padding: 0;
         }
         .rich-terminal {
-            background-color: red !important;
-            color: white !important;
+            background-color: #ffcccc !important;  /* Lighter red background */
+            color: black !important;  /* Dark text color for contrast */
         }
         .rich-table {
-            background-color: red !important;
-            color: white !important;
+            background-color: #ffcccc !important;  /* Lighter red background */
+            color: black !important;
+            padding: 15px;  /* Add spacing between contents */
+            border-spacing: 15px;  /* Add spacing between cells */
+        }
+        .rich-table th, .rich-table td {
+            padding: 10px 20px;  /* Padding within each cell */
         }
     </style>
     """
@@ -63,3 +68,5 @@ def showcase(file_or_string):
     with open(table_name, "w") as f:
         f.write(html)
     print(f"HTML file '{table_name}' created successfully.")
+
+
