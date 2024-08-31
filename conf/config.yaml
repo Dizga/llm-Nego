@@ -7,7 +7,7 @@ cuda: true
 
 playing:
   nb_iterations: 50
-  games_per_iteration: 5
+  games_per_iteration: 10
 
 game:
   rounds_per_game: 1
@@ -24,9 +24,9 @@ training:
     # For batch size vs mini confusion https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_trainer.py#L647)
     batch_size: 1 # Amount of examples loaded on the GPU. Must be divisable by mini_batch_size.
     mini_batch_size: 1 # Number of examples fed in parallel to the model before taking gradient step.
-    ppo_epochs: 1 # Default: 4. Number of optimisation epochs per batch of samples
+    ppo_epochs: 4 # Default: 4. Number of optimisation epochs per batch of samples
     model_name: "model"
-    learning_rate: 1.41e-5
+    #learning_rate: 1.41e-5
     gradient_checkpointing: False # Whether to keep all activations in memory at once.
     gradient_accumulation_steps: 1 # Default: 1. Number of minibatch gradient step before accumulation
     log_with: "tensorboard"

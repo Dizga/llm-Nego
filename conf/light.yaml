@@ -3,20 +3,17 @@ defaults:
 
 
 playing:
-  nb_iterations: 1
+  nb_iterations: 5
   games_per_iteration: 1
 
-
-
 player_0:
-  type: dummy_hf
+  type: oai
 
   player_args:
     game_intro_file: "src/prompts/semicomp/rules.txt"
     chain_of_thought_file: "src/prompts/semicomp/cot.txt" # false if none, else link to txt file 
     proposal_file: "src/prompts/semicomp/proposal.txt"
     max_retries: 1
-
 
 game:
   rounds_per_game: 1
