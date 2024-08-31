@@ -17,19 +17,19 @@ def showcase(file_or_string):
 
     # Create a table to display the conversation
     table = Table(show_header=True, header_style="bold magenta")
-    table.add_column("Role", style="dim", width=12)
+    table.add_column("Role", width=12)
     table.add_column("Content")
 
     for message in conversation:
         if message["role"] == "context":
-            style = "cyan"
-            role = 'Researcher'
+            style = "dark_red"
+            role = 'Context'
         elif message["role"] == "assistant":
-            style = "bright_blue"
-            role = 'Player'
+            style = "dark_blue"
+            role = 'Assistant'
         else:
-            style = "bright_green"
-            role = 'Intermediary'
+            style = "dark_green"
+            role = 'User'
         table.add_row(role, message["content"], style=style)
 
     console.print(table)
