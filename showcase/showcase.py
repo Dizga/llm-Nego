@@ -36,15 +36,24 @@ def showcase(file_or_string):
 
     # Export the table to HTML
     html = console.export_html()
+    
+    # Add custom CSS for the background color
     custom_css = """
     <style>
-        body {
+        body, html {
             font-size: 12px;
-            background-color: black;
-            color: white;
+            background-color: red !important;
+            color: red !important;
+            margin: 0;
+            padding: 0;
         }
-        .terminal {
-            background-color: black;
+        .rich-terminal {
+            background-color: red !important;
+            color: white !important;
+        }
+        .rich-table {
+            background-color: red !important;
+            color: white !important;
         }
     </style>
     """
@@ -53,4 +62,4 @@ def showcase(file_or_string):
     table_name = 'player_example.html'
     with open(table_name, "w") as f:
         f.write(html)
-
+    print(f"HTML file '{table_name}' created successfully.")
