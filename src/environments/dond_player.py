@@ -54,11 +54,6 @@ class DondPlayer():
         Returns:
             bool: False if game ended else True.
         """
-<<<<<<< HEAD
-=======
-
-        
->>>>>>> origin/main
         # Get the context message to be passed to the model to get its response
         user_message = self.get_usr_message(state)
 
@@ -86,10 +81,6 @@ class DondPlayer():
         # Process the response
         return self.extract(response)
 
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/main
     def verificator(self, message):
         """
         Verifies if the message is correct.
@@ -199,11 +190,7 @@ class DondPlayer():
         Returns:
             tuple: A tuple containing a boolean indicating if it's a proposal and the extracted content.
         """
-<<<<<<< HEAD
-        pattern = r'<message>(.*?)</message>|<propose>\{\s*"i_take"\s*:\s*(\{.*?\})\s*,\s*"other_player_gets"\s*:\s*(\{.*?\})\s*\}</propose>'
-=======
         pattern = r'<message>(.*?)</message>|<finalize>\s*\{\s*"i_take"\s*:\s*(.*?)\s*,\s*"other_player_gets"\s*:\s*(.*?)\s*\}\s*</finalize>'
->>>>>>> origin/main
         match = re.search(pattern, message, re.DOTALL)
 
         if not match:
