@@ -187,25 +187,12 @@ class DondGame:
             "last_message": self.last_message
         }
         if player == "player_0":
-<<<<<<< HEAD
             out["values"] = self.values_player_0
             out["last_score"] = self.points_player_0
             return out
 
         out["values"] = self.values_player_1
         out["last_score"] = self.points_player_1
-=======
-            out["book_val"] = self.values_player_0["books"]
-            out["hat_val"] = self.values_player_0["hats"]
-            out["ball_val"] = self.values_player_0["balls"]
-            out["last_score"] = self.points_player_0_history[-1] if self.points_player_0_history else None
-            return out
-
-        out["book_val"] = self.values_player_1["books"]
-        out["hat_val"] = self.values_player_1["hats"]
-        out["ball_val"] = self.values_player_1["balls"]
-        out["last_score"] = self.points_player_1_history[-1] if self.points_player_1_history else None
->>>>>>> origin/main
         return out
 
     def verify_props_match(self):
