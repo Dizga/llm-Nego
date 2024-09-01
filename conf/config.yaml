@@ -39,10 +39,18 @@ player_0:
   type: hf
 
   player_args:
+<<<<<<< HEAD
     game_intro_file: "src/prompts/semicomp/rules.txt"
     chain_of_thought_file: "src/prompts/semicomp/cot.txt" # false if none, else link to txt file 
     max_retries: 5
     proposal_file: "src/prompts/semicomp/proposal.txt"
+=======
+    game_intro_file: "src/prompts/coop/rules.txt"
+    chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
+    max_retries: 2
+    proposal_file: "src/prompts/coop/proposal.txt"
+    new_round_file: "src/prompts/coop/new_round.txt"
+>>>>>>> origin/main
 
   agent_args:
     name: "agent_0"
@@ -85,9 +93,18 @@ player_1:
 
   type: "same_as_player_0"
 
+<<<<<<< HEAD
   player_args: "same_as_player_0"
 
   agent_args: "same_as_player_0"
+=======
+  player_args:
+    game_intro_file: "same_as_player_0"
+    chain_of_thought_file: "same_as_player_0"
+    max_retries: "same_as_player_0"
+    proposal_file: "same_as_player_0"
+    new_round_file: "same_as_player_0"
+>>>>>>> origin/main
 
     
 

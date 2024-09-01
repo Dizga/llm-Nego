@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from typing import Any, List, Dict
 from openai import OpenAI
 import os
@@ -88,10 +89,30 @@ class OaiAgent:
 
         # Generate a response using OpenAI's API
         response = self.client.chat.completions.create(
+=======
+from openai import OpenAI
+
+from agents.base_agent import BaseAgent
+
+class OaiAgent(BaseAgent):
+    def __init__(self, model="gpt-4o-mini") -> None:
+        super().__init__()
+        self.openai = OpenAI()
+        self.model= model
+        
+        
+    def prompt(self, message, is_error = False, is_new_round = False):
+
+        self.add_message("user", message, is_error=is_error, is_new_round=is_new_round)
+
+        response = self.openai.chat.completions.create(
+>>>>>>> origin/main
             model=self.model,
+            max_tokens=1000,
             messages=self.history,
         )
 
+<<<<<<< HEAD
         # Extract the assistant's response from the response object
         response_text = response.choices[0].message.content
 
@@ -138,3 +159,9 @@ class OaiAgent:
         # Placeholder: OpenAI's API does not support direct model fine-tuning via code in this way.
         # You may need to use a different approach or service to fine-tune models.
         print("Training is not implemented for OpenAI API in this agent.")
+=======
+        response = response.choices[0].message.content
+
+        self.add_message('assistant', response)
+        return response
+>>>>>>> origin/main
