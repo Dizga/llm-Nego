@@ -20,8 +20,8 @@ class Logger:
         self.datenow = datetime.now().strftime('%Y_%m_%d_%H_%M')
         
         columns_metrics = [
-            'player_0_score',
-            'player_1_score',
+            'player_0_reward',
+            'player_1_reward',
             'quantities',
             'player_0_values',
             'player_1_values',
@@ -69,10 +69,10 @@ class Logger:
         self.iteration_stats = {
             "Iteration": self.iteration,
             "Agreement Percentage": self.metrics['reach_agreement'].mean() * 100 if not self.metrics['reach_agreement'].empty else 0,
-            "Score Variance player_0": self.metrics['player_0_score'].var() if not self.metrics['player_0_score'].empty else 0,
-            "Score Variance player_1": self.metrics['player_1_score'].var() if not self.metrics['player_1_score'].empty else 0,
-            "Mean Score player_0": self.metrics['player_0_score'].mean() if not self.metrics['player_0_score'].empty else 0,
-            "Mean Score player_1": self.metrics['player_1_score'].mean() if not self.metrics['player_1_score'].empty else 0
+            "Score Variance player_0": self.metrics['player_0_reward'].var() if not self.metrics['player_0_reward'].empty else 0,
+            "Score Variance player_1": self.metrics['player_1_reward'].var() if not self.metrics['player_1_reward'].empty else 0,
+            "Mean Score player_0": self.metrics['player_0_reward'].mean() if not self.metrics['player_0_reward'].empty else 0,
+            "Mean Score player_1": self.metrics['player_1_reward'].mean() if not self.metrics['player_1_reward'].empty else 0
         }
         return self.iteration_stats
 

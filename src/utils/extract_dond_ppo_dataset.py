@@ -1,60 +1,44 @@
 import json
-import numpy as np
-import hydra
-from datetime import datetime
 import os
-from hydra.core.hydra_config import HydraConfig
-from omegaconf import OmegaConf
 import pandas as pd
+import regex as re
 
-# local imports
-from utils.dond_logger import DondLogger
-from environments.dond_game import DondGame
-from environments.dond_player import DondPlayer
-from agents.hf_agent import HfAgent
-from agents.dummy_hf_agent import DummyHfAgent
-from agents.oai_agent import OaiAgent
+def extract_hf_ppo_dataset(folder_path: str, 
+                           player_0=True, 
+                           full_context=True,
+                           export_for_debugging=True):
+    """
+    Extracts data for HF PPO training from game logs.
 
+    Args:
+        folder_path (str): Path to the folder containing game logs.
+        player_0 (bool): If True, extracts data for player 0, otherwise for player 1.
+        full_context (bool): If True, includes full context of the conversation.
+        export_for_debugging (bool): If True, exports the queries, responses, and scores to a JSON file for debugging.
 
+    Returns:
+        tuple: Lists of queries, responses, and scores.
+    """
 
-def extract_hf_ppo_dataset(folder_path: str, player_0=True, full_context=True):
-        """
-        Args:
-            file (str): Location of the csv / dataframe for the iteration
-        """
+    player_prefix = "player_0_" if player_0 else "player_1_"
+    queries, responses, scores = [], [], []
+
+    # For each game player
+    for file_name in os.listdir(folder_path):
         
-        gm_messages_path_df_column = "rounds_path"
+        pattern = re.compile(r'^iter_\d{2}_game_\d{4}\.csv$')
 
-        if player_0: 
-            gm_messages_path_df_column = "player_0_path"
-            mg_rewards_df_column = "player_0_return"
-        else: 
-            gm_messages_path_df_column = "player_1_path"
-            mg_rewards_df_column = "player_1_return"
+        if pattern.match(file_name):
 
-        # get jsons list
-        queries = []
-        responses = []
-        scores = []
+            # Get list of rewards
+            game = pd.read_csv(os.path.join(folder_path, file_name))
+            rewards = game[player_prefix + "reward"].tolist()
 
-        # get all the games 
-        games_info_df = pd.read_csv(os.path.join(folder_path, 'games.csv')) 
-        games_info = games_info_df.to_dict(orient='records')
+            # Import conversation
+            conversation_path = os.path.join(folder_path, player_prefix+file_name.replace(".csv", ".json"))
+            with open(conversation_path, 'r') as file: conversation = json.load(file)
 
-        # TODO: only analyse the games from the right player
-
-        for game_info in games_info:
-
-            # get game returns
-            game_path = game_info['rounds_path']
-            rounds_metrics_df = pd.read_csv(game_path)  # get rounds dataframe
-            mg_rewards = rounds_metrics_df[mg_rewards_df_column].tolist()
-
-            # get game conversation
-            conv_path = os.path.join(folder_path, game_info[gm_messages_path_df_column])
-            with open(conv_path, 'r') as file:
-                game = json.load(file)
-
+            # Extract queries, responses, and scores
             context = []
             count = -1
 
@@ -62,11 +46,20 @@ def extract_hf_ppo_dataset(folder_path: str, player_0=True, full_context=True):
             for message in game:
                 if message['is_error']: continue
                 if message['role'] == "assistant":
-                    queries.append(context)
+                    queries.append(context.copy() if full_context else context[-1:])
                     responses.append(message)
-                    scores.append(mg_rewards[count])
-                elif message['is_new_round']:
+                    scores.append(rewards[count])
+                elif message.get('is_new_round'):
                     count += 1
                 context.append(message)
 
-        return queries, responses, scores
+    # Export to facilitate debugging
+    if export_for_debugging:
+        debug_data = [{"query": q, "response": r, "score": s} 
+                      for q, r, s in zip(queries, responses, scores)]
+        
+        debug_file_path = os.path.join(folder_path, "debug_output.json")
+        with open(debug_file_path, 'w') as debug_file:
+            json.dump(debug_data, debug_file, indent=4)
+
+    return queries, responses, scores

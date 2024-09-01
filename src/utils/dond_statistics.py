@@ -1,25 +1,27 @@
 import pandas as pd
-import numpy as np
 import os
 import re
-from collections import defaultdict
 from statistics import *
 
 def compute_dond_statistics(folder_path):
-    # Initialize lists to store statistics and dictionaries for round scores
-    total_returns = {'player_0':[], 'player_1':[]}
-    round_scores = defaultdict(lambda: defaultdict(list))
-    agreements_reached = []
-    num_rounds = 0
 
-    # Define the regex pattern for matching filenames
-    pattern = re.compile(r'^iter_\d{2}_game_\d{4}\.csv$')
+    game_stats = {
+        'player_0_total_returns': [],
+        'player_1_total_returns': [],
+        'total_reward_over_coop_optimum': [], 
+        'agreement_reached_percentage': [],
+    } 
 
     # Iterate over each file in the folder
+    pattern = re.compile(r'^iter_\d{2}_game_\d{4}\.csv$')
     for file_name in os.listdir(folder_path):
         if pattern.match(file_name):
+
             file_path = os.path.join(folder_path, file_name)
             df = pd.read_csv(file_path)
+
+            # Get number of rounds in game
+            num_rounds = len(df)
 
             # Convert string representations of dictionaries to actual dictionaries
             df['quantities'] = df['quantities'].apply(eval)
@@ -28,37 +30,42 @@ def compute_dond_statistics(folder_path):
             df['player_0_proposal'] = df['player_0_proposal'].apply(eval)
             df['player_1_proposal'] = df['player_1_proposal'].apply(eval)
 
-            # Compute statistics for this file
-            total_returns['player_0'].append(df['player_0_score'].sum())
-            total_returns['player_1'].append(df['player_1_score'].sum())
+            # Get total rewards of game
+            player_0_total_rewards = df['player_0_reward'].sum()
+            player_1_total_rewards = df['player_1_reward'].sum()
 
-            
-            for _, row in df.iterrows():
-                round_id = row['round_id']
-                round_scores['player_0'][round_id].append(row['player_0_score'])
-                round_scores['player_1'][round_id].append(row['player_1_score'])
+            # Perfect cooperation
+            coop_optimum = 0
+            for index, row in df.iterrows():
+                p0vs = row['player_0_values']
+                p1vs = row['player_1_values']
+                for key in p0vs:
+                    coop_optimum += max(p0vs[key], p1vs[key]) * row['quantities'][key]
+            total_reward_over_coop_optimum = player_0_total_rewards / coop_optimum
 
-            agreements_reached.extend(df['agreement_reached'])
-            num_rounds += len(df)
+            agreements_reached_percentage = df['agreement_reached'].sum()/num_rounds * 100
 
-    # Compute round scores
-    round_score_list = {
-        player: {round_id: np.mean(scores) for round_id, scores in scores_dict.items()}
-        for player, scores_dict in round_scores.items()
-    }
+            game_stats['player_0_total_returns'].append(player_0_total_rewards)
+            game_stats['player_1_total_returns'].append(player_1_total_rewards)
+            game_stats['total_reward_over_coop_optimum'].append(total_reward_over_coop_optimum)
+            game_stats['agreement_reached_percentage'].append(agreements_reached_percentage)
+
 
     # Compute desired statistics
-    stats = {
-        'Mean Total Return Player 0': mean(total_returns['player_0']),
-        'Mean Total Return Player 1': mean(total_returns['player_1']),
-        # 'Mean Round Return Variance': np.mean([np.var(list(scores.values())) for scores in round_score_list.values()]),
-        #'Variance for Total Return': np.var(total_returns),
-        '% Agreements Reached Per Round': mean(agreements_reached) * 100
-    }
+    global_game_stats = {}
+    for key in game_stats.keys():
+        global_game_stats["mean_" + key] = mean(game_stats[key])
 
-    # Create a DataFrame from the dictionary and save as CSV
-    stats_df = pd.DataFrame(list(stats.items()), columns=['Statistic', 'Value'])
-    output_file = os.path.join(folder_path, 'global_iteration_statistics.csv')
-    stats_df.to_csv(output_file, index=False)
+    # Create DataFrames from the dictionaries
+    game_stats_df = pd.DataFrame(list(game_stats.items()), columns=['Statistic', 'Value'])
+    global_stats_df = pd.DataFrame(list(global_game_stats.items()), columns=['Statistic', 'Value'])
 
+    # Save the DataFrames as separate CSV files
+    game_stats_file = os.path.join(folder_path, 'game_stats.csv')
+    global_stats_file = os.path.join(folder_path, 'global_stats.csv')
+    
+    game_stats_df.to_csv(game_stats_file, index=False)
+    global_stats_df.to_csv(global_stats_file, index=False)
+
+    print(f"Statistics exported to {game_stats_file} and {global_stats_file}")
 

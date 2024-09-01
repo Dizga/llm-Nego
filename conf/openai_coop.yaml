@@ -1,3 +1,5 @@
+
+
 device: "cuda"
 hydra:
   job:
@@ -7,12 +9,12 @@ cuda: true
 
 playing:
   nb_iterations: 50
-  games_per_iteration: 2
+  games_per_iteration: 10
 
 game:
   rounds_per_game: 1
   max_turns: 10
-  mode: semicomp # semicomp, coop
+  mode: coop 
   setup: random_read
   setups_file: src/environments/dond_setups.txt
 
@@ -36,51 +38,18 @@ training:
 
 player_0:
 
-  type: hf
+  type: oai
 
   player_args:
     game_intro_file: "src/prompts/coop/rules.txt"
-    chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
-    max_retries: 2
-    proposal_file: "src/prompts/coop/proposal.txt"
-    new_round_file: "src/prompts/coop/new_round.txt"
+    chain_of_thought_file: "src/prompts/semicomp/cot.txt" # false if none, else link to txt file 
+    max_retries: 5
+    proposal_file: "src/prompts/semicomp/proposal.txt"
 
   agent_args:
-    name: "agent_0"
-    device: cuda
-    tokenizer_name: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-    inherit_model: False
-    
-    model_args: 
-        pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-        torch_dtype: "auto"
-        device_map: "auto"
-        trust_remote_code: True
-
-    bits_and_bytes_args:
-        load_in_8bit: True
-
-    lora_args:
-        task_type: TaskType.CAUSAL_LM
-        r: 16
-        lora_alpha: 2
-        lora_dropout: 0.1
-        target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
-
-    model_training_args:
-      output_dir: out_folder
-      num_train_epochs: 1
-      fp16: True
-      per_device_train_batch_size: 3
-      learning_rate: 5e-5
-      weight_decay: 0.01
-      logging_dir: os.path.join(out_folder, 'models', 'logs')
-      logging_steps: 10
-      save_total_limit: 2
-      save_steps: 500
-      evaluation_strategy: "steps"
-      eval_steps: 500
-      load_best_model_at_end: True
+    name: "openai_agent"
+    api_key: 
+    model: gpt-4o-mini
 
 player_1:
 

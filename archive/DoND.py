@@ -149,8 +149,8 @@ class DoND:
             dict: The current state of the game.
         """
         return {
-            'player_0_score': self.points_player_0,
-            'player_1_score': self.points_player_1,
+            'player_0_reward': self.points_player_0,
+            'player_1_reward': self.points_player_1,
             'quantities': self.quantities,
             'player_0_values': self.values_player_0,
             'player_1_values': self.values_player_1,

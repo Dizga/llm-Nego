@@ -49,8 +49,8 @@ class DoNDTrainer(TwoPlayerNegotiationTrainer):
         mean_score_player_0 = self.logger.iteration_stats['Mean Score player_0'] # Get the mean score of the current iteration
         mean_score_player_1 = self.logger.iteration_stats['Mean Score player_1'] # Get the mean score of the current iteration
         # Filter games with score better than the mean score
-        filtered_player_0 = metrics[metrics['player_0_score'] >= mean_score_player_0]
-        filtered_player_1 = metrics[metrics['player_1_score'] >= mean_score_player_1]
+        filtered_player_0 = metrics[metrics['player_0_reward'] >= mean_score_player_0]
+        filtered_player_1 = metrics[metrics['player_1_reward'] >= mean_score_player_1]
         player_0_filtered_files = [self.logger.it_folder + '/' + element for element in filtered_player_0['player_0_file'].tolist()]
         player_1_filtered_files = [self.logger.it_folder + '/' + element for element in filtered_player_1['player_1_file'].tolist()]
         player_0_filtered_jsons = [json.load(open(file_path, 'r')) for file_path in player_0_filtered_files]

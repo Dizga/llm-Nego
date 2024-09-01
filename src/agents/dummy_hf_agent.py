@@ -27,7 +27,7 @@ class DummyHfAgent(HfAgent):
         model_inputs = self.tokenizer([text], return_tensors="pt").to(self.device)
         #generated_ids = self.model.generate(model_inputs.input_ids, max_new_tokens=1000, do_sample=True)
         #generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
-        response = "<reason>I do not think.</reason><message>Nice weather today huh!</message>"
+        response = "<reason>I do not think./reason><propose>{ \"i_take\": {\"gold\": 200}, \"other_player_gets\": {\"gold\": 800} }</propose>"
 
         self.add_message(role="assistant", message=response)
         return response
