@@ -43,10 +43,8 @@ def dond_ppo_run_train_cycle(cfg):
         
         # Play games
         logging.info(f"Started playing {cfg.playing.games_per_iteration} games.")
-        log_gpu_usage()
         iteration_runner.run_iteration()
         logging.info(f"Completed the {cfg.playing.games_per_iteration} games.")
-        log_gpu_usage()
 
 
         compute_dond_statistics(iteration_runner.it_folder)
