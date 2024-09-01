@@ -48,7 +48,7 @@ player_0:
 
   agent_args:
     name: "openai_agent"
-    api_key: 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
+    api_key: 
     model: gpt-4o-mini
 
 player_1:
