@@ -7,7 +7,7 @@ cuda: true
 
 playing:
   nb_iterations: 50
-  games_per_iteration: 10
+  games_per_iteration: 2
 
 game:
   rounds_per_game: 1
@@ -85,20 +85,10 @@ player_1:
 
   type: "same_as_player_0"
 
-  player_args:
-    game_intro_file: "same_as_player_0"
-    chain_of_thought_file: "same_as_player_0"
-    max_retries: "same_as_player_0"
-    proposal_file: "same_as_player_0"
+  player_args: "same_as_player_0"
 
-  agent_args:
-    name: "agent_1"
-    device: "same_as_player_0"
-    tokenizer_name: "same_as_player_0"
-    inherit_model: True
-    model_args: "same_as_player_0"
-    lora_args: "same_as_player_0"
-    model_training_args: "same_as_player_0"
+  agent_args: "same_as_player_0"
+
     
 
 

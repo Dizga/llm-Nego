@@ -17,7 +17,7 @@ from environments.dond_player import DondPlayer
 from agents.hf_agent import HfAgent
 from agents.dummy_hf_agent import DummyHfAgent
 from agents.oai_agent import OaiAgent
-from utils.get_dond_player import get_agent
+from utils.get_dond_player import get_agents
 from utils.train_ppo_agent import train_agent_ppo
 from utils.inherit_args import inherit_args
 from utils.dond_statistics import compute_dond_statistics
@@ -33,13 +33,8 @@ def dond_ppo_run_train_cycle(cfg):
 
 
     dond_game = DondGame(**cfg.game)
-
-    player_0 = get_agent(dond_game, **cfg.player_0)
     inherit_args(cfg.player_0, cfg.player_1, "same_as_player_0")
-    player_1 = get_agent(dond_game, **cfg.player_1)
-
-    if cfg.player_1.agent_args.inherit_model: 
-        player_1.agent.model = player_0.agent.model
+    player_0, player_1 = get_agents(dond_game, cfg.player_0, cfg.player_1)
 
     iteration_runner = DondIterationRunner(
         output_directory,

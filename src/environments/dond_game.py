@@ -231,9 +231,9 @@ class DondGame:
             proposal (list): The list of proposed quantities for each item.
         """
         if self.current_turn() == "player_0":
-            self.player_0_prop = proposal
+            self.player_0_prop = proposal.i_take
         else:
-            self.player_1_prop = proposal
+            self.player_1_prop = proposal.i_take
 
     def render(self):
         """

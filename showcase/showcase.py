@@ -23,13 +23,13 @@ def showcase(file_or_string):
     for message in conversation:
         if message["role"] == "context":
             style = "bright_red"
-            role = 'Context'
+            role = 'Researcher'
         elif message["role"] == "assistant":
             style = "bright_yellow"
-            role = 'Assistant'
+            role = 'Player'
         else:
             style = "bright_green"
-            role = 'User'
+            role = 'Intermediary'
         table.add_row(role, message["content"], style=style)
 
     console.print(table)
