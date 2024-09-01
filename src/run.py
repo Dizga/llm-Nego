@@ -10,7 +10,7 @@ import os
 from experiments.dond_ppo_run_train_cycle import dond_ppo_run_train_cycle
 from experiments.bc_dond import run_bc_dond
 
-@hydra.main(config_path="../conf", config_name="light")
+@hydra.main(config_path="../conf", config_name="openai_coop")
 def main(cfg):
     if os.path.exists('conf/local.yaml'):
         local_cfg = OmegaConf.load('conf/local.yaml')

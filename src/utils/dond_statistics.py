@@ -27,8 +27,8 @@ def compute_dond_statistics(folder_path):
             df['quantities'] = df['quantities'].apply(eval)
             df['player_0_values'] = df['player_0_values'].apply(eval)
             df['player_1_values'] = df['player_1_values'].apply(eval)
-            df['player_0_proposal'] = df['player_0_proposal'].apply(eval)
-            df['player_1_proposal'] = df['player_1_proposal'].apply(eval)
+            df['player_0_finalization'] = df['player_0_finalization'].apply(eval)
+            df['player_1_finalization'] = df['player_1_finalization'].apply(eval)
 
             # Get total rewards of game
             player_0_total_rewards = df['player_0_reward'].sum()

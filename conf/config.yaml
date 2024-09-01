@@ -12,7 +12,7 @@ playing:
 game:
   rounds_per_game: 1
   max_turns: 10
-  mode: semicomp # semicomp, coop
+  mode: basic # basic, coop
   setup: random_read
   setups_file: src/environments/dond_setups.txt
 
@@ -42,7 +42,7 @@ player_0:
     game_intro_file: "src/prompts/coop/rules.txt"
     chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
     max_retries: 2
-    proposal_file: "src/prompts/coop/proposal.txt"
+    finalization_file: "src/prompts/coop/finalization.txt"
     new_round_file: "src/prompts/coop/new_round.txt"
 
   agent_args:

@@ -56,8 +56,8 @@ class DondIterationRunner:
             if game_state['new_round']:
                 pass
                 # self._start_new_round() TODO
-            is_proposal, content = self.players[player_id].play_move(game_state)
-            game_state = self.game.step(content, is_proposal=is_proposal)
+            is_finalization, content = self.players[player_id].play_move(game_state)
+            game_state = self.game.step(content, is_finalization=is_finalization)
             player_id = (player_id + 1) % 2
             
         # while True:

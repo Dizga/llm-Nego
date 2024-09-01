@@ -27,7 +27,7 @@ class DoND:
         self.quantities = {key: value for key, value in zip(self.items, [5, 4, 3])}
         self.values_player_0 = {key: value for key, value in zip(self.items, [5, 4, 3])}
         self.values_player_1 = {key: value for key, value in zip(self.items, [3, 4, 5])}
-        self.has_proposed = False
+        self.has_finalized = False
         self.player_0_prop = {}
         self.player_1_prop = {}
         self.points_player_0 = 0
@@ -36,13 +36,13 @@ class DoND:
         self.last_message = ""
         return self.quantities, self.values_player_0, self.values_player_1
 
-    def step(self, output: str | list, is_proposal=False):
+    def step(self, output: str | list, is_finalization=False):
         """
         Advances the game by one step.
 
         Args:
-            output (str | list): The output message or proposal list from the player.
-            is_proposal (bool): Indicates if the output is a proposal.
+            output (str | list): The output message or finalization list from the player.
+            is_finalization (bool): Indicates if the output is a finalization.
 
         Returns:
             bool: Whether the game should continue or not.
@@ -50,9 +50,9 @@ class DoND:
         self.turn += 1
         self.last_message = output
         
-        if self.has_proposed:
-            if not is_proposal: return False # player has not made a proposal after other player, automatic loss
-            self.propose(output)
+        if self.has_finalized:
+            if not is_finalization: return False # player has not made a finalization after other player, automatic loss
+            self.finalize(output)
 
             if self.verify_props_match():
                 self.set_points()
@@ -60,11 +60,11 @@ class DoND:
                 return False  # Game ended successfully
             return False  # Game ended with failure to be complementary
         
-        self.has_proposed = is_proposal
+        self.has_finalized = is_finalization
         
-        if is_proposal:
-            self.has_proposed = True
-            self.propose(output)
+        if is_finalization:
+            self.has_finalized = True
+            self.finalize(output)
             return True  # Continue the game
         
         if self.turn > self.max_turns:
@@ -90,7 +90,7 @@ class DoND:
             "ball_cnt": self.quantities["balls"],
             # "quantities": self.quantities,
             "agreement_reached": self.agreement_reached,
-            "has_proposed": self.has_proposed,
+            "has_finalized": self.has_finalized,
             "last_message": self.last_message
         }
         if player == "player_0":
@@ -106,10 +106,10 @@ class DoND:
 
     def verify_props_match(self):
         """
-        Verifies if the proposals from both players match the total quantities.
+        Verifies if the finalizations from both players match the total quantities.
 
         Returns:
-            bool: True if the proposals match, False otherwise.
+            bool: True if the finalizations match, False otherwise.
         """
         for item in self.items:
             if self.player_0_prop[item] + self.player_1_prop[item] != self.quantities[item]:
@@ -118,22 +118,22 @@ class DoND:
 
     def set_points(self):
         """
-        Sets the points for both players based on their proposals.
+        Sets the points for both players based on their finalizations.
         """
         self.points_player_0 = sum(self.values_player_0[item] * self.player_0_prop[item] for item in self.items)
         self.points_player_1 = sum(self.values_player_1[item] * self.player_1_prop[item] for item in self.items)
 
-    def propose(self, proposal: list):
+    def finalize(self, finalization: list):
         """
-        Records the proposal from the current player.
+        Records the finalization from the current player.
 
         Args:
-            proposal (list): The list of proposed quantities for each item.
+            finalization (list): The list of finalized quantities for each item.
         """
         if self.current_turn() == "player_0":
-            self.player_0_prop = {key: value for key, value in zip(self.items, proposal)}
+            self.player_0_prop = {key: value for key, value in zip(self.items, finalization)}
         else:
-            self.player_1_prop = {key: value for key, value in zip(self.items, proposal)}
+            self.player_1_prop = {key: value for key, value in zip(self.items, finalization)}
 
     def render(self):
         """
@@ -154,8 +154,8 @@ class DoND:
             'quantities': self.quantities,
             'player_0_values': self.values_player_0,
             'player_1_values': self.values_player_1,
-            'player_0_proposal': self.player_0_prop,
-            'player_1_proposal': self.player_1_prop,
+            'player_0_finalization': self.player_0_prop,
+            'player_1_finalization': self.player_1_prop,
             'agreement_reached': self.agreement_reached,
         }
 

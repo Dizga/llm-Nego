@@ -25,8 +25,8 @@ class Logger:
             'quantities',
             'player_0_values',
             'player_1_values',
-            'player_0_proposal',
-            'player_1_proposal',
+            'player_0_finalization',
+            'player_1_finalization',
             'reach_agreement',
             'player_0_file',
             'player_1_file'

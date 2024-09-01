@@ -7,11 +7,12 @@ from environments.dond_game import DondGame
 
 class DondPlayer():
     def __init__(self, 
+                 dond_game,
                  game_intro_file, 
                  chain_of_thought_file, 
                  new_round_file,
                  max_retries,
-                 proposal_file,
+                 finalization_file,
                  agent, 
                  player_type="player_0"):
         """
@@ -34,18 +35,19 @@ class DondPlayer():
         with open(new_round_file, 'r') as file:
             self.new_round_prompt = file.read()
 
-        with open(proposal_file, 'r') as file:
-            self.proposal_prompt = file.read()
+        with open(finalization_file, 'r') as file:
+            self.finalization_prompt = file.read()
         
         self.chain_of_thought = None
         if chain_of_thought_file:
             with open(chain_of_thought_file, 'r') as file:
                 self.chain_of_thought = file.read()
         
+        self.dond_game = dond_game
         self.max_retries = max_retries
         self.agent = agent
         self.player_type = player_type
-        self.other_has_proposed = False  # whether the other player has made a proposal
+        self.other_has_finalized = False  # whether the other player has made a finalization
 
     def play_move(self, state):
         """
@@ -104,18 +106,18 @@ class DondPlayer():
         Returns:
             str: The constructed user message.
         """
-        # Create dummy proposal to include in game explanation
-        dummy_proposal = {key: "..." for key in state['quantities']}
-        state['dummy_proposal'] = dummy_proposal
+        # Create dummy finalization to include in game explanation
+        dummy_finalization = {key: "..." for key in state['quantities']}
+        state['dummy_finalization'] = dummy_finalization
 
         user_message = ""
         if self.is_new_game:
             user_message += self.game_basics.format(**state)
         elif self.first_turn:
             user_message += self.new_round_prompt.format(**state)
-        if state.get("has_proposed"):
-            self.other_has_proposed = True
-            user_message += self.proposal_prompt.format(**state)
+        if state.get("has_finalized"):
+            self.other_has_finalized = True
+            user_message += self.finalization_prompt.format(**state)
         else:
             user_message += f"The other player said: '{state['last_message']}'\n" if state['last_message'] else "You are the first to play, there are no messages yet.\n"
             if self.chain_of_thought is not None:
@@ -138,29 +140,29 @@ class DondPlayer():
         if "<reason>" not in response or "</reason>" not in response:
             errors.append("Missing <reason>...</reason> tag.")
         
-        # Check if message or propose tag exists, but not both
+        # Check if message or finalize tag exists, but not both
         has_message = "<message>" in response and "</message>" in response
-        has_propose = "<finalize>" in response and "</finalize>" in response
+        has_finalize = "<finalize>" in response and "</finalize>" in response
         
-        if has_message and has_propose:
+        if has_message and has_finalize:
             errors.append("Response contains both <message>...</message> and <finalize>...</finalize> tags. Only one is allowed per response.")
-        elif not has_message and not has_propose:
+        elif not has_message and not has_finalize:
             errors.append("Response must contain either <message>...</message> or <finalize>...</finalize> tag. Do not forget the closing tag.")
 
-        if self.other_has_proposed:
-            if not has_propose:
-                errors.append("The other player has made a proposal. You must propose also.")
+        if self.other_has_finalized:
+            if not has_finalize:
+                errors.append("The other player has made a finalization. You must finalize also.")
         
-        # Check if propose tag is JSON parsable and follows the specified format
-        if has_propose:
-            propose_content = response.split("<finalize>")[1].split("</finalize>")[0].strip()
+        # Check if finalize tag is JSON parsable and follows the specified format
+        if has_finalize:
+            finalize_content = response.split("<finalize>")[1].split("</finalize>")[0].strip()
             try:
-                propose_json = json.loads(propose_content)
-                if not all(key in propose_json for key in ["i_take", "other_player_gets"]):
+                finalize_json = json.loads(finalize_content)
+                if not all(key in finalize_json for key in ["i_take", "other_player_gets"]):
                     errors.append('The <finalize> tag must contain JSON with keys "i_take" and "other_player_gets".')
                 else:
-                    i_take = propose_json["i_take"]
-                    other_player_gets = propose_json["other_player_gets"]
+                    i_take = finalize_json["i_take"]
+                    other_player_gets = finalize_json["other_player_gets"]
                     # Generalized validation for arbitrary items
                     if not (isinstance(i_take, dict) and 
                             all(key in i_take for key in self.dond_game.items) and 
@@ -188,7 +190,7 @@ class DondPlayer():
             message (str): The response message.
 
         Returns:
-            tuple: A tuple containing a boolean indicating if it's a proposal and the extracted content.
+            tuple: A tuple containing a boolean indicating if it's a finalization and the extracted content.
         """
         pattern = r'<message>(.*?)</message>|<finalize>\s*\{\s*"i_take"\s*:\s*(.*?)\s*,\s*"other_player_gets"\s*:\s*(.*?)\s*\}\s*</finalize>'
         match = re.search(pattern, message, re.DOTALL)
@@ -197,7 +199,7 @@ class DondPlayer():
             return False, ""
         
         elif match.group(2):
-            # Extract json from proposal
+            # Extract json from finalization
             i_take = json.loads(match.group(2))
             other_player_gets = json.loads(match.group(3))
             return True, {"i_take": i_take, "other_player_gets": other_player_gets}
@@ -209,7 +211,7 @@ class DondPlayer():
         """
         Resets round attributes.
         """
-        self.other_has_proposed = False
+        self.other_has_finalized = False
         self.first_turn = True
     
     def new_game(self):
