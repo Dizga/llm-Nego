@@ -77,6 +77,8 @@ class HfAgent:
                 raise ValueError("model_args must be provided when inheriting a model.")
             self.model = AutoModelForCausalLMWithValueHead.from_pretrained(**model_args)
             self.model.gradient_checkpointing_enable()
+            self.model.to(self.device)
+
 
         # Initialize tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
@@ -94,8 +96,8 @@ class HfAgent:
         else:
             raise ValueError("model_training_args must be provided for training configuration.")
 
-        # Move model to the specified device
-        self.model.to(self.device)
+        self.history = []
+
 
     
     def _format_messages(self, messages: List[dict]) -> str:

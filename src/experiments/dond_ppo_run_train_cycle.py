@@ -16,6 +16,7 @@ from utils.get_dond_player import get_agents
 from utils.train_ppo_agent import train_agent_ppo
 from utils.dond_statistics import compute_dond_statistics
 from utils.log_gpu_usage import log_gpu_usage
+from utils.inherit_args import inherit_args
 
 
 def dond_ppo_run_train_cycle(cfg): 
@@ -34,8 +35,7 @@ def dond_ppo_run_train_cycle(cfg):
         output_directory,
         cfg.playing.games_per_iteration, 
         game=dond_game,
-        player_0=player_0,
-        player_1=player_1,
+        players = [player_0, player_1]
     )
 
 
