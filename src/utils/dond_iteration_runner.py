@@ -22,20 +22,13 @@ class DondIterationRunner:
     def __init__(self, 
                  out_dir,
                  games_per_iteration, 
-<<<<<<< HEAD
                  game: DondGame, 
                  player_0: DondPlayer, 
                  player_1: DondPlayer, 
-=======
-                 game: DondGame,
-                 players: list[DondPlayer],
-                 logger: DondLogger,
->>>>>>> origin/main
                  ):
 
         self.games_per_iteration = games_per_iteration
         self.game = game
-<<<<<<< HEAD
         self.player_0 = player_0
         self.player_1 = player_1
 
@@ -45,10 +38,6 @@ class DondIterationRunner:
         self.iteration_nb = 0
         self.game_nb = 0
         self.round_nb = 0
-=======
-        self.players = players
-        self.logger = logger
->>>>>>> origin/main
 
     def run_iteration(self):
         self.new_iteration()
@@ -56,17 +45,11 @@ class DondIterationRunner:
             self.run_game()
 
     def run_game(self):
-<<<<<<< HEAD
         logging.info(f"Game {self.game_nb} of iteration {self.iteration_nb} started.")
         self.new_game()
         players = [self.player_0, self.player_1]
         self.player_0.new_game()
         self.player_1.new_game()
-=======
-        self.logger.log_info("Game started.")
-        self.logger.new_game()
-        self._start_new_game()
->>>>>>> origin/main
         game_state = self.game.reset()
         player_id = 0
         while not game_state['game_ended']:
@@ -77,7 +60,6 @@ class DondIterationRunner:
             player_id = (player_id + 1) % 2
             
         # while True:
-<<<<<<< HEAD
         self.log_game(self.game.export(), 
                              self.player_0.get_history(), 
                              self.player_1.get_history())
@@ -149,17 +131,3 @@ class DondIterationRunner:
         file_path = os.path.join(self.run_dir, f"{player_name}.json")
         with open(file_path, 'w') as f:
             json.dump(messages, f, indent=4)
-=======
-        self.logger.log_game(*self.game.export(), 
-                             self.players[0].get_history(), 
-                             self.players[1].get_history())
-        self.logger.log_info("Game completed.")
-
-    def _start_new_game(self):
-        for player in self.players:
-            player.new_game()
-
-    def _start_new_round(self):
-        for player in self.players:
-            player.new_round()
->>>>>>> origin/main

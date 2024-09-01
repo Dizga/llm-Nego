@@ -41,14 +41,10 @@ def extract_hf_ppo_dataset(folder_path: str,
             # Extract queries, responses, and scores
             context = []
             count = -1
-<<<<<<< HEAD
-            for message in conversation:
-=======
 
             # extract queries, responses and scores
             for message in game:
                 if message['is_error']: continue
->>>>>>> origin/main
                 if message['role'] == "assistant":
                     queries.append(context.copy() if full_context else context[-1:])
                     responses.append(message)
