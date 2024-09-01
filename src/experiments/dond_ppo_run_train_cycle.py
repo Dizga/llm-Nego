@@ -35,8 +35,7 @@ def dond_ppo_run_train_cycle(cfg):
         output_directory,
         cfg.playing.games_per_iteration, 
         game=dond_game,
-        player_0=player_0,
-        player_1=player_1,
+        players = [player_0, player_1]
     )
 
 

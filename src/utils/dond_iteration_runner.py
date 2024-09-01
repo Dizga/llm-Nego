@@ -23,14 +23,15 @@ class DondIterationRunner:
                  out_dir,
                  games_per_iteration, 
                  game: DondGame, 
-                 player_0: DondPlayer, 
-                 player_1: DondPlayer, 
+                 players
                  ):
 
         self.games_per_iteration = games_per_iteration
         self.game = game
-        self.player_0 = player_0
-        self.player_1 = player_1
+        self.players = players
+        self.player_0 = players[0]
+        self.player_1 = players[1]
+
 
         self.run_dir = out_dir
         self.datenow = datetime.now().strftime('%Y_%m_%d_%H_%M')
@@ -47,14 +48,14 @@ class DondIterationRunner:
     def run_game(self):
         logging.info(f"Game {self.game_nb} of iteration {self.iteration_nb} started.")
         self.new_game()
-        players = [self.player_0, self.player_1]
         self.player_0.new_game()
         self.player_1.new_game()
         game_state = self.game.reset()
         player_id = 0
         while not game_state['game_ended']:
             if game_state['new_round']:
-                self._start_new_round()
+                pass
+                # self._start_new_round() TODO
             is_proposal, content = self.players[player_id].play_move(game_state)
             game_state = self.game.step(content, is_proposal=is_proposal)
             player_id = (player_id + 1) % 2

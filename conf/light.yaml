@@ -7,7 +7,7 @@ playing:
   games_per_iteration: 1
 
 player_0:
-  type: oai
+  type: dummy_hf
 
   player_args:
     game_intro_file: "src/prompts/semicomp/rules.txt"

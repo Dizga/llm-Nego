@@ -45,13 +45,11 @@ def get_agents(
     # Create players
     player_0 = DondPlayer(
         **player_0_args.player_args, 
-        dond_game=dond_game,
         agent=agent_0, 
     )
     
     player_1 = DondPlayer(
         **player_1_args.player_args, 
-        dond_game=dond_game,
         agent=agent_1, 
     )
 
