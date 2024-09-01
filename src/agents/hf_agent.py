@@ -16,7 +16,6 @@ from trl import (
 from peft import LoraConfig
 import os
 
-<<<<<<< HEAD
 from utils.log_gpu_usage import log_gpu_usage
 
 
@@ -38,22 +37,6 @@ class HfAgent:
         model_training_args: dict = None,
         out_folder: str = "checkpoints",
     ) -> None:
-=======
-from agents.base_agent import BaseAgent
-
-class HfAgent(BaseAgent):
-    
-    def __init__(self,
-                 name="agent",
-                 device="cuda",  # cuda or cpu
-                 tokenizer="microsoft/Phi-3-mini-128k-instruct",
-                 inherit_model=False,
-                 model_args=None,
-                 lora_args= None,
-                 model_training_args= None,
-                 out_folder="checkpoints",
-                 ) -> None:
->>>>>>> origin/main
         """
         Initializes the HfAgent.
 
@@ -172,7 +155,6 @@ class HfAgent(BaseAgent):
                 messages = entry.get("messages", [])
                 formatted = self._format_messages(messages)
 
-<<<<<<< HEAD
             # Query, conversation
             elif isinstance(entry, list):
                 # Assuming list of messages
@@ -341,7 +323,4 @@ class HfAgent(BaseAgent):
         # Add assistant response to history
         self.add_message(role="assistant", message=response)
 
-=======
-        self.add_message(role="assistant", message=response)
->>>>>>> origin/main
         return response
