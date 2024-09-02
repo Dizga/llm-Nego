@@ -109,6 +109,7 @@ class DondPlayer():
         # Create dummy finalization to include in game explanation
         dummy_finalization = {key: "..." for key in state['quantities']}
         state['dummy_finalization'] = dummy_finalization
+        state['game_mode_specificities'] = self.game_state_specificities(state['mode'])
 
         user_message = ""
         if self.is_new_game:
@@ -123,6 +124,24 @@ class DondPlayer():
             if self.chain_of_thought is not None:
                 user_message += self.chain_of_thought.format(**state)
         return user_message
+    
+    def game_state_specificities(self, mode):
+
+        if mode == "basic":
+            return """
+            You are playing the vanilla variation of this game.
+            The reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.
+            """
+        
+        if mode == "coop":
+            return """
+            You are playing the cooperative variation of the deal-or-no-deal game. 
+            The reward you are trying to maximize is calculated as follows: your utility values multiplied by items you take + the other player's utility values multiplied by the items they take
+
+            I repeat, it is the reward that you are trying to maximize and not only your utility values multiplied by items you take. It is the sum of both total utilities, per the cooperation mode.
+            """
+
+
     
     def validate(self, response):
         """

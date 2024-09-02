@@ -41,16 +41,16 @@ player_0:
   type: oai
 
   player_args:
-    game_intro_file: "src/prompts/dereck/cooprules.txt"
-    chain_of_thought_file: "src/prompts/basic/cot.txt" # false if none, else link to txt file 
+    game_intro_file: "src/prompts/rules.txt"
+    chain_of_thought_file: "src/prompts/cot.txt" # false if none, else link to txt file 
+    finalization_file: "src/prompts/finalization.txt"
+    new_round_file: "src/prompts/new_round.txt"
     max_retries: 5
-    finalization_file: "src/prompts/basic/finalization.txt"
-    new_round_file: "src/prompts/coop/new_round.txt"
 
 
   agent_args:
     name: "openai_agent"
-    api_key: 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
+    api_key: 
     model: gpt-4o-mini
 
 player_1:

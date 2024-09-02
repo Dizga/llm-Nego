@@ -1,4 +1,0 @@
-You scored {last_score} points in this round.
-This is a new round, please decide how to divide {quantities} between yourself and your partner.
-Your values are {values}.
-You don't know your partner's item values. 

@@ -39,11 +39,11 @@ player_0:
   type: hf
 
   player_args:
-    game_intro_file: "src/prompts/coop/rules.txt"
-    chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
+    game_intro_file: "src/prompts/rules.txt"
+    chain_of_thought_file: "src/prompts/cot.txt" # false if none, else link to txt file 
     max_retries: 2
-    finalization_file: "src/prompts/coop/finalization.txt"
-    new_round_file: "src/prompts/coop/new_round.txt"
+    finalization_file: "src/prompts/finalization.txt"
+    new_round_file: "src/prompts/new_round.txt"
 
   agent_args:
     name: "agent_0"

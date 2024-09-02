@@ -117,7 +117,7 @@ def nego_game(
 
             if player_finalization["accept_opponent_finalization"]:
                 logger.log_info("Game ended with acceptance.")
-                logger.log_info(f"Final finalization: {current_finalization}")
+                logger.log_info(f"finalization: {current_finalization}")
                 return calculate_rewards(state, player.name, opponent.name, current_finalization), convo
 
             current_finalization = player_finalization["my_finalization"]

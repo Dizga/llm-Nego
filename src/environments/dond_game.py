@@ -177,6 +177,7 @@ class DondGame:
         if player == "current_turn":
             player = self.current_turn()
         out = {
+            'mode': self.mode,
             'game_ended': self.game_ended,
             "new_round": self.new_round,
             "current_turn": self.current_turn(),
