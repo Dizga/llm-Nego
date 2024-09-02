@@ -9,11 +9,11 @@ from omegaconf import OmegaConf
 import torch
 # local imports
 from environments.dond_game import DondGame
-from environments.dond_player import DondPlayer
+from agents.dond_player import DondPlayer
 from agents.hf_agent import HfAgent
 from agents.dummy_hf_agent import DummyHfAgent
 from agents.oai_agent import OaiAgent
-from utils.extract_dond_ppo_dataset import extract_hf_ppo_dataset
+from training.extract_dond_ppo_dataset import extract_hf_ppo_dataset
 
 def delete_tensor_list(list):
     for el in list: 

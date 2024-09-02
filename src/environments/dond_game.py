@@ -71,6 +71,7 @@ class DondGame:
         self.round_nb = 1
         self.new_round = True
         self.game_ended = False
+        self.last_message = None
         self.player_0_prop_history = []
         self.player_1_prop_history = []
         self.points_player_0_history = []
@@ -99,7 +100,7 @@ class DondGame:
         self.points_player_0 = 0
         self.points_player_1 = 0
         self.agreement_reached = False
-        self.last_message = ""
+        self.last_message = None
 
     def archive_player_states(self):
         self.player_0_prop_history.append(self.player_0_prop)
@@ -115,6 +116,8 @@ class DondGame:
         self.round_nb += 1
         self.turn = 0
         self.has_finalized = False
+        self.last_message = None
+
         self.archive_player_states()
         self.reset_player_bookkeeping()
         self.new_round = True
@@ -137,14 +140,23 @@ class DondGame:
         
         self.last_message = output
 
-        if self.has_finalized:
+        if self.has_finalized: # Other player made finalization last turn
+
             if not is_finalization: # player has not made a finalization after other player, automatic loss
-                self.end_round()
-                return self.get_state()
-            self.finalize(output)
-            if self.verify_props_match():
-                self.set_points()
-                self.agreement_reached = True
+                self.points_player_0 = 0
+                self.points_player_1 = 0
+                self.agreement_reached = False
+            
+            else: # Player has made a finalization
+                self.finalize(output)
+
+                if self.verify_props_match(): # If finalizations are complementary
+                    self.set_points()
+                    self.agreement_reached = True
+                else:
+                    self.points_player_0 = 0
+                    self.points_player_1 = 0
+                    self.agreement_reached = False
             self.end_round()
             return self.get_state()  
 

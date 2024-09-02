@@ -7,13 +7,13 @@ from hydra.core.hydra_config import HydraConfig
 from omegaconf import OmegaConf
 
 # local imports
-from environments.dond_player import DondPlayer
+from agents.dond_player import DondPlayer
 from agents.hf_agent import HfAgent
 from agents.dummy_hf_agent import DummyHfAgent
 from agents.oai_agent import OaiAgent
 
 
-def get_agents(
+def get_dond_players(
     dond_game,
     player_0_args,
     player_1_args,
@@ -39,7 +39,7 @@ def get_agents(
         raise ValueError(f"Unknown agent type: {player_1_args.type}")
 
     # Handle case where player 1 inherits the model from player 0
-    if player_1_args.agent_args.get('inherit_model', False) and hasattr(agent_0, 'model') and not isinstance(agent_1, OaiAgent):
+    if player_1_args.type != "oai" and player_1_args.agent_args.inherit_model: 
         agent_1.model = agent_0.model
 
     # Create players

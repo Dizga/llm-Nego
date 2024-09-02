@@ -6,14 +6,14 @@ import logging.config
 
 
 # local imports
-from utils.dond_iteration_runner import DondIterationRunner
+from experiments.dond_iteration_runner import DondIterationRunner
 from environments.dond_game import DondGame
-from environments.dond_player import DondPlayer
+from agents.dond_player import DondPlayer
 from agents.hf_agent import HfAgent
 from agents.dummy_hf_agent import DummyHfAgent
 from agents.oai_agent import OaiAgent
-from utils.get_dond_player import get_agents
-from utils.train_ppo_agent import train_agent_ppo
+from agents.get_dond_players import get_dond_players
+from training.train_ppo_agent import train_agent_ppo
 from utils.dond_statistics import compute_dond_statistics
 from utils.log_gpu_usage import log_gpu_usage
 from utils.inherit_args import inherit_args
@@ -29,7 +29,7 @@ def dond_ppo_run_train_cycle(cfg):
 
     dond_game = DondGame(**cfg.game)
     inherit_args(cfg.player_0, cfg.player_1, "same_as_player_0")
-    player_0, player_1 = get_agents(dond_game, cfg.player_0, cfg.player_1)
+    player_0, player_1 = get_dond_players(dond_game, cfg.player_0, cfg.player_1)
 
     iteration_runner = DondIterationRunner(
         output_directory,

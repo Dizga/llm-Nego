@@ -7,7 +7,7 @@ cuda: true
 
 playing:
   nb_iterations: 50
-  games_per_iteration: 2
+  games_per_iteration: 10
 
 game:
   rounds_per_game: 1
@@ -41,9 +41,9 @@ player_0:
   player_args:
     game_intro_file: "src/prompts/rules.txt"
     chain_of_thought_file: "src/prompts/cot.txt" # false if none, else link to txt file 
-    max_retries: 2
     finalization_file: "src/prompts/finalization.txt"
     new_round_file: "src/prompts/new_round.txt"
+    max_retries: 2
 
   agent_args:
     name: "agent_0"
@@ -83,12 +83,19 @@ player_0:
       load_best_model_at_end: True
 
 player_1:
-
   type: "same_as_player_0"
-
   player_args: "same_as_player_0"
-
   agent_args: "same_as_player_0"
+    inherit_model: True
+    name: "same_as_player_0"
+    device: "same_as_player_0"
+    tokenizer_name: "same_as_player_0"
+    inherit_model: True
+    model_args: "same_as_player_0"
+    bits_and_bytes_args: "same_as_player_0"
+    lora_args: "same_as_player_0"
+    model_training_args: "same_as_player_0"
+
 
     
 

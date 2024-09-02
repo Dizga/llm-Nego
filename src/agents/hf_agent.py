@@ -98,8 +98,6 @@ class HfAgent:
 
         self.history = []
 
-
-    
     def _format_messages(self, messages: List[dict]) -> str:
         """
         Formats a list of messages into a single string suitable for the model.
