@@ -40,8 +40,7 @@ def compute_dond_statistics(folder_path):
                 p0vs = row['player_0_values']
                 p1vs = row['player_1_values']
                 for key in p0vs:
-                    if row['agreement_reached']:
-                        coop_optimum += max(p0vs[key], p1vs[key]) * row['quantities'][key]
+                    coop_optimum += max(p0vs[key], p1vs[key]) * row['quantities'][key]
             total_reward_over_coop_optimum = player_0_total_rewards / coop_optimum
 
             agreements_reached_percentage = df['agreement_reached'].sum()/num_rounds * 100
