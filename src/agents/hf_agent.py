@@ -165,24 +165,27 @@ class HfAgent:
         for entry in data:
             if isinstance(entry, dict):
                 messages = entry.get("messages", [])
-                formatted = self._format_messages(messages)
             elif isinstance(entry, list):
-                formatted = self._format_messages(entry)
+                messages = entry
             else:
                 raise ValueError("Each data entry must be a dict or list representing messages.")
 
+            # Apply the chat template to format the conversation
+            formatted = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=False)
+            
             # Tokenize the formatted conversation
             tokenized = self.tokenizer(
-                formatted,
+                [formatted],
                 return_tensors="pt",
                 padding=True,
                 truncation=True,
-            )
+            ).to(self.device)
 
-            input_ids_list.append(tokenized["input_ids"].squeeze(0).to(self.device))
-            attention_mask_list.append(tokenized["attention_mask"].squeeze(0).to(self.device))
+            input_ids_list.append(tokenized["input_ids"].squeeze(0))
+            attention_mask_list.append(tokenized["attention_mask"].squeeze(0))
 
         return input_ids_list, attention_mask_list
+
 
     def train_ppo_json(
         self, queries: List[dict], responses: List[dict], scores: List[float]
@@ -300,9 +303,9 @@ class HfAgent:
         user_msg = message
         self.add_message(role="user", message=user_msg, is_error=is_error, is_new_round=is_new_round)
 
-        text = self.tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
+        text = self.tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True) #https://huggingface.co/docs/transformers/main/en/chat_templating
         model_inputs = self.tokenizer([text], return_tensors="pt").to(self.device)
-        generated_ids = self.model.generate(**model_inputs, max_new_tokens=1000, do_sample=True) # TODO: add attention mask
+        generated_ids = self.model.generate(**model_inputs, max_new_tokens=1000, do_sample=True) 
         generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
         response = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
