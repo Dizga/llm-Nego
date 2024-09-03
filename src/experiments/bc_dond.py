@@ -8,7 +8,7 @@ from omegaconf import OmegaConf
 
 # local imports
 from environments.dond_game import DondGame
-from environments.dond_player import DondPlayer
+from agents.dond_player import DondPlayer
 from agents.hf_agent import HfAgent
 from agents.dummy_hf_agent import DummyHfAgent
 from agents.oai_agent import OaiAgent
@@ -54,8 +54,8 @@ class BcDondTrainer:
             if game_state['new_round']:
                 self.player_0.new_round()
                 self.player_1.new_round()
-            is_proposal, content = players[player_id].play_move(game_state)
-            game_state = self.game.step(content, is_proposal=is_proposal)
+            is_finalization, content = players[player_id].play_move(game_state)
+            game_state = self.game.step(content, is_finalization=is_finalization)
             player_id = (player_id + 1) % 2
             
         # while True:

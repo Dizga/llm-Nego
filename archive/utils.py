@@ -23,9 +23,9 @@ def generate_initial_state(
         "turns": np.random.poisson(expected_turns)
     }
 
-def calculate_remaining_items(item_quantities: List[int], proposal: List[int]) -> List[int]:
-    """Calculate the remaining items after a proposal."""
-    return [item_quantities[i] - proposal[i] for i in range(len(item_quantities))]
+def calculate_remaining_items(item_quantities: List[int], finalization: List[int]) -> List[int]:
+    """Calculate the remaining items after a finalization."""
+    return [item_quantities[i] - finalization[i] for i in range(len(item_quantities))]
 
 def calculate_end_probability(turn: int, lambda_: float) -> float:
     """Calculate the probability that the game ends on the given turn."""
@@ -39,17 +39,17 @@ def calculate_end_probability(turn: int, lambda_: float) -> float:
     return P_end_at_t_given_reached_t
 
 def calculate_rewards(
-    state: Dict[str, Union[int, List[int], Dict[str, List[int]]]], player: str, opponent: str, proposal: List[int]
+    state: Dict[str, Union[int, List[int], Dict[str, List[int]]]], player: str, opponent: str, finalization: List[int]
 ) -> Dict[str, int]:
-    """Calculate the rewards for both players based on the proposal."""
+    """Calculate the rewards for both players based on the finalization."""
     type_of_items, item_quantities, utilities, _ = state.values()
 
     player_utilities = utilities[player]
     opponent_utilities = utilities[opponent]
 
-    remaining_items = calculate_remaining_items(item_quantities, proposal)
+    remaining_items = calculate_remaining_items(item_quantities, finalization)
 
     return {
         player: sum([remaining_items[i] * player_utilities[i] for i in range(type_of_items)]),
-        opponent: sum([proposal[i] * opponent_utilities[i] for i in range(type_of_items)])
+        opponent: sum([finalization[i] * opponent_utilities[i] for i in range(type_of_items)])
     }

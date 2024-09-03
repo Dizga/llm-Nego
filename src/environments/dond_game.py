@@ -62,7 +62,7 @@ class DondGame:
             tuple: The quantities of items and the values for player 0 and player 1.
         """
         self.turn = 0
-        self.has_proposed = False
+        self.has_finalized = False
 
         # changes the quantities and values of the players
         self.set_new_game_settings()
@@ -71,6 +71,9 @@ class DondGame:
         self.round_nb = 1
         self.new_round = True
         self.game_ended = False
+        self.last_message = None
+        self.points_player_0 = 0
+        self.points_player_1 = 0
         self.player_0_prop_history = []
         self.player_1_prop_history = []
         self.points_player_0_history = []
@@ -96,10 +99,8 @@ class DondGame:
     def reset_player_bookkeeping(self):
         self.player_0_prop = {}
         self.player_1_prop = {}
-        self.points_player_0 = 0
-        self.points_player_1 = 0
         self.agreement_reached = False
-        self.last_message = ""
+        self.last_message = None
 
     def archive_player_states(self):
         self.player_0_prop_history.append(self.player_0_prop)
@@ -114,7 +115,9 @@ class DondGame:
     def end_round(self):
         self.round_nb += 1
         self.turn = 0
-        self.has_proposed = False
+        self.has_finalized = False
+        self.last_message = None
+
         self.archive_player_states()
         self.reset_player_bookkeeping()
         self.new_round = True
@@ -123,13 +126,13 @@ class DondGame:
         self.set_new_game_settings()
 
     
-    def step(self, output, is_proposal=False)-> bool: 
+    def step(self, output, is_finalization=False)-> bool: 
         """
         Advances the game by one step.
 
         Args:
-            output (str | list): The output message or proposal list from the player.
-            is_proposal (bool): Indicates if the output is a proposal.
+            output (str | list): The output message or finalization list from the player.
+            is_finalization (bool): Indicates if the output is a finalization.
 
         Returns:
             bool: False if game ended else True.
@@ -137,22 +140,32 @@ class DondGame:
         
         self.last_message = output
 
-        if self.has_proposed:
-            if not is_proposal: # player has not made a proposal after other player, automatic loss
-                self.end_round()
-                return self.get_state()
-            self.propose(output)
-            if self.verify_props_match():
-                self.set_points()
-                self.agreement_reached = True
+        if self.has_finalized: # Other player made finalization last turn
+
+            if not is_finalization: # player has not made a finalization after other player, automatic loss
+                self.points_player_0 = 0
+                self.points_player_1 = 0
+                self.agreement_reached = False
+            
+            else: # Player has made a finalization
+                self.finalize(output)
+
+                if self.verify_props_match(): # If finalizations are complementary
+                    self.set_points()
+                    self.agreement_reached = True
+                else:
+                    self.points_player_0 = 0
+                    self.points_player_1 = 0
+                    self.agreement_reached = False
+                    
             self.end_round()
             return self.get_state()  
 
-        self.has_proposed = is_proposal
+        self.has_finalized = is_finalization
 
-        if is_proposal:
-            self.has_proposed = True
-            self.propose(output)
+        if is_finalization:
+            self.has_finalized = True
+            self.finalize(output)
         
         self.turn += 1
 
@@ -176,16 +189,20 @@ class DondGame:
         """
         if player == "current_turn":
             player = self.current_turn()
+
         out = {
+            'mode': self.mode,
             'game_ended': self.game_ended,
             "new_round": self.new_round,
             "current_turn": self.current_turn(),
             "round_number": self.round_nb,
+            "nb_rounds": self.rounds_per_game,
             "quantities": self.quantities,
             "agreement_reached": self.agreement_reached,
-            "has_proposed": self.has_proposed,
+            "has_finalized": self.has_finalized,
             "last_message": self.last_message
         }
+        
         if player == "player_0":
             out["values"] = self.values_player_0
             out["last_score"] = self.points_player_0
@@ -197,10 +214,10 @@ class DondGame:
 
     def verify_props_match(self):
         """
-        Verifies if the proposals from both players match the total quantities.
+        Verifies if the finalizations from both players match the total quantities.
 
         Returns:
-            bool: True if the proposals match, False otherwise.
+            bool: True if the finalizations match, False otherwise.
         """
         for item in self.items:
             if self.player_0_prop[item] + self.player_1_prop[item] != self.quantities[item]:
@@ -209,7 +226,7 @@ class DondGame:
 
     def set_points(self):
         """
-        Sets the points for both players based on their proposals.
+        Sets the points for both players based on their finalizations.
         """
         points_player_0 = sum(self.values_player_0[item] * self.player_0_prop[item] for item in self.items)
         points_player_1 = sum(self.values_player_1[item] * self.player_1_prop[item] for item in self.items)
@@ -219,27 +236,22 @@ class DondGame:
             self.points_player_0 = total
             self.points_player_1 = total
 
-        elif self.mode == "semicomp":
+        elif self.mode == "basic":
             self.points_player_0 = points_player_0
             self.points_player_1 = points_player_1
 
-    def propose(self, proposal: list):
+    def finalize(self, finalization: list):
         """
-        Records the proposal from the current player.
+        Records the finalization from the current player.
 
         Args:
-            proposal (list): The list of proposed quantities for each item.
+            finalization (list): The list of finalized quantities for each item.
         """
         if self.current_turn() == "player_0":
-            self.player_0_prop = proposal.i_take
+            self.player_0_prop = finalization['i_take']
         else:
-            self.player_1_prop = proposal.i_take
+            self.player_1_prop = finalization['i_take']
 
-    def render(self):
-        """
-        Renders the current state of the game (not implemented).
-        """
-        pass
 
     def export(self):
         """
@@ -249,12 +261,6 @@ class DondGame:
         for round_id in range(self.rounds_per_game):
             rounds.append(self.export_round(round_id))
         return rounds
-
-    def export_summary(self):
-        return {
-            'player_0_total_reward': sum(self.points_player_0_history),
-            'player_1_total_reward': sum(self.points_player_1_history),
-        }
 
     def export_round(self, id=-1):
         """
@@ -271,8 +277,8 @@ class DondGame:
             'quantities': self.quantities_history[id],
             'player_0_values': self.values_player_0_history[id],
             'player_1_values': self.values_player_1_history[id],
-            'player_0_proposal': self.player_0_prop_history[id],
-            'player_1_proposal': self.player_1_prop_history[id],
+            'player_0_finalization': self.player_0_prop_history[id],
+            'player_1_finalization': self.player_1_prop_history[id],
             'agreement_reached': self.agreement_reached_history[id],
         }
 

@@ -28,37 +28,37 @@ def generate_initial_state(items_min=3, items_max=3, quantity_min=1, quantity_ma
         "item_quantities": item_quantities,
         "player1_utility_values": your_utility_values,
         "player2_utility_values": opponent_utility_values,
-        "opponent_proposal": None
+        "opponent_finalization": None
     }
 
 def calculate_remaining_items(item_quantities, opponent_take):
     return [item_quantities[i] - opponent_take[i] for i in range(len(item_quantities))]
 
-def generate_prompt(turn, item_quantities, your_utility_values, opponent_utility_values, opponent_proposal=None):
+def generate_prompt(turn, item_quantities, your_utility_values, opponent_utility_values, opponent_finalization=None):
     item_info = ", ".join([f"{item_quantities[i]} units of item_{i+1}" for i in range(len(item_quantities))])
     your_utilities = ", ".join([f"{your_utility_values[i]} for item_{i+1}" for i in range(len(your_utility_values))])
     opponent_utilities = ", ".join([f"{opponent_utility_values[i]} for item_{i+1}" for i in range(len(opponent_utility_values))])
 
-    if opponent_proposal is None:
-        opponent_proposal_text = "There is no opponent proposal yet. Make a proposal."
+    if opponent_finalization is None:
+        opponent_finalization_text = "There is no opponent finalization yet. Make a finalization."
     else:
-        opponent_take = opponent_proposal
+        opponent_take = opponent_finalization
         remaining_items = calculate_remaining_items(item_quantities, opponent_take)
         remaining_items_text = ", ".join([f"{remaining_items[i]} of item_{i+1}" for i in range(len(remaining_items))])
-        opponent_proposal_text = (
-            f"The opponent's proposal is to take {opponent_take[0]} of item_1, "
+        opponent_finalization_text = (
+            f"The opponent's finalization is to take {opponent_take[0]} of item_1, "
             + ", ".join([f"{opponent_take[i]} of item_{i+1}" for i in range(1, len(opponent_take))]) +
             f" and leave you with {remaining_items_text}."
-            "Reason about the current state of the game, then choose to accept or decline the proposal. "
-            "If you decline this proposal, reason about a new proposal. "
-            "If you decide that the best option is to accept your opponent's proposal, clearly say it at the end of your reasoning."
+            "Reason about the current state of the game, then choose to accept or decline the finalization. "
+            "If you decline this finalization, reason about a new finalization. "
+            "If you decide that the best option is to accept your opponent's finalization, clearly say it at the end of your reasoning."
         )
 
     return (
         f"It is Turn {turn}. There are {item_info}. "
         f"Your utility values for the items are: {your_utilities}. "
         f"The opponent's utility values for the items are: {opponent_utilities}. "
-        f"{opponent_proposal_text} "
+        f"{opponent_finalization_text} "
     )
 
 # Generate initial game state
@@ -69,7 +69,7 @@ state = {
   "item_quantities": [3, 5, 4],
   "player1_utility_values": [3, 5, 1],
   "player2_utility_values": [2, 3, 3],
-  "opponent_proposal": None
+  "opponent_finalization": None
 }
 num_turns = np.random.poisson(5)
 print(f"There will be {num_turns} turns.")
@@ -78,18 +78,18 @@ instruction_prompt = (
     "You are a player in a two-player negotiation game. "
     "Your goal is to maximize your own reward by proposing how to divide a set of items. "
     "Your reward is equal to the number of items you receive multiplied by the utility for each. "
-    "You and your opponent will take turns giving proposals of how to divide the items. "
-    "Each proposal specifies how many of each item it wants, leaving the remaining items for the other player.\n"
-    "Before giving a proposal, each player can choose to accept the opponent's last proposal and end the game, "
-    "the items would then be divided according to the accepted proposal. "
-    "If no proposal is accepted after a random amount of turns sampled from a Poisson distribution with an expectation of 5, the game ends with both players receiving a reward of 0.\n"
+    "You and your opponent will take turns giving finalizations of how to divide the items. "
+    "Each finalization specifies how many of each item it wants, leaving the remaining items for the other player.\n"
+    "Before giving a finalization, each player can choose to accept the opponent's last finalization and end the game, "
+    "the items would then be divided according to the accepted finalization. "
+    "If no finalization is accepted after a random amount of turns sampled from a Poisson distribution with an expectation of 5, the game ends with both players receiving a reward of 0.\n"
 )
 
-proposal_template = """{
-    "accept_opponent_proposal": true | false,
-    "my_proposal": null | [int]
+finalization_template = """{
+    "accept_opponent_finalization": true | false,
+    "my_finalization": null | [int]
 }"""
-prompt_parsable_output = (f"Return your answer as a valid JSON string following this template: {proposal_template}, 'my_proposal' should be a list of length {state['type_of_items']}. "
+prompt_parsable_output = (f"Return your answer as a valid JSON string following this template: {finalization_template}, 'my_finalization' should be a list of length {state['type_of_items']}. "
                           "No explanation needed. No Markdown needed")
 
 def chat_with_local_llm(messages):
@@ -124,11 +124,11 @@ utility_values = {
 }
 
 current_player = 1
-current_proposal = None
+current_finalization = None
 
 # for turn in range(1, num_turns + 1):
 #     for current_player in [1,2]:
-#         prompt = generate_prompt(turn, state["item_quantities"], utility_values[current_player], utility_values[current_player%2+1], current_proposal)
+#         prompt = generate_prompt(turn, state["item_quantities"], utility_values[current_player], utility_values[current_player%2+1], current_finalization)
 #         messages[current_player].append({"role": "user", "content": prompt}) 
 
 #         player_response = chat[current_player](messages[current_player])
@@ -138,30 +138,30 @@ current_proposal = None
 #         player_json_response = chat[current_player](messages[current_player])
 
 #         try:
-#             player_proposal = json.loads(player_json_response)
+#             player_finalization = json.loads(player_json_response)
 #         except json.JSONDecodeError:
 #             print(f"Error decoding JSON from Player {current_player} response.")
 #             print(player_json_response)
 #             break
 
-#         if player_proposal["accept_opponent_proposal"]:
+#         if player_finalization["accept_opponent_finalization"]:
 #             print("Game ended with acceptance.")
-#             print(current_proposal)
+#             print(current_finalization)
 #             break
 
-#         current_proposal = player_proposal["my_proposal"]
+#         current_finalization = player_finalization["my_finalization"]
 
-#         print(f"Player {current_player} Proposal: {current_proposal}")
+#         print(f"Player {current_player} finalization: {current_finalization}")
 
 # print("Game finished.")
 
 max_retries = 3
 player1_rewards, player2_rewards = 0, 0
-current_proposal = None
+current_finalization = None
 
 for turn in range(1, num_turns + 1):
     player_2 = False
-    prompt = generate_prompt(turn, state["item_quantities"], state["player1_utility_values"], state["player2_utility_values"], state["opponent_proposal"])
+    prompt = generate_prompt(turn, state["item_quantities"], state["player1_utility_values"], state["player2_utility_values"], state["opponent_finalization"])
     player_1_messages.append({"role": "user", "content": prompt}) 
 
     player_1_response = chat_with_local_llm(player_1_messages)
@@ -174,7 +174,7 @@ for turn in range(1, num_turns + 1):
         player_1_messages.append({"role": "assistant", "content": player_1_response_json})
 
         try:
-            player_1_proposal = json.loads(player_1_response_json)
+            player_1_finalization = json.loads(player_1_response_json)
             break
         except json.JSONDecodeError:
             retries += 1
@@ -186,14 +186,14 @@ for turn in range(1, num_turns + 1):
         print(player_1_response_json)
         break
 
-    if player_1_proposal["accept_opponent_proposal"]:
-        current_proposal = p2_proposal
+    if player_1_finalization["accept_opponent_finalization"]:
+        current_finalization = p2_finalization
         print("Game ended with acceptance.")
-        print(p2_proposal)
+        print(p2_finalization)
         break
 
     player_2 = True
-    prompt = generate_prompt(turn, state["item_quantities"], state["player2_utility_values"], state["player1_utility_values"], player_1_proposal["my_proposal"])
+    prompt = generate_prompt(turn, state["item_quantities"], state["player2_utility_values"], state["player1_utility_values"], player_1_finalization["my_finalization"])
     p2_messages.append({"role": "user", "content": prompt})
 
     chatgpt_response = chat_with_gpt3(p2_messages)
@@ -203,29 +203,29 @@ for turn in range(1, num_turns + 1):
     p2_response_json = chat_with_gpt3(p2_messages)
 
     try:
-        p2_proposal = json.loads(p2_response_json)
+        p2_finalization = json.loads(p2_response_json)
     except json.JSONDecodeError:
         print("Error decoding JSON from GPT-3 response.")
         print(p2_response_json)
         break
 
-    if p2_proposal["accept_opponent_proposal"]:
-        current_proposal = player_1_proposal
+    if p2_finalization["accept_opponent_finalization"]:
+        current_finalization = player_1_finalization
         print("Game ended with acceptance.")
-        print(player_1_proposal)
+        print(player_1_finalization)
         break
 
-    state["opponent_proposal"] = p2_proposal["my_proposal"]
+    state["opponent_finalization"] = p2_finalization["my_finalization"]
 
     print(f"Turn {turn} ended.")
-    print(f"Local Model Response: {player_1_proposal}")
-    print(f"ChatGPT Response: {p2_proposal}")
+    print(f"Local Model Response: {player_1_finalization}")
+    print(f"ChatGPT Response: {p2_finalization}")
 
 print("Game finished.")
 
-def calculate_rewards(item_quantities, player_1_utility_values, player_2_utility_values, proposal, player_2 = False ):
+def calculate_rewards(item_quantities, player_1_utility_values, player_2_utility_values, finalization, player_2 = False ):
 
-    player_1_take = proposal
+    player_1_take = finalization
     player_2_take = calculate_remaining_items(item_quantities, player_1_take)
     if player_2:
         player_1_take, player_2_take = player_2_take, player_1_take
@@ -241,7 +241,7 @@ def calculate_rewards(item_quantities, player_1_utility_values, player_2_utility
     return player1_rewards, player2_rewards
 
 if turn != num_turns:
-    player1_rewards, player2_rewards = calculate_rewards(state["item_quantities"], state["player1_utility_values"], state["player2_utility_values"], current_proposal, player_2)
+    player1_rewards, player2_rewards = calculate_rewards(state["item_quantities"], state["player1_utility_values"], state["player2_utility_values"], current_finalization, player_2)
 
 print(f'Player 1 reward: {player1_rewards}')
 print(f'Player 2 reward: {player2_rewards}')

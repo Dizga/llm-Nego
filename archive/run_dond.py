@@ -78,7 +78,7 @@ def run_dond(cfg):
     player_0 = DoNDPlayer(
         game_intro_file=cfg.player_0.game_intro_file,
         chain_of_thought_file=cfg.player_0.chain_of_thought,
-        proposal_file=cfg.player_0.proposal_file,
+        finalization_file=cfg.player_0.finalization_file,
         dond_game=game,
         agent=agent_0,
         player_type="player_0"
@@ -93,7 +93,7 @@ def run_dond(cfg):
     player_1 = DoNDPlayer(
         game_intro_file=cfg.player_1.game_intro_file,
         chain_of_thought_file=cfg.player_1.chain_of_thought,
-        proposal_file=cfg.player_0.proposal_file,
+        finalization_file=cfg.player_0.finalization_file,
         dond_game=game,
         agent=agent_1,
         player_type="player_1"

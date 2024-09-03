@@ -1,7 +1,7 @@
 [
     {
         "role": "user",
-        "content": "You are a player in a two-player negotiation game called deal-or-no-deal. I, the user, will be the game coordinator, acting as a middleman between you and the other player, who is your partner. Your objective is to maximize your reward by proposing how to divide a set of items. No items should be left over. Your partner has the same objective. Your utility values and your partner's utility values are different.\n\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take\n\nGame Mechanics:\nTurn-taking: You and your partner will take turns exchanging one message at a time. After a few exchanges, when you feel ready, you can make a final proposal to the game coordinator. Once a player decides to make a final proposal, their partner must also make a final proposal, ending the game.\nReasoning and Action: At the start of your turn, you will be asked to reason about the current state of the game and how to fulfill your objective, then make an action (either messaging your partner or sending a final proposal).\nFinal Proposal: A final proposal should specify how many of each item you want, leaving the remaining items for your partner. The final proposal should be JSON parsable.\nMatching Proposals: If the combined proposals don't match the total number of items available, both players score 0.\n\nFormatting:\nReasoning: <reason> [Your reasoning here.] </reason>\nMessages: <message> [Your message here.] </message>\nFinal proposals: <propose>{ \"i_take\": {'gold': '...'}, \"other_player_gets\": {'gold': '...'} }</propose>, where 'i_take' is your share and 'other_player_gets' is your partner share of the items.\n\nOnly do one reasoning + action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<reason> [Your reasoning here.] </reason>\n<message> [Your message to your partner here.] </message>\n\n2. [Partner responds]\n<reason> [Your reasoning here.] </reason>\n<message> [Your message to your partner here.] </message>\n\n3. [Partner agrees]\n<reason> [Your reasoning here.] </reason>\n<propose>{ \"i_take\": {'gold': '...'}, \"other_player_gets\": {'gold': '...'} }</propose>\n\nPlease decide how to divide {'gold': 1000} between yourself and your partner.\nYour item values are {'gold': 1}\nYou don't know your partner's item values. You are the first to play, there is no messages yet.\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "You are a player in a two-player negotiation game called deal-or-no-deal. I, the user, will be the game coordinator, acting as a middleman between you and the other player, who is your partner. Your objective is to maximize your reward by proposing how to divide a set of items. No items should be left over. Your partner has the same objective. Your utility values and your partner's utility values are different.\n\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take\n\nGame Mechanics:\nTurn-taking: You and your partner will take turns exchanging one message at a time. After a few exchanges, when you feel ready, you can make a finalization to the game coordinator. Once a player decides to make a finalization, their partner must also make a finalization, ending the game.\nReasoning and Action: At the start of your turn, you will be asked to reason about the current state of the game and how to fulfill your objective, then make an action (either messaging your partner or sending a finalization).\nfinalization: A finalization should specify how many of each item you want, leaving the remaining items for your partner. The finalization should be JSON parsable.\nMatching finalizations: If the combined finalizations don't match the total number of items available, both players score 0.\n\nFormatting:\nReasoning: <reason> [Your reasoning here.] </reason>\nMessages: <message> [Your message here.] </message>\nfinalizations: <finalize>{ \"i_take\": {'gold': '...'}, \"other_player_gets\": {'gold': '...'} }</finalize>, where 'i_take' is your share and 'other_player_gets' is your partner share of the items.\n\nOnly do one reasoning + action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<reason> [Your reasoning here.] </reason>\n<message> [Your message to your partner here.] </message>\n\n2. [Partner responds]\n<reason> [Your reasoning here.] </reason>\n<message> [Your message to your partner here.] </message>\n\n3. [Partner agrees]\n<reason> [Your reasoning here.] </reason>\n<finalize>{ \"i_take\": {'gold': '...'}, \"other_player_gets\": {'gold': '...'} }</finalize>\n\nPlease decide how to divide {'gold': 1000} between yourself and your partner.\nYour item values are {'gold': 1}\nYou don't know your partner's item values. You are the first to play, there is no messages yet.\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": true
     },
@@ -13,7 +13,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -25,7 +25,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -37,7 +37,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -49,7 +49,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -61,7 +61,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -73,7 +73,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -85,7 +85,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -97,7 +97,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -109,7 +109,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -121,7 +121,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -133,7 +133,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -145,7 +145,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -157,7 +157,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -169,7 +169,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -181,7 +181,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -193,7 +193,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -205,7 +205,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -217,7 +217,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -229,7 +229,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -241,7 +241,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -253,7 +253,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -265,7 +265,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -277,7 +277,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -289,7 +289,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },
@@ -301,7 +301,7 @@
     },
     {
         "role": "user",
-        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the final proposal.\nDo not forget that both players will receive 0 points if the proposals do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <propose>.",
+        "content": "The other player said: 'Nice weather today huh!'\nAs a reminder, there is a total of {'gold': 1000}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message your partner or make the finalization.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
         "is_error": false,
         "is_new_round": false
     },

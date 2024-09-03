@@ -7,12 +7,12 @@ playing:
   games_per_iteration: 1
 
 player_0:
-  type: oai
+  type: dummy_hf
 
   player_args:
-    game_intro_file: "src/prompts/semicomp/rules.txt"
-    chain_of_thought_file: "src/prompts/semicomp/cot.txt" # false if none, else link to txt file 
-    proposal_file: "src/prompts/semicomp/proposal.txt"
+    game_intro_file: "src/prompts/basic/rules.txt"
+    chain_of_thought_file: "src/prompts/basic/cot.txt" # false if none, else link to txt file 
+    finalization_file: "src/prompts/basic/finalization.txt"
     max_retries: 1
 
 game:
