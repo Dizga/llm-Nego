@@ -26,6 +26,10 @@ class OaiAgent:
         """
         self.name = name
         self.api_key = api_key
+        if os.getenv("OPENAI_API_KEY"):
+            self.client = OpenAI()
+        else:
+            self.client = OpenAI(api_key=api_key)
         self.client = OpenAI(api_key=api_key)
         self.model = model
         self.history = []
