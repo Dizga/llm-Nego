@@ -6,6 +6,7 @@ from transformers import (
     AutoTokenizer,
     TrainingArguments,
     BitsAndBytesConfig,
+    TextIteratorStreamer
 )
 from trl import (
     SFTTrainer,
@@ -20,6 +21,12 @@ from utils.log_gpu_usage import log_gpu_usage
 import logging
 import time
 import subprocess
+
+os.environ["TOKENIZERS_PARALLELISM"] = "false" # silence warnings when compiling
+import torch._dynamo
+torch._dynamo.config.suppress_errors = True
+
+torch.set_default_device('cuda')
 
 
 class HfAgent:
@@ -59,11 +66,6 @@ class HfAgent:
 
         # Initialize tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
-        if self.tokenizer.pad_token is None:
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-            if self.tokenizer.pad_token is None:
-                raise ValueError("Tokenizer does not have an eos_token to use as pad_token.")
-        self.tokenizer.padding_side = "left"  # Optional: adjust padding side
 
         self.out_folder = out_folder
 
@@ -84,14 +86,18 @@ class HfAgent:
             quantization_config=self.quantization_conf,
         )
 
+        # Compile for faster generation (https://github.com/huggingface/huggingface-llama-recipes/blob/main/torch_compile.py)
+        # self.model.forward = torch.compile(self.model.forward, mode="reduce-overhead", fullgraph=True)
+        # self.model.generation_config.cache_implementation = "static"
+        # self.model.generation_config.max_length = 128
+
+
         # Initialize the LoRA configuration
-        self.lora_config = LoraConfig(**lora_args)
+        #self.lora_config = LoraConfig(**lora_args)
         
         # Apply the LoRA configuration to the model
-        self.model = self.apply_lora(self.model, self.lora_config)
+        #self.model = self.apply_lora(self.model, self.lora_config)
         
-        # Move the model to the specified device
-        self.model.to(self.device)
 
     def apply_lora(self, model, lora_config):
         """Applies the LoRA configuration to the model."""
@@ -102,9 +108,9 @@ class HfAgent:
     def _switch_to_generation_model(self, model_args: dict):
         """Switches to a standard generation model without a value head for inference."""
         self.model = AutoModelForCausalLM.from_pretrained(**model_args)
+        self.model = self.model.eval()
         self.model.to(self.device)
         
-        self.use_value_head = False
 
     def _format_messages(self, messages: List[dict]) -> str:
         """
@@ -290,107 +296,16 @@ class HfAgent:
             str: The generated response from the model.
         """
 
-        start_time = time.time()  # Start time for debugging
 
-        # Log initial GPU status
-        if torch.cuda.is_available():
-            logging.info(f"Using device: {self.device}")
-            logging.info(f"Initial GPU memory allocated: {torch.cuda.memory_allocated()} bytes")
-            logging.info(f"Initial GPU memory reserved: {torch.cuda.memory_reserved()} bytes")
-            # Run nvidia-smi to log detailed GPU info
-            gpu_info = subprocess.run(["nvidia-smi"], capture_output=True, text=True)
-            logging.info(f"Initial GPU status:\n{gpu_info.stdout}")
-        else:
-            logging.warning("CUDA is not available. Running on CPU.")
+        user_msg = message
+        self.add_message(role="user", message=user_msg, is_error=is_error, is_new_round=is_new_round)
 
-        # Ensure model is on the correct device
-        logging.info(f"Model is on device: {next(self.model.parameters()).device}")
+        text = self.tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True)
+        model_inputs = self.tokenizer([text], return_tensors="pt").to(self.device)
+        generated_ids = self.model.generate(**model_inputs, max_new_tokens=1000, do_sample=True) # TODO: add attention mask
+        generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
+        response = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
-        # Switch to a generation model without a value head if necessary
-        if model_args and self.use_value_head:
-            self._switch_to_generation_model(model_args)
-
-        # Add user message to history
-        self.add_message(role="user", message=message, is_error=is_error, is_new_round=is_new_round)
-
-        # Format the conversation history
-        formatted_history = self._format_messages(self.history)
-
-        # Tokenization timing
-        tokenization_start = time.time()
-        # Tokenize the conversation
-        inputs = self.tokenizer(
-            formatted_history,
-            return_tensors="pt",
-            padding=True,
-            truncation=True,
-        ).to(self.device)
-        tokenization_end = time.time()
-        logging.info(f"Tokenization took {tokenization_end - tokenization_start:.2f} seconds")
-
-        # Log GPU memory usage after tokenization
-        if torch.cuda.is_available():
-            logging.info(f"GPU memory allocated after tokenization: {torch.cuda.memory_allocated()} bytes")
-            logging.info(f"GPU memory reserved after tokenization: {torch.cuda.memory_reserved()} bytes")
-
-        # Verify inputs are on the GPU
-        logging.info(f"Input tensors are on device: {inputs.input_ids.device}")
-
-        # Generation timing with profiling
-        generation_start = time.time()
-        with torch.no_grad():
-            with torch.profiler.profile(
-                activities=[
-                    torch.profiler.ProfilerActivity.CPU,
-                    torch.profiler.ProfilerActivity.CUDA],
-                record_shapes=True,
-                with_stack=True
-            ) as prof:
-                generated_ids = self.model.generate(
-                    inputs.input_ids,
-                    attention_mask=inputs.attention_mask,
-                    max_new_tokens=1000,
-                    do_sample=True,
-                    temperature=0.7,
-                    top_p=0.9,
-                    eos_token_id=self.tokenizer.eos_token_id,
-                )
-        generation_end = time.time()
-        logging.info(f"Generation took {generation_end - generation_start:.2f} seconds")
-        logging.info(prof.key_averages().table(sort_by="cuda_time_total"))
-
-        # Log GPU memory usage after generation
-        if torch.cuda.is_available():
-            logging.info(f"GPU memory allocated after generation: {torch.cuda.memory_allocated()} bytes")
-            logging.info(f"GPU memory reserved after generation: {torch.cuda.memory_reserved()} bytes")
-
-        # Decoding timing
-        decoding_start = time.time()
-        # Decode the generated tokens
-        response = self.tokenizer.decode(
-            generated_ids[0][inputs.input_ids.shape[-1]:],
-            skip_special_tokens=True
-        )
-        decoding_end = time.time()
-        logging.info(f"Decoding took {decoding_end - decoding_start:.2f} seconds")
-
-        # Log the generated response
-        logging.info(f"Generated response: {response}")
-
-        # Add assistant response to history
         self.add_message(role="assistant", message=response)
-
-        # Total time logging
-        end_time = time.time()
-        logging.info(f"Total prompt processing time: {end_time - start_time:.2f} seconds")
-
-        # Log final GPU memory usage
-        if torch.cuda.is_available():
-            logging.info(f"Final GPU memory allocated: {torch.cuda.memory_allocated()} bytes")
-            logging.info(f"Final GPU memory reserved: {torch.cuda.memory_reserved()} bytes")
-            # Run nvidia-smi again to log final GPU info
-            gpu_info = subprocess.run(["nvidia-smi"], capture_output=True, text=True)
-            logging.info(f"Final GPU status:\n{gpu_info.stdout}")
-
         return response
 

@@ -12,7 +12,7 @@ playing:
 game:
   rounds_per_game: 1
   max_turns: 10
-  mode: coop # basic, coop
+  mode: basic # basic, coop
   setup: random_read
   setups_file: src/environments/dond_setups.txt
 
@@ -48,7 +48,7 @@ player_0:
   agent_args:
     name: "agent_0"
     device: cuda
-    tokenizer_name: "HuggingFaceTB/SmolLM-135M-Instruct" # Default: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    tokenizer_name: "meta-llama/Meta-Llama-3.1-8B-Instruct" # Default: "meta-llama/Meta-Llama-3.1-8B-Instruct"
     model_training_args:
       output_dir: out_folder
       num_train_epochs: 1
@@ -66,16 +66,15 @@ player_0:
 
   inherit_model: False
 
-  model_args:
+  model_args: # https://github.com/huggingface/huggingface-llama-recipes?tab=readme-ov-file
 
     pretrained_args: 
-        pretrained_model_name_or_path: "HuggingFaceTB/SmolLM-135M-Instruct" # Default: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-        torch_dtype: "auto"
+        pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct" # Default: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+        torch_dtype: "bfloat16"
         device_map: "auto"
-        trust_remote_code: True
 
     bits_and_bytes_args:
-        load_in_8bit: False
+      load_in_4bit: True
 
     lora_args:
         task_type: TaskType.CAUSAL_LM
