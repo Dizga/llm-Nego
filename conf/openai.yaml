@@ -47,8 +47,8 @@ player_0:
 
   agent_args:
     name: "openai_agent"
-    api_key: ${OPENAI_API_KEY}
-    model: gpt-4o
+    api_key: ""
+    model: gpt-4o-mini
 
 player_1:
 
