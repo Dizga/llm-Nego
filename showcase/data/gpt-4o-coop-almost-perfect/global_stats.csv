@@ -1,0 +1,5 @@
+Statistic,Value
+mean_player_0_total_returns,13.0
+mean_player_1_total_returns,13.0
+mean_total_reward_over_coop_optimum,0.9514178876678877
+mean_agreement_reached_percentage,100.0

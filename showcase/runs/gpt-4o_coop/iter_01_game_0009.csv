@@ -1,2 +1,0 @@
-mode,round_id,player_0_reward,player_1_reward,quantities,player_0_values,player_1_values,player_0_finalization,player_1_finalization,agreement_reached
-basic,0,8,10,"{'books': 2, 'hats': 1, 'balls': 4}","{'books': 1, 'hats': 0, 'balls': 2}","{'books': 3, 'hats': 4, 'balls': 0}","{'books': 0, 'hats': 0, 'balls': 4}","{'books': 2, 'hats': 1, 'balls': 0}",True

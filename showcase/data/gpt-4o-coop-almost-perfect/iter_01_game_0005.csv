@@ -1,0 +1,2 @@
+mode,round_id,player_0_reward,player_1_reward,quantities,player_0_values,player_1_values,player_0_finalization,player_1_finalization,agreement_reached
+coop,0,19,19,"{'books': 1, 'hats': 1, 'balls': 3}","{'books': 1, 'hats': 9, 'balls': 0}","{'books': 1, 'hats': 0, 'balls': 3}","{'books': 0, 'hats': 1, 'balls': 0}","{'books': 1, 'hats': 0, 'balls': 3}",True
