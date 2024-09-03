@@ -17,6 +17,9 @@ from peft import LoraConfig
 import os
 
 from utils.log_gpu_usage import log_gpu_usage
+import logging
+import time
+import subprocess
 
 
 class HfAgent:
@@ -31,7 +34,6 @@ class HfAgent:
         device: str = "cuda",  # 'cuda' or 'cpu'
         tokenizer_name: str = "microsoft/Phi-3-mini-128k-instruct",
         inherit_model: bool = False,
-        model_args: dict = None,
         bits_and_bytes_args: dict = None,
         lora_args: dict = None,
         model_training_args: dict = None,
@@ -53,32 +55,7 @@ class HfAgent:
         """
         super().__init__()
         self.name = name
-        self.device = device
-
-        # Initialize LoRA configuration
-        if lora_args is not None:
-            self.lora_config = LoraConfig(**lora_args)
-        else:
-            raise ValueError("lora_args must be provided for LoRA configuration.")
-
-        # Initialize model
-        if not inherit_model:
-            if bits_and_bytes_args is None:
-                raise ValueError("bits_and_bytes_args must be provided if not inheriting a model.")
-            self.quantization_conf = BitsAndBytesConfig(**bits_and_bytes_args)
-            self.model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                **model_args,
-                peft_config=self.lora_config,
-                quantization_config=self.quantization_conf,
-            )
-            self.model.gradient_checkpointing_enable()
-        else:
-            if model_args is None:
-                raise ValueError("model_args must be provided when inheriting a model.")
-            self.model = AutoModelForCausalLMWithValueHead.from_pretrained(**model_args)
-            self.model.gradient_checkpointing_enable()
-            self.model.to(self.device)
-
+        self.device = torch.device(device)
 
         # Initialize tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
@@ -91,12 +68,43 @@ class HfAgent:
         self.out_folder = out_folder
 
         # Set training arguments
-        if model_training_args is not None:
-            self.training_args = TrainingArguments(**model_training_args)
-        else:
-            raise ValueError("model_training_args must be provided for training configuration.")
+        self.training_args = TrainingArguments(**model_training_args)
+
 
         self.history = []
+
+    def _initialize_model(self, pretrained_args: dict, bits_and_bytes_args: dict, lora_args: dict):
+        """Initializes the model with LoRA and quantization configurations."""
+        # Initialize the quantization configuration
+        self.quantization_conf = BitsAndBytesConfig(**bits_and_bytes_args)
+        
+        # Load the model with quantization
+        self.model = AutoModelForCausalLM.from_pretrained(
+            **pretrained_args,
+            quantization_config=self.quantization_conf,
+        )
+
+        # Initialize the LoRA configuration
+        self.lora_config = LoraConfig(**lora_args)
+        
+        # Apply the LoRA configuration to the model
+        self.model = self.apply_lora(self.model, self.lora_config)
+        
+        # Move the model to the specified device
+        self.model.to(self.device)
+
+    def apply_lora(self, model, lora_config):
+        """Applies the LoRA configuration to the model."""
+        # Assuming you're using the `peft` library for LoRA
+        from peft import get_peft_model
+        return get_peft_model(model, lora_config)
+
+    def _switch_to_generation_model(self, model_args: dict):
+        """Switches to a standard generation model without a value head for inference."""
+        self.model = AutoModelForCausalLM.from_pretrained(**model_args)
+        self.model.to(self.device)
+        
+        self.use_value_head = False
 
     def _format_messages(self, messages: List[dict]) -> str:
         """
@@ -149,17 +157,11 @@ class HfAgent:
         attention_mask_list = []
 
         for entry in data:
-            # Response, single element
             if isinstance(entry, dict):
-                # Assuming each entry has 'role' and 'content' keys
                 messages = entry.get("messages", [])
                 formatted = self._format_messages(messages)
-
-            # Query, conversation
             elif isinstance(entry, list):
-                # Assuming list of messages
                 formatted = self._format_messages(entry)
-
             else:
                 raise ValueError("Each data entry must be a dict or list representing messages.")
 
@@ -171,12 +173,10 @@ class HfAgent:
                 truncation=True,
             )
 
-            # Append tokenized outputs to respective lists
-            input_ids_list.append(tokenized["input_ids"].squeeze(0))
-            attention_mask_list.append(tokenized["attention_mask"].squeeze(0))
+            input_ids_list.append(tokenized["input_ids"].squeeze(0).to(self.device))
+            attention_mask_list.append(tokenized["attention_mask"].squeeze(0).to(self.device))
 
         return input_ids_list, attention_mask_list
-
 
     def train_ppo_json(
         self, queries: List[dict], responses: List[dict], scores: List[float]
@@ -200,7 +200,6 @@ class HfAgent:
         log_gpu_usage()
 
         # Step through PPO training with attention masks
-        # TODO: add masks
         stats = self.ppo_trainer.step(
             queries=queries_ids,
             responses=responses_ids,
@@ -258,7 +257,6 @@ class HfAgent:
             is_new_round (bool): Indicates if the message starts a new conversation round.
         """
         if is_error and self.history:
-            # Mark the last assistant message as having an error
             self.history[-1]["is_error"] = True
         self.history.append({
             "role": role,
@@ -276,7 +274,9 @@ class HfAgent:
         """
         self.add_message("system", message)
 
-    def prompt(self, message: str, is_error: bool = False, is_new_round: bool = False) -> str:
+
+
+    def prompt(self, message: str, is_error: bool = False, is_new_round: bool = False, model_args: dict = None) -> str:
         """
         Adds a user message to the conversation history and generates a response.
 
@@ -284,16 +284,40 @@ class HfAgent:
             message (str): The user message to be added to the conversation history.
             is_error (bool): Indicates if the user message is an error message.
             is_new_round (bool): Indicates if the message starts a new conversation round.
+            model_args (dict): Arguments to switch to a model without the value head for generation.
 
         Returns:
             str: The generated response from the model.
         """
+
+        start_time = time.time()  # Start time for debugging
+
+        # Log initial GPU status
+        if torch.cuda.is_available():
+            logging.info(f"Using device: {self.device}")
+            logging.info(f"Initial GPU memory allocated: {torch.cuda.memory_allocated()} bytes")
+            logging.info(f"Initial GPU memory reserved: {torch.cuda.memory_reserved()} bytes")
+            # Run nvidia-smi to log detailed GPU info
+            gpu_info = subprocess.run(["nvidia-smi"], capture_output=True, text=True)
+            logging.info(f"Initial GPU status:\n{gpu_info.stdout}")
+        else:
+            logging.warning("CUDA is not available. Running on CPU.")
+
+        # Ensure model is on the correct device
+        logging.info(f"Model is on device: {next(self.model.parameters()).device}")
+
+        # Switch to a generation model without a value head if necessary
+        if model_args and self.use_value_head:
+            self._switch_to_generation_model(model_args)
+
         # Add user message to history
         self.add_message(role="user", message=message, is_error=is_error, is_new_round=is_new_round)
 
         # Format the conversation history
         formatted_history = self._format_messages(self.history)
 
+        # Tokenization timing
+        tokenization_start = time.time()
         # Tokenize the conversation
         inputs = self.tokenizer(
             formatted_history,
@@ -301,26 +325,72 @@ class HfAgent:
             padding=True,
             truncation=True,
         ).to(self.device)
+        tokenization_end = time.time()
+        logging.info(f"Tokenization took {tokenization_end - tokenization_start:.2f} seconds")
 
-        # Generate a response
+        # Log GPU memory usage after tokenization
+        if torch.cuda.is_available():
+            logging.info(f"GPU memory allocated after tokenization: {torch.cuda.memory_allocated()} bytes")
+            logging.info(f"GPU memory reserved after tokenization: {torch.cuda.memory_reserved()} bytes")
+
+        # Verify inputs are on the GPU
+        logging.info(f"Input tensors are on device: {inputs.input_ids.device}")
+
+        # Generation timing with profiling
+        generation_start = time.time()
         with torch.no_grad():
-            generated_ids = self.model.generate(
-                inputs.input_ids,
-                attention_mask=inputs.attention_mask,
-                max_new_tokens=1000,
-                do_sample=True,
-                temperature=0.7,
-                top_p=0.9,
-                eos_token_id=self.tokenizer.eos_token_id,
-            )
+            with torch.profiler.profile(
+                activities=[
+                    torch.profiler.ProfilerActivity.CPU,
+                    torch.profiler.ProfilerActivity.CUDA],
+                record_shapes=True,
+                with_stack=True
+            ) as prof:
+                generated_ids = self.model.generate(
+                    inputs.input_ids,
+                    attention_mask=inputs.attention_mask,
+                    max_new_tokens=1000,
+                    do_sample=True,
+                    temperature=0.7,
+                    top_p=0.9,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                )
+        generation_end = time.time()
+        logging.info(f"Generation took {generation_end - generation_start:.2f} seconds")
+        logging.info(prof.key_averages().table(sort_by="cuda_time_total"))
 
+        # Log GPU memory usage after generation
+        if torch.cuda.is_available():
+            logging.info(f"GPU memory allocated after generation: {torch.cuda.memory_allocated()} bytes")
+            logging.info(f"GPU memory reserved after generation: {torch.cuda.memory_reserved()} bytes")
+
+        # Decoding timing
+        decoding_start = time.time()
         # Decode the generated tokens
         response = self.tokenizer.decode(
             generated_ids[0][inputs.input_ids.shape[-1]:],
             skip_special_tokens=True
         )
+        decoding_end = time.time()
+        logging.info(f"Decoding took {decoding_end - decoding_start:.2f} seconds")
+
+        # Log the generated response
+        logging.info(f"Generated response: {response}")
 
         # Add assistant response to history
         self.add_message(role="assistant", message=response)
 
+        # Total time logging
+        end_time = time.time()
+        logging.info(f"Total prompt processing time: {end_time - start_time:.2f} seconds")
+
+        # Log final GPU memory usage
+        if torch.cuda.is_available():
+            logging.info(f"Final GPU memory allocated: {torch.cuda.memory_allocated()} bytes")
+            logging.info(f"Final GPU memory reserved: {torch.cuda.memory_reserved()} bytes")
+            # Run nvidia-smi again to log final GPU info
+            gpu_info = subprocess.run(["nvidia-smi"], capture_output=True, text=True)
+            logging.info(f"Final GPU status:\n{gpu_info.stdout}")
+
         return response
+

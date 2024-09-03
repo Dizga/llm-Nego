@@ -6,6 +6,6 @@ models/
 outputs/
 conf/local.yaml
 *.log
-
 venv/
 *.pyc
+postactivate

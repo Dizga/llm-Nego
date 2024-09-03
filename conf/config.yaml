@@ -12,7 +12,7 @@ playing:
 game:
   rounds_per_game: 1
   max_turns: 10
-  mode: basic # basic, coop
+  mode: coop # basic, coop
   setup: random_read
   setups_file: src/environments/dond_setups.txt
 
@@ -48,25 +48,7 @@ player_0:
   agent_args:
     name: "agent_0"
     device: cuda
-    tokenizer_name: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-    inherit_model: False
-    
-    model_args: 
-        pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-        torch_dtype: "auto"
-        device_map: "auto"
-        trust_remote_code: True
-
-    bits_and_bytes_args:
-        load_in_8bit: True
-
-    lora_args:
-        task_type: TaskType.CAUSAL_LM
-        r: 16
-        lora_alpha: 2
-        lora_dropout: 0.1
-        target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
-
+    tokenizer_name: "HuggingFaceTB/SmolLM-135M-Instruct" # Default: "meta-llama/Meta-Llama-3.1-8B-Instruct"
     model_training_args:
       output_dir: out_folder
       num_train_epochs: 1
@@ -82,19 +64,34 @@ player_0:
       eval_steps: 500
       load_best_model_at_end: True
 
+  inherit_model: False
+
+  model_args:
+
+    pretrained_args: 
+        pretrained_model_name_or_path: "HuggingFaceTB/SmolLM-135M-Instruct" # Default: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+        torch_dtype: "auto"
+        device_map: "auto"
+        trust_remote_code: True
+
+    bits_and_bytes_args:
+        load_in_8bit: False
+
+    lora_args:
+        task_type: TaskType.CAUSAL_LM
+        r: 16
+        lora_alpha: 2
+        lora_dropout: 0.1
+        target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+
+
 player_1:
   type: "same_as_player_0"
   player_args: "same_as_player_0"
   agent_args: "same_as_player_0"
-    inherit_model: True
-    name: "same_as_player_0"
-    device: "same_as_player_0"
-    tokenizer_name: "same_as_player_0"
-    inherit_model: True
-    model_args: "same_as_player_0"
-    bits_and_bytes_args: "same_as_player_0"
-    lora_args: "same_as_player_0"
-    model_training_args: "same_as_player_0"
+  inherit_model: True
+  model_args: "same_as_player_0"
+
 
 
     
