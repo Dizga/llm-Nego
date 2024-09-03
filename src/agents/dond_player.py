@@ -60,9 +60,8 @@ class DondPlayer():
 
         # Check if new round
         if state['round_number'] > self.round_nb:
-            self.is_new_round = True 
+            self.new_round()
             self.round_nb+=1
-
         else: 
             self.is_new_round = False
 
@@ -129,7 +128,7 @@ class DondPlayer():
         if self.is_new_round: 
             user_message += self.new_round_prompt.format(**state)
 
-        if state.get("has_finalized"):
+        if state["has_finalized"]:
             self.other_has_finalized = True
             user_message += self.finalization_prompt.format(**state)
 
@@ -246,6 +245,7 @@ class DondPlayer():
         """
         Resets round attributes.
         """
+        self.is_new_round = True
         self.other_has_finalized = False
         self.first_turn = True
     

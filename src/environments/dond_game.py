@@ -157,6 +157,7 @@ class DondGame:
                     self.points_player_0 = 0
                     self.points_player_1 = 0
                     self.agreement_reached = False
+                    
             self.end_round()
             return self.get_state()  
 

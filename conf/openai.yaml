@@ -10,7 +10,7 @@ playing:
   games_per_iteration: 5
 
 game:
-  rounds_per_game: 10
+  rounds_per_game: 5
   max_turns: 10
   mode: basic
   setup: random_read

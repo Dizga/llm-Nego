@@ -1,0 +1,6 @@
+mode,round_id,player_0_reward,player_1_reward,quantities,player_0_values,player_1_values,player_0_finalization,player_1_finalization,agreement_reached,total_points_over_maximum
+basic,0,4,0,"{'books': 2, 'hats': 1, 'balls': 2}","{'books': 2, 'hats': 0, 'balls': 3}","{'books': 4, 'hats': 2, 'balls': 0}","{'books': 2, 'hats': 1, 'balls': 0}","{'books': 0, 'hats': 0, 'balls': 2}",True,0.25
+basic,1,0,0,"{'books': 1, 'hats': 1, 'balls': 3}","{'books': 1, 'hats': 6, 'balls': 1}","{'books': 1, 'hats': 6, 'balls': 1}","{'books': 1, 'hats': 0, 'balls': 2}","{'books': 0, 'hats': 1, 'balls': 0}",False,0.0
+basic,2,5,7,"{'books': 1, 'hats': 1, 'balls': 3}","{'books': 1, 'hats': 3, 'balls': 2}","{'books': 3, 'hats': 7, 'balls': 0}","{'books': 1, 'hats': 0, 'balls': 2}","{'books': 0, 'hats': 1, 'balls': 1}",True,0.75
+basic,3,5,9,"{'books': 1, 'hats': 4, 'balls': 1}","{'books': 1, 'hats': 2, 'balls': 1}","{'books': 9, 'hats': 0, 'balls': 1}","{'books': 0, 'hats': 2, 'balls': 1}","{'books': 1, 'hats': 2, 'balls': 0}",True,0.7777777777777778
+basic,4,10,8,"{'books': 4, 'hats': 1, 'balls': 1}","{'books': 0, 'hats': 7, 'balls': 3}","{'books': 2, 'hats': 1, 'balls': 1}","{'books': 0, 'hats': 1, 'balls': 1}","{'books': 4, 'hats': 0, 'balls': 0}",True,1.0
