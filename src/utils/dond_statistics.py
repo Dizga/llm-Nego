@@ -8,7 +8,7 @@ def compute_dond_statistics(folder_path):
     game_stats = {
         'player_0_total_returns': [],
         'player_1_total_returns': [],
-        'total_reward_over_coop_optimum': [], 
+        'total_points_over_maximum': [], 
         'agreement_reached_percentage': [],
     } 
 
@@ -34,22 +34,37 @@ def compute_dond_statistics(folder_path):
             player_0_total_rewards = df['player_0_reward'].sum()
             player_1_total_rewards = df['player_1_reward'].sum()
 
-            # Perfect cooperation
-            coop_optimum = 0
+            # Calculate total_points_over_maximum for each row
+            total_points_over_maximum_list = []
             for index, row in df.iterrows():
-                p0vs = row['player_0_values']
-                p1vs = row['player_1_values']
-                for key in p0vs:
-                    coop_optimum += max(p0vs[key], p1vs[key]) * row['quantities'][key]
-            total_reward_over_coop_optimum = player_0_total_rewards / coop_optimum
+                maximum = 0
+                p0_points = 0
+                p1_points = 0
+                # Calculate maximum and points
+                if row['agreement_reached']:
+                    for key in row['quantities'].keys():
+                        maximum += max(row['player_0_values'][key], row['player_1_values'][key]) * row['quantities'][key]
+                        p0_points += row['player_0_finalization'][key] * row['player_0_values'][key]
+                        p1_points += row['player_1_finalization'][key] * row['player_1_values'][key]
+                    total_points_over_maximum = (p0_points + p1_points) / maximum
+                else:
+                    total_points_over_maximum = 0 
+                
+                total_points_over_maximum_list.append(total_points_over_maximum)
 
-            agreements_reached_percentage = df['agreement_reached'].sum()/num_rounds * 100
+            # Add total_points_over_maximum to the DataFrame
+            df['total_points_over_maximum'] = total_points_over_maximum_list
+
+            # Calculate and store statistics
+            agreements_reached_percentage = df['agreement_reached'].sum() / num_rounds * 100
 
             game_stats['player_0_total_returns'].append(player_0_total_rewards)
             game_stats['player_1_total_returns'].append(player_1_total_rewards)
-            game_stats['total_reward_over_coop_optimum'].append(total_reward_over_coop_optimum)
             game_stats['agreement_reached_percentage'].append(agreements_reached_percentage)
+            game_stats['total_points_over_maximum'].extend(total_points_over_maximum_list)
 
+            # Save the updated DataFrame back to the CSV file
+            df.to_csv(file_path, index=False)
 
     # Compute desired statistics
     global_game_stats = {}

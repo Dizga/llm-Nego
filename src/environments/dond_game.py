@@ -72,6 +72,8 @@ class DondGame:
         self.new_round = True
         self.game_ended = False
         self.last_message = None
+        self.points_player_0 = 0
+        self.points_player_1 = 0
         self.player_0_prop_history = []
         self.player_1_prop_history = []
         self.points_player_0_history = []
@@ -97,8 +99,6 @@ class DondGame:
     def reset_player_bookkeeping(self):
         self.player_0_prop = {}
         self.player_1_prop = {}
-        self.points_player_0 = 0
-        self.points_player_1 = 0
         self.agreement_reached = False
         self.last_message = None
 
@@ -188,17 +188,20 @@ class DondGame:
         """
         if player == "current_turn":
             player = self.current_turn()
+
         out = {
             'mode': self.mode,
             'game_ended': self.game_ended,
             "new_round": self.new_round,
             "current_turn": self.current_turn(),
             "round_number": self.round_nb,
+            "nb_rounds": self.rounds_per_game,
             "quantities": self.quantities,
             "agreement_reached": self.agreement_reached,
             "has_finalized": self.has_finalized,
             "last_message": self.last_message
         }
+        
         if player == "player_0":
             out["values"] = self.values_player_0
             out["last_score"] = self.points_player_0
@@ -248,11 +251,6 @@ class DondGame:
         else:
             self.player_1_prop = finalization['i_take']
 
-    def render(self):
-        """
-        Renders the current state of the game (not implemented).
-        """
-        pass
 
     def export(self):
         """
@@ -262,12 +260,6 @@ class DondGame:
         for round_id in range(self.rounds_per_game):
             rounds.append(self.export_round(round_id))
         return rounds
-
-    def export_summary(self):
-        return {
-            'player_0_total_reward': sum(self.points_player_0_history),
-            'player_1_total_reward': sum(self.points_player_1_history),
-        }
 
     def export_round(self, id=-1):
         """

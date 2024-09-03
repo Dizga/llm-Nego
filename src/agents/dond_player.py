@@ -42,7 +42,8 @@ class DondPlayer():
         if chain_of_thought_file:
             with open(chain_of_thought_file, 'r') as file:
                 self.chain_of_thought = file.read()
-        
+
+        self.round_nb = 1
         self.dond_game = dond_game
         self.max_retries = max_retries
         self.agent = agent
@@ -56,11 +57,20 @@ class DondPlayer():
         Returns:
             bool: False if game ended else True.
         """
+
+        # Check if new round
+        if state['round_number'] > self.round_nb:
+            self.is_new_round = True 
+            self.round_nb+=1
+
+        else: 
+            self.is_new_round = False
+
         # Get the context message to be passed to the model to get its response
         user_message = self.get_usr_message(state)
 
         # Get response from the model
-        response = self.agent.prompt(user_message, is_new_round=self.first_turn)
+        response = self.agent.prompt(user_message, is_new_round=self.is_new_round)
 
         # Validate the response from the model
         valid_response, error_message = self.validate(response)
@@ -112,17 +122,23 @@ class DondPlayer():
         state['game_mode_specificities'] = self.game_state_specificities(state['mode'])
 
         user_message = ""
+
         if self.is_new_game:
             user_message += self.game_basics.format(**state)
-        elif self.first_turn:
+
+        if self.is_new_round: 
             user_message += self.new_round_prompt.format(**state)
+
         if state.get("has_finalized"):
             self.other_has_finalized = True
             user_message += self.finalization_prompt.format(**state)
+
         else:
             user_message += f"The other player said: '{state['last_message']}'\n" if state['last_message'] else "You are the first to play, there are no messages yet.\n"
+
             if self.chain_of_thought is not None:
                 user_message += self.chain_of_thought.format(**state)
+
         return user_message
     
     def game_state_specificities(self, mode):
@@ -241,6 +257,7 @@ class DondPlayer():
             list: The message history before resetting.
         """
         self.new_round()
+        self.round_nb = 1
         self.is_new_game = True
         history = self.agent.history
         self.agent.reset_messages()
