@@ -98,22 +98,26 @@ class HfAgent:
 
         self.history = []
 
+    # def _format_messages(self, messages: List[dict]) -> str:
+    #     """
+    #     Formats a list of messages into a single string suitable for the model.
+
+    #     Args:
+    #         messages (List[dict]): List of messages with 'role' and 'content'.
+
+    #     Returns:
+    #         str: Formatted conversation string.
+    #     """
+    #     formatted = ""
+    #     for message in messages:
+    #         role = message.get("role", "user")
+    #         content = message.get("content", "")
+    #         formatted += f"{role}: {content}\n"
+    #     return formatted.strip()
+    
     def _format_messages(self, messages: List[dict]) -> str:
-        """
-        Formats a list of messages into a single string suitable for the model.
 
-        Args:
-            messages (List[dict]): List of messages with 'role' and 'content'.
-
-        Returns:
-            str: Formatted conversation string.
-        """
-        formatted = ""
-        for message in messages:
-            role = message.get("role", "user")
-            content = message.get("content", "")
-            formatted += f"{role}: {content}\n"
-        return formatted.strip()
+        return self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
 
     def init_ppo_trainer(self, out_directory: str, ppo_training_args: dict) -> None:
         """

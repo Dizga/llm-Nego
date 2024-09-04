@@ -8,11 +8,7 @@ import logging.config
 # local imports
 from experiments.dond_iteration_runner import DondIterationRunner
 from environments.dond_game import DondGame
-from agents.dond_player import DondPlayer
-from agents.hf_agent import HfAgent
-from agents.dummy_hf_agent import DummyHfAgent
-from agents.oai_agent import OaiAgent
-from agents.get_dond_players import get_dond_players
+from players.get_dond_players import get_dond_players
 from training.train_ppo_agent import train_agent_ppo
 from utils.dond_statistics import compute_dond_statistics
 from utils.log_gpu_usage import log_gpu_usage

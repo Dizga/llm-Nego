@@ -1,31 +1,27 @@
 import json
-from datetime import datetime
+import hydra
 import os
-import pandas as pd
 import logging
 import logging.config
+import pandas as pd
 
-# local imports
-from environments.dond_game import DondGame
+from environments.ultimatum import Ultimatum
+from players.ultimatum_players import UltimatumPlayer
+from players.get_players import setup_players
 
 
-class DondIterationRunner:
-    def __init__(self, 
+class UltimatumIterator():
+    def __init__(self,
                  out_dir,
                  games_per_iteration, 
-                 game: DondGame, 
-                 players
+                 game: Ultimatum,
+                 players: list[UltimatumPlayer],
                  ):
 
         self.games_per_iteration = games_per_iteration
         self.game = game
         self.players = players
-        self.player_0 = players[0]
-        self.player_1 = players[1]
-
-
         self.run_dir = out_dir
-        self.datenow = datetime.now().strftime('%Y_%m_%d_%H_%M')
 
         self.iteration_nb = 0
         self.game_nb = 0
@@ -37,25 +33,18 @@ class DondIterationRunner:
             self.run_game()
 
     def run_game(self):
-        logging.info(f"Game {self.game_nb} of iteration {self.iteration_nb} started.")
-        self.new_game()
-        self.player_0.new_game()
-        self.player_1.new_game()
-        game_state = self.game.reset()
+        logging.info("Game started.")
+        game_state = self.new_game()
         player_id = 0
+
         while not game_state['game_ended']:
-            if game_state['new_round']:
-                pass
-                # self._start_new_round() TODO
-            is_finalization, content = self.players[player_id].play_move(game_state)
-            game_state = self.game.step(content, is_finalization=is_finalization)
+            content = self.players[player_id].play_move(game_state)
+            game_state = self.game.step(content)
             player_id = (player_id + 1) % 2
-            
-        # while True:
-        self.log_game(self.game.export(), 
-                             self.player_0.get_history(), 
-                             self.player_1.get_history())
-        logging.info("Game completed.")
+
+        self.log_game(*self.game.export(), 
+                             self.players[0].get_history(), 
+                             self.players[1].get_history())
 
     def new_iteration(self)-> str:
         """
@@ -71,6 +60,7 @@ class DondIterationRunner:
         self.game_log = pd.DataFrame()
         self.game_log_file = os.path.join(self.it_folder, "games.csv")
         return self.it_folder
+    
 
     def new_game(self):
         self.game_nb += 1
@@ -78,7 +68,9 @@ class DondIterationRunner:
         self.rounds_log = pd.DataFrame([])
         self.rounds_path = os.path.join(self.it_folder, 
                 f"iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.csv")
-        
+        for player in self.players:
+            player.new_game()
+        return self.game.reset()
 
     def log_game(self, game, player_0_history, player_1_history):
         """
@@ -100,7 +92,6 @@ class DondIterationRunner:
         # Log every round
         for round in game: self.log_round(round)
 
-
     def log_round(self, round: dict):
         """
         Logs game data, saves player histories, and updates metrics.
@@ -112,14 +103,33 @@ class DondIterationRunner:
         self.rounds_log = pd.concat([self.rounds_log, pd.DataFrame([round])], ignore_index=True)
         self.rounds_log.to_csv(self.rounds_path, index=False)
 
-    def save_player_messages(self, player_name: str, messages: list):
-        """
-        Saves player messages to a JSON file.
+    def _start_new_round(self):
+        for player in self.players:
+            player.new_round()
 
-        Args:
-            player_name (str): The name of the player.
-            messages (list): A list of messages from the player.
-        """
-        file_path = os.path.join(self.run_dir, f"{player_name}.json")
-        with open(file_path, 'w') as f:
-            json.dump(messages, f, indent=4)
+
+def ultimatum(cfg): 
+    
+    # Make hydra output directory
+    hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
+    output_directory = hydra_cfg['runtime']['output_dir']
+    os.makedirs(output_directory, exist_ok=True)
+
+    dond_game = Ultimatum(**cfg.game)
+
+    players = setup_players(cfg, player_type=UltimatumPlayer)
+
+    iteration_runner = UltimatumIterator(
+        output_directory,
+        cfg.playing.games_per_iteration, 
+        game=dond_game,
+        players=players,
+    )
+
+    for _ in range(cfg.playing.nb_iterations):
+        
+        # Play games
+        iteration_runner.run_iteration()
+
+
+
