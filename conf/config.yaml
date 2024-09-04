@@ -7,11 +7,11 @@ cuda: true
 
 playing:
   nb_iterations: 1
-  games_per_iteration: 100
+  games_per_iteration: 1
 
 game:
   rounds_per_game: 1
-  max_turns: 10
+  max_turns: 1
   mode: basic # basic, coop
   setup: random_read
   setups_file: src/environments/dond_setups.txt
