@@ -76,17 +76,15 @@ class DondPlayer():
 
         # Allow safety nets which gives retry attempts to the model
         retries = 0
-        while retries < self.max_retries:
-            if valid_response:
-                break
+        while not valid_response and retries < self.max_retries:
             response = self.agent.prompt(error_message, is_error=True)
             valid_response, error_message = self.validate(response)
             retries += 1
 
-        # Return dummy message if model refuses to conform to correct format
-        if retries == self.max_retries:
-            response = "<message></message>"
+        if not valid_response and retries >= self.max_retries:
+            response = "<reason></reason><message>I have failed to provide a proper response.</message>"
 
+        # Return dummy message if model refuses to conform to correct format
         self.first_turn = False
         self.is_new_game = False
         # Process the response

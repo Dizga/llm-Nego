@@ -1,0 +1,5 @@
+Statistic,Value
+player_0_total_returns,"[0, 0, 0, 0, 0, 2, 6, 0, 0, 10]"
+player_1_total_returns,"[0, 0, 0, 0, 0, 6, 4, 0, 0, 6]"
+total_points_over_maximum,"[0, 0, 0, 0, 0, 0.6666666666666666, 0.625, 0, 0, 1.0]"
+agreement_reached_percentage,"[0.0, 0.0, 0.0, 0.0, 0.0, 100.0, 100.0, 0.0, 0.0, 100.0]"

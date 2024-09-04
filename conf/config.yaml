@@ -6,13 +6,13 @@ hydra:
 cuda: true
 
 playing:
-  nb_iterations: 50
-  games_per_iteration: 10
+  nb_iterations: 1
+  games_per_iteration: 20
 
 game:
   rounds_per_game: 1
   max_turns: 10
-  mode: basic # basic, coop
+  mode: coop # basic, coop
   setup: random_read
   setups_file: src/environments/dond_setups.txt
 
@@ -43,7 +43,7 @@ player_0:
     chain_of_thought_file: "src/prompts/cot.txt" # false if none, else link to txt file 
     finalization_file: "src/prompts/finalization.txt"
     new_round_file: "src/prompts/new_round.txt"
-    max_retries: 2
+    max_retries: 3
 
   agent_args:
     name: "agent_0"
@@ -74,7 +74,7 @@ player_0:
         device_map: "auto"
 
     bits_and_bytes_args:
-      load_in_4bit: True
+      load_in_4bit: False
 
     lora_args:
         task_type: TaskType.CAUSAL_LM

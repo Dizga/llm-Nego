@@ -4,7 +4,6 @@ import os
 import logging
 import logging.config
 
-
 # local imports
 from experiments.dond_iteration_runner import DondIterationRunner
 from environments.dond_game import DondGame
