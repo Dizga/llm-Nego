@@ -6,8 +6,8 @@ hydra:
 cuda: true
 
 playing:
-  nb_iterations: 1
-  games_per_iteration: 1
+  nb_iterations: 10
+  games_per_iteration: 2
 
 game:
   rounds_per_game: 1
@@ -22,8 +22,8 @@ training:
   nb_epochs: 1 # Number of passes on entire dataset.
   ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
     # For batch size vs mini confusion https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_trainer.py#L647)
-    batch_size: 1 # Amount of examples loaded on the GPU. Must be divisable by mini_batch_size.
-    mini_batch_size: 1 # Number of examples fed in parallel to the model before taking gradient step.
+    batch_size: 2 # Amount of examples loaded on the GPU. Must be divisable by mini_batch_size.
+    mini_batch_size: 2 # Number of examples fed in parallel to the model before taking gradient step.
     ppo_epochs: 4 # Default: 4. Number of optimisation epochs per batch of samples
     model_name: "model"
     #learning_rate: 1.41e-5

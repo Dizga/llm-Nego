@@ -14,7 +14,7 @@ from trl import (
     PPOConfig,
     PPOTrainer,
 )
-from peft import LoraConfig
+from peft import LoraConfig, LoraModel
 import os
 
 from utils.log_gpu_usage import log_gpu_usage
@@ -40,9 +40,6 @@ class HfAgent:
         name: str = "agent",
         device: str = "cuda",  # 'cuda' or 'cpu'
         tokenizer_name: str = "microsoft/Phi-3-mini-128k-instruct",
-        inherit_model: bool = False,
-        bits_and_bytes_args: dict = None,
-        lora_args: dict = None,
         model_training_args: dict = None,
         out_folder: str = "checkpoints",
     ) -> None:
@@ -67,19 +64,18 @@ class HfAgent:
         # Initialize tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
 
-        self.out_folder = out_folder
-
         # Set training arguments
         self.training_args = TrainingArguments(**model_training_args)
 
+        self.out_folder = out_folder
 
         self.history = []
 
     def _initialize_model(self, pretrained_args: dict, bits_and_bytes_args: dict, lora_args: dict):
         """Initializes the model with LoRA and quantization configurations."""
+
         # Initialize the quantization configuration
         self.quantization_conf = BitsAndBytesConfig(**bits_and_bytes_args)
-
 
         # Initialize the LoRA configuration
         self.lora_config = LoraConfig(**lora_args)
@@ -97,37 +93,6 @@ class HfAgent:
         # self.model.generation_config.max_length = 128
 
 
-        # Initialize the LoRA configuration
-        #self.lora_config = LoraConfig(**lora_args)
-        
-        # Apply the LoRA configuration to the model
-        #self.model = self.apply_lora(self.model, self.lora_config)
-        
-
-    def apply_lora(self, model, lora_config):
-        """Applies the LoRA configuration to the model."""
-        # Assuming you're using the `peft` library for LoRA
-        from peft import get_peft_model
-        return get_peft_model(model, lora_config)
-
-        
-
-    def _format_messages(self, messages: List[dict]) -> str:
-        """
-        Formats a list of messages into a single string suitable for the model.
-
-        Args:
-            messages (List[dict]): List of messages with 'role' and 'content'.
-
-        Returns:
-            str: Formatted conversation string.
-        """
-        formatted = ""
-        for message in messages:
-            role = message.get("role", "user")
-            content = message.get("content", "")
-            formatted += f"{role}: {content}\n"
-        return formatted.strip()
 
     def init_ppo_trainer(self, out_directory: str, ppo_training_args: dict) -> None:
         """
@@ -293,8 +258,6 @@ class HfAgent:
         Returns:
             str: The generated response from the model.
         """
-
-
         user_msg = message
         self.add_message(role="user", message=user_msg, is_error=is_error, is_new_round=is_new_round)
 
@@ -306,4 +269,35 @@ class HfAgent:
 
         self.add_message(role="assistant", message=response)
         return response
+    
+    def save_lora_weights(self, save_directory: str) -> None:
+        """
+        Saves only the LoRA weights to a specified directory.
+
+        Args:
+            save_directory (str): The directory where the LoRA weights will be saved.
+        """
+        if not isinstance(self.model, LoraModel):
+            raise ValueError("The model is not a LoRA model, cannot save LoRA weights.")
+
+        os.makedirs(save_directory, exist_ok=True)
+        # Save the LoRA weights only
+        self.model.save_pretrained(save_directory)
+
+        logging.info(f"LoRA weights saved to {save_directory}")
+
+    def load_lora_weights(self, load_directory: str) -> None:
+        """
+        Loads only the LoRA weights from a specified directory.
+
+        Args:
+            load_directory (str): The directory from where the LoRA weights will be loaded.
+        """
+        if not isinstance(self.model, LoraModel):
+            raise ValueError("The model is not a LoRA model, cannot load LoRA weights.")
+
+        # Load the LoRA weights
+        self.model = LoraModel.from_pretrained(self.model, load_directory)
+
+        logging.info(f"LoRA weights loaded from {load_directory}")
 
