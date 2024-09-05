@@ -7,28 +7,30 @@ cuda: true
 
 playing:
   nb_iterations: 10
-  games_per_iteration: 2
+  games_per_iteration: 1
 
 game:
   rounds_per_game: 1
-  max_turns: 1
+  max_turns: 4
   mode: basic # basic, coop
   setup: random_read
   setups_file: src/environments/dond_setups.txt
 
 training:
+
   train_type: "ppo"
   checkpoint_models: False
   nb_epochs: 1 # Number of passes on entire dataset.
+
   ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
     # For batch size vs mini confusion https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_trainer.py#L647)
-    batch_size: 2 # Amount of examples loaded on the GPU. Must be divisable by mini_batch_size.
-    mini_batch_size: 2 # Number of examples fed in parallel to the model before taking gradient step.
-    ppo_epochs: 4 # Default: 4. Number of optimisation epochs per batch of samples
+    batch_size: 2 # Number of examples put on the GPU at once. batch_size = mini_batch_size * gradient_accumulation_steps
+    mini_batch_size: 1 # Number of examples fed in parallel to the model
+    gradient_accumulation_steps: 2 # Number of minibatch gradient accumulation before step. Should be equal to batch size.
+    ppo_epochs: 1 # Default: 4. Number of optimisation epochs per batch of samples
     model_name: "model"
-    #learning_rate: 1.41e-5
+    learning_rate: 1.41e-5
     gradient_checkpointing: False # Whether to keep all activations in memory at once.
-    gradient_accumulation_steps: 1 # Default: 1. Number of minibatch gradient step before accumulation
     log_with: "tensorboard"
     project_kwargs: None # don't touch, will be set later
     tracker_project_name: "tensorboard"
@@ -43,26 +45,12 @@ player_0:
     chain_of_thought_file: "src/prompts/cot.txt" # false if none, else link to txt file 
     finalization_file: "src/prompts/finalization.txt"
     new_round_file: "src/prompts/new_round.txt"
-    max_retries: 3
+    max_retries: 1
 
   agent_args:
     name: "agent_0"
     device: cuda
     tokenizer_name: "meta-llama/Meta-Llama-3.1-8B-Instruct" # Default: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-    model_training_args:
-      output_dir: out_folder
-      num_train_epochs: 1
-      fp16: True
-      per_device_train_batch_size: 3
-      learning_rate: 5e-5
-      weight_decay: 0.01
-      logging_dir: os.path.join(out_folder, 'models', 'logs')
-      logging_steps: 10
-      save_total_limit: 2
-      save_steps: 500
-      evaluation_strategy: "steps"
-      eval_steps: 500
-      load_best_model_at_end: True
 
   inherit_model: False
 
@@ -79,7 +67,7 @@ player_0:
     lora_args:
         task_type: TaskType.CAUSAL_LM
         r: 16
-        lora_alpha: 2
+        lora_alpha: 16
         lora_dropout: 0.1
         target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
 

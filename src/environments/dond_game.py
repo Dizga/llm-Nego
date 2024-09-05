@@ -148,9 +148,10 @@ class DondGame:
                 self.agreement_reached = False
             
             else: # Player has made a finalization
+
                 self.finalize(output)
 
-                if self.verify_props_match(): # If finalizations are complementary
+                if self.verify_finalizations_match(): # If finalizations are complementary
                     self.set_points()
                     self.agreement_reached = True
                 else:
@@ -212,7 +213,7 @@ class DondGame:
         out["last_score"] = self.points_player_1
         return out
 
-    def verify_props_match(self):
+    def verify_finalizations_match(self):
         """
         Verifies if the finalizations from both players match the total quantities.
 
