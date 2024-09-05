@@ -2,6 +2,7 @@ import json
 import os
 import pandas as pd
 import regex as re
+import copy
 
 def extract_hf_ppo_dataset(folder_path: str, 
                            player_0=True, 
@@ -28,6 +29,8 @@ def extract_hf_ppo_dataset(folder_path: str,
         
         pattern = re.compile(r'^iter_\d{2}_game_\d{4}\.csv$')
 
+        context = []
+
         if pattern.match(file_name):
 
             # Get list of rewards
@@ -44,14 +47,26 @@ def extract_hf_ppo_dataset(folder_path: str,
 
             # extract queries, responses and scores
             for message in conversation:
+
+                # Don't add mistakes to training data
                 if message['is_error']: continue
+
+                # An action has been made
                 if message['role'] == "assistant":
-                    queries.append(context.copy() if full_context else context[-1:])
-                    responses.append(message)
+
+                    queries.append(context)
+
+                    responses.append([message])
+
                     scores.append(rewards[count])
+
                 elif message.get('is_new_round'):
                     count += 1
+
+                context = copy.deepcopy(context)
                 context.append(message)
+
+            
 
     # Export to facilitate debugging
     if export_for_debugging:

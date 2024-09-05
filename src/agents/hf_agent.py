@@ -14,7 +14,7 @@ from trl import (
     PPOConfig,
     PPOTrainer,
 )
-from peft import LoraConfig
+from peft import LoraConfig, LoraModel
 import os
 
 from utils.log_gpu_usage import log_gpu_usage
@@ -40,9 +40,6 @@ class HfAgent:
         name: str = "agent",
         device: str = "cuda",  # 'cuda' or 'cpu'
         tokenizer_name: str = "microsoft/Phi-3-mini-128k-instruct",
-        inherit_model: bool = False,
-        bits_and_bytes_args: dict = None,
-        lora_args: dict = None,
         model_training_args: dict = None,
         out_folder: str = "checkpoints",
     ) -> None:
@@ -67,23 +64,28 @@ class HfAgent:
         # Initialize tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
 
-        self.out_folder = out_folder
-
         # Set training arguments
-        self.training_args = TrainingArguments(**model_training_args)
+        if model_training_args:
+            self.training_args = TrainingArguments(**model_training_args)
 
+        self.out_folder = out_folder
 
         self.history = []
 
     def _initialize_model(self, pretrained_args: dict, bits_and_bytes_args: dict, lora_args: dict):
         """Initializes the model with LoRA and quantization configurations."""
+
         # Initialize the quantization configuration
         self.quantization_conf = BitsAndBytesConfig(**bits_and_bytes_args)
+
+        # Initialize the LoRA configuration
+        self.lora_config = LoraConfig(**lora_args)
         
         # Load the model with quantization
-        self.model = AutoModelForCausalLM.from_pretrained(
+        self.model = AutoModelForCausalLMWithValueHead.from_pretrained(
             **pretrained_args,
             quantization_config=self.quantization_conf,
+            peft_config=self.lora_config
         )
 
         # Compile for faster generation (https://github.com/huggingface/huggingface-llama-recipes/blob/main/torch_compile.py)
@@ -92,42 +94,6 @@ class HfAgent:
         # self.model.generation_config.max_length = 128
 
 
-        # Initialize the LoRA configuration
-        #self.lora_config = LoraConfig(**lora_args)
-        
-        # Apply the LoRA configuration to the model
-        #self.model = self.apply_lora(self.model, self.lora_config)
-        
-
-    def apply_lora(self, model, lora_config):
-        """Applies the LoRA configuration to the model."""
-        # Assuming you're using the `peft` library for LoRA
-        from peft import get_peft_model
-        return get_peft_model(model, lora_config)
-
-    def _switch_to_generation_model(self, model_args: dict):
-        """Switches to a standard generation model without a value head for inference."""
-        self.model = AutoModelForCausalLM.from_pretrained(**model_args)
-        self.model = self.model.eval()
-        self.model.to(self.device)
-        
-
-    def _format_messages(self, messages: List[dict]) -> str:
-        """
-        Formats a list of messages into a single string suitable for the model.
-
-        Args:
-            messages (List[dict]): List of messages with 'role' and 'content'.
-
-        Returns:
-            str: Formatted conversation string.
-        """
-        formatted = ""
-        for message in messages:
-            role = message.get("role", "user")
-            content = message.get("content", "")
-            formatted += f"{role}: {content}\n"
-        return formatted.strip()
 
     def init_ppo_trainer(self, out_directory: str, ppo_training_args: dict) -> None:
         """
@@ -155,75 +121,70 @@ class HfAgent:
             data (List[Dict]): A list of JSON objects representing conversations.
 
         Returns:
-            Tuple[List[torch.Tensor], List[torch.Tensor]]: A tuple containing:
-                - input_ids (List[torch.Tensor]): List of tokenized input IDs tensors.
-                - attention_mask (List[torch.Tensor]): List of attention masks tensors indicating actual data tokens.
-        """
-        input_ids_list = []
-        attention_mask_list = []
-
-        for entry in data:
-            if isinstance(entry, dict):
-                messages = entry.get("messages", [])
-            elif isinstance(entry, list):
-                messages = entry
-            else:
-                raise ValueError("Each data entry must be a dict or list representing messages.")
-
-            # Apply the chat template to format the conversation
-            formatted = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=False)
             
-            # Tokenize the formatted conversation
-            tokenized = self.tokenizer(
-                [formatted],
-                return_tensors="pt",
-                padding=True,
-                truncation=True,
-            ).to(self.device)
+        """
 
-            input_ids_list.append(tokenized["input_ids"].squeeze(0))
-            attention_mask_list.append(tokenized["attention_mask"].squeeze(0))
+        formatted = self.tokenizer.apply_chat_template(data, tokenize=False, add_generation_prompt=False)
+        
+        # Ensure a pad_token is set for the tokenizer
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        return input_ids_list, attention_mask_list
+        # Tokenize with padding and truncation
+        tokenized = self.tokenizer(
+            formatted,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+        ).to(self.device)
+
+
+        return tokenized
 
 
     def train_ppo_json(
-        self, queries: List[dict], responses: List[dict], scores: List[float]
+        self, queries: List, responses: List, scores: List[float]
     ) -> dict:
         """
         Trains the agent using PPO on a batch of queries, responses, and corresponding rewards.
 
         Args:
-            queries (List[dict]): A list of query JSON objects.
-            responses (List[dict]): A list of response JSON objects.
-            scores (List[float]): A list of rewards (scores) associated with each query-response pair.
+            queries (List): A list of query JSON objects.
+            responses (List): A list of response JSON objects.
+            scores (List): A list of rewards (scores) associated with each query-response pair.
 
         Returns:
             dict: A dictionary containing training statistics.
         """
-        # Encode queries and responses
-        queries_ids, queries_masks = self.encode_jsons(queries)
-        responses_ids, responses_masks = self.encode_jsons(responses)
+
+        # Encode the queries into input_ids and convert the batch tensor into a list of 1D tensors
+        queries_ids_tensor = self.encode_jsons(queries)['input_ids']
+        queries_ids_tensor_list = [queries_ids_tensor[i] for i in range(queries_ids_tensor.size(0))]
+
+        # Encode the responses into input_ids and convert the batch tensor into a list of 1D tensors
+        responses_ids_tensor = self.encode_jsons(responses)['input_ids']
+        responses_ids_tensor_list = [responses_ids_tensor[i] for i in range(responses_ids_tensor.size(0))]
+
         scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in scores]
 
         log_gpu_usage()
 
-        # Step through PPO training with attention masks
+        # Step through PPO training 
         stats = self.ppo_trainer.step(
-            queries=queries_ids,
-            responses=responses_ids,
+            queries=queries_ids_tensor_list,
+            responses=responses_ids_tensor_list,
             scores=scores,
         )
 
-        # Log stats including the attention masks
+        # Log stats 
         self.ppo_trainer.log_stats(
             stats=stats,
-            batch={"query": queries_ids, "response": responses_ids},
+            batch={"query": queries_ids_tensor_list, "response": responses_ids_tensor_list},
             rewards=scores,
         )
 
         # Memory management
-        del queries_ids, queries_masks, responses_ids, responses_masks, scores
+        del queries_ids_tensor_list, responses_ids_tensor_list, scores
         torch.cuda.empty_cache()
 
         return stats
@@ -255,6 +216,9 @@ class HfAgent:
         """
         self.history = []
 
+    def set_error_last_message(self):
+        self.history[-1]["is_error"] = True
+
     def add_message(self, role: str, message: str, is_error: bool = False, is_new_round: bool = False) -> None:
         """
         Adds a message to the conversation history.
@@ -265,8 +229,7 @@ class HfAgent:
             is_error (bool): Indicates if the message is an error message.
             is_new_round (bool): Indicates if the message starts a new conversation round.
         """
-        if is_error and self.history:
-            self.history[-1]["is_error"] = True
+
         self.history.append({
             "role": role,
             "content": message,
@@ -298,17 +261,47 @@ class HfAgent:
         Returns:
             str: The generated response from the model.
         """
-
-
         user_msg = message
         self.add_message(role="user", message=user_msg, is_error=is_error, is_new_round=is_new_round)
 
-        text = self.tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True) #https://huggingface.co/docs/transformers/main/en/chat_templating
+        text = self.tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True) # https://huggingface.co/docs/transformers/main/en/chat_templating
         model_inputs = self.tokenizer([text], return_tensors="pt").to(self.device)
-        generated_ids = self.model.generate(**model_inputs, max_new_tokens=1000, do_sample=True) 
+        with torch.no_grad():
+            generated_ids = self.model.generate(**model_inputs, max_new_tokens=1000, do_sample=True) 
         generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
         response = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
         self.add_message(role="assistant", message=response)
         return response
+    
+    def save_lora_weights(self, save_directory: str) -> None:
+        """
+        Saves only the LoRA weights to a specified directory.
+
+        Args:
+            save_directory (str): The directory where the LoRA weights will be saved.
+        """
+        if not isinstance(self.model, LoraModel):
+            raise ValueError("The model is not a LoRA model, cannot save LoRA weights.")
+
+        os.makedirs(save_directory, exist_ok=True)
+        # Save the LoRA weights only
+        self.model.save_pretrained(save_directory)
+
+        logging.info(f"LoRA weights saved to {save_directory}")
+
+    def load_lora_weights(self, load_directory: str) -> None:
+        """
+        Loads only the LoRA weights from a specified directory.
+
+        Args:
+            load_directory (str): The directory from where the LoRA weights will be loaded.
+        """
+        if not isinstance(self.model, LoraModel):
+            raise ValueError("The model is not a LoRA model, cannot load LoRA weights.")
+
+        # Load the LoRA weights
+        self.model = LoraModel.from_pretrained(self.model, load_directory)
+
+        logging.info(f"LoRA weights loaded from {load_directory}")
 

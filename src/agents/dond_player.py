@@ -26,8 +26,14 @@ class DondPlayer():
             agent (NegoAgent): The LLM player instance.
             player_type (str): The type of player, either "player_0" or "player_1".
         """
-        self.first_turn = True
+        self.first_move = True
         self.is_new_game = True
+
+        # Pattern to match the message part
+        self.message_pattern = r'<message>(.*?)</message>'
+        
+        # Pattern to match the finalization part
+        self.finalize_pattern = r'<finalize>\s*\{\s*"i_take"\s*:\s*(.*?)\s*,\s*"other_player_gets"\s*:\s*(.*?)\s*\}\s*</finalize>'
         
         with open(game_intro_file, 'r') as file:
             self.game_basics = file.read()
@@ -49,13 +55,12 @@ class DondPlayer():
         self.agent = agent
         self.player_type = player_type
         self.other_has_finalized = False  # whether the other player has made a finalization
+        self.error_overload_message = False
 
     def play_move(self, state):
         """
         Plays a move in the DoND game.
 
-        Returns:
-            bool: False if game ended else True.
         """
 
         # Check if new round
@@ -76,32 +81,23 @@ class DondPlayer():
 
         # Allow safety nets which gives retry attempts to the model
         retries = 0
-        while not valid_response and retries < self.max_retries:
+        while not valid_response and retries <= self.max_retries:
             response = self.agent.prompt(error_message, is_error=True)
             valid_response, error_message = self.validate(response)
+            if not valid_response:
+                self.agent.set_error_last_message() # Set error in agent history for last message
             retries += 1
 
-        if not valid_response and retries >= self.max_retries:
+        # Too many mistakes were made
+        if not valid_response and retries > self.max_retries:
             response = "<reason></reason><message>I have failed to provide a proper response.</message>"
+            self.error_overload_message = f"""Last turn, you made too many errors. The final one was: "{error_message}". The dummy response "{response}" was sent to the other player in place of the one you sent."""
 
-        # Return dummy message if model refuses to conform to correct format
-        self.first_turn = False
-        self.is_new_game = False
+        self.first_move = False
+
         # Process the response
         return self.extract(response)
 
-    def verificator(self, message):
-        """
-        Verifies if the message is correct.
-
-        Args:
-            message (str): The message to verify.
-
-        Returns:
-            bool: Always returns True (placeholder for future implementation).
-        """
-        # TODO: add conditions that return false if message not correct
-        return True
 
     def get_usr_message(self, state):
         """
@@ -122,9 +118,14 @@ class DondPlayer():
 
         if self.is_new_game:
             user_message += self.game_basics.format(**state)
+            self.is_new_game = False
 
         if self.is_new_round: 
             user_message += self.new_round_prompt.format(**state)
+
+        if self.error_overload_message:
+            user_message += self.error_overload_message
+            self.error_overload_message = False
 
         if state["has_finalized"]:
             self.other_has_finalized = True
@@ -178,6 +179,7 @@ class DondPlayer():
         
         if has_message and has_finalize:
             errors.append("Response contains both <message>...</message> and <finalize>...</finalize> tags. Only one is allowed per response.")
+
         elif not has_message and not has_finalize:
             errors.append("Response must contain either <message>...</message> or <finalize>...</finalize> tag. Do not forget the closing tag.")
 
@@ -187,24 +189,39 @@ class DondPlayer():
         
         # Check if finalize tag is JSON parsable and follows the specified format
         if has_finalize:
+
             finalize_content = response.split("<finalize>")[1].split("</finalize>")[0].strip()
+
             try:
+
                 finalize_json = json.loads(finalize_content)
+
                 if not all(key in finalize_json for key in ["i_take", "other_player_gets"]):
                     errors.append('The <finalize> tag must contain JSON with keys "i_take" and "other_player_gets".')
+
                 else:
+                    # TODO: use json dict catcher instead!
                     i_take = finalize_json["i_take"]
                     other_player_gets = finalize_json["other_player_gets"]
                     # Generalized validation for arbitrary items
+
+                    # Does not self-attribute right set of items for self
                     if not (isinstance(i_take, dict) and 
                             all(key in i_take for key in self.dond_game.items) and 
                             all(isinstance(i_take[key], int) for key in self.dond_game.items)):
                         errors.append(f'The "i_take" value must be a dictionary with integer values for {self.dond_game.items}.')
                     
+                    # Does not attribute right set of items for other player
                     if not (isinstance(other_player_gets, dict) and 
                             all(key in other_player_gets for key in self.dond_game.items) and 
                             all(isinstance(other_player_gets[key], int) for key in self.dond_game.items)):
                         errors.append(f'The "other_player_gets" value must be a dictionary with integer values {self.dond_game.items}.')
+
+
+                    if not re.search(self.finalize_pattern, response, re.DOTALL):
+                        errors.append('Could not pattern match on finalization.')
+
+
             except json.JSONDecodeError:
                 errors.append("The content within <finalize>...</finalize> is not valid JSON.")
 
@@ -214,30 +231,45 @@ class DondPlayer():
         else:
             return True, "Response is valid."
 
-    def extract(self, message):
+
+    def extract(self, response):
         """
-        Extracts the content from the response message.
+        Extracts the content from the response.
 
         Args:
-            message (str): The response message.
+            response (str): The full response string.
 
         Returns:
-            tuple: A tuple containing a boolean indicating if it's a finalization and the extracted content.
+            tuple: A tuple containing a boolean indicating if it's a finalization 
+                and the extracted content (either a string message or a dictionary 
+                for finalization details).
         """
-        pattern = r'<message>(.*?)</message>|<finalize>\s*\{\s*"i_take"\s*:\s*(.*?)\s*,\s*"other_player_gets"\s*:\s*(.*?)\s*\}\s*</finalize>'
-        match = re.search(pattern, message, re.DOTALL)
-
-        if not match:
-            return False, ""
         
-        elif match.group(2):
-            # Extract json from finalization
-            i_take = json.loads(match.group(2))
-            other_player_gets = json.loads(match.group(3))
+        # Check if it's a message
+        message_match = re.search(self.message_pattern, response, re.DOTALL)
+        
+        if message_match:
+            # Extract and return the message content
+            message_content = message_match.group(1)
+            return False, message_content
+        
+        # Check if it's a finalization
+        finalize_match = re.search(self.finalize_pattern, response, re.DOTALL)
+        
+        if finalize_match:
+            # Extract the finalization data and convert it to JSON
+            i_take_json = finalize_match.group(1)
+            other_player_gets_json = finalize_match.group(2)
+            
+            i_take = json.loads(i_take_json)
+            other_player_gets = json.loads(other_player_gets_json)
+            
+            # Return the finalization data
             return True, {"i_take": i_take, "other_player_gets": other_player_gets}
         
-        else:
-            return False, match.group(1)
+        # If neither message nor finalization is found, return False with an empty string
+        return False, ""
+
         
     def new_round(self):
         """
@@ -245,7 +277,7 @@ class DondPlayer():
         """
         self.is_new_round = True
         self.other_has_finalized = False
-        self.first_turn = True
+        self.first_move = True
     
     def new_game(self):
         """
@@ -257,6 +289,8 @@ class DondPlayer():
         self.new_round()
         self.round_nb = 1
         self.is_new_game = True
+        self.first_move = True
+        self.other_has_finalized = False
         history = self.agent.history
         self.agent.reset_messages()
         return history

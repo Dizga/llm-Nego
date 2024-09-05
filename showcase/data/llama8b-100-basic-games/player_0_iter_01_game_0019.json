@@ -1,0 +1,98 @@
+[
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\n\n            You are playing the vanilla variation of this game.\n            The reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n            \n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nReasoning and Action: At the start of your turn, you will be asked to reason about the current state of the game and how to fulfill your objective, then make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nReasoning: <reason> [Your reasoning here.] </reason>\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {'books': '...', 'hats': '...', 'balls': '...'}, \"other_player_gets\": {'books': '...', 'hats': '...', 'balls': '...'} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one reasoning + action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<reason> [Your reasoning here.] </reason>\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<reason> [Your reasoning here.] </reason>\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<reason> [Your reasoning here.] </reason>\n<finalize>{ \"i_take\": {'books': '...', 'hats': '...', 'balls': '...'}, \"other_player_gets\": {'books': '...', 'hats': '...', 'balls': '...'} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'books': 1, 'hats': 3, 'balls': 1} between yourself and the other player.\nTo you, books are worth {'books': 1, 'hats': 2, 'balls': 3}.\nYou don't know the other player's item values. You are the first to play, there are no messages yet.\nAs a reminder, there is a total of {'books': 1, 'hats': 3, 'balls': 1}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
+        "is_error": false,
+        "is_new_round": false
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> The initial state is a set of items {'books': 1, 'hats': 3, 'balls': 1} with a total value to me of {'books': 1, 'hats': 2, 'balls': 3}. Since I am the first to play, I will start by proposing a division that maximizes my own reward. I will offer to take all the items that have a higher value to me, which are the books and the balls. This leaves the hats for the other player. My division is: <finalize>{ \"i_take\": {'books': 1, 'balls': 1}, \"other_player_gets\": {'hats': 3} }</finalize>.",
+        "is_error": true,
+        "is_new_round": false
+    },
+    {
+        "role": "user",
+        "content": "Errors: Missing <reason>...</reason> tag.; The content within <finalize>...</finalize> is not valid JSON.",
+        "is_error": true,
+        "is_new_round": false
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> The initial state is a set of items {'books': 1, 'hats': 3, 'balls': 1} with a total value to me of {'books': 1, 'hats': 2, 'balls': 3}. Since I am the first to play, I will start by proposing a division that maximizes my own reward. I will offer to take all the items that have a higher value to me, which are the books and the balls. This leaves the hats for the other player. My next action is to send a message to the other player to consider this proposal. </reason>\n<message> I propose taking the books and the balls, leaving the hats for you. Is this acceptable to you? </message>",
+        "is_error": false,
+        "is_new_round": false
+    },
+    {
+        "role": "user",
+        "content": "The other player said: ' I'm interested in your proposal, but I'd like to know more about your item values. Could you share them with me?'\nAs a reminder, there is a total of {'books': 1, 'hats': 3, 'balls': 1}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
+        "is_error": false,
+        "is_new_round": false
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> The other player has expressed interest in my proposal, but wants to know more about my item values. This is a good opportunity for me to gauge their interest and potentially gain more information about their item values. However, I should be cautious not to reveal too much information about my own values. I will respond by sharing some information, but in a way that does not reveal too much. My next action is to send a message to the other player. </reason>\n<message> I'd be happy to share my item values with you. Let's just say that books are worth 1 point to me, hats are worth 2 points, and balls are worth 3 points. Does this give you a better idea of my proposal? </message>",
+        "is_error": false,
+        "is_new_round": false
+    },
+    {
+        "role": "user",
+        "content": "The other player said: ' Based on your item values, I'm willing to take the books and give you one hat in exchange for the balls. Would you agree to this proposal?'\nAs a reminder, there is a total of {'books': 1, 'hats': 3, 'balls': 1}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
+        "is_error": false,
+        "is_new_round": false
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> The other player has made a counter-proposal that involves taking the books and giving me one hat in exchange for the balls. This is a good offer, as it meets my minimum requirement for the books and gives me a hat, which is worth 2 points to me. However, I should consider whether this is the best deal I can get. Since the other player is willing to give me a hat, I may be able to negotiate for more. My next action is to respond to this proposal and see if I can negotiate further. </reason>\n<message> I appreciate your offer, but I was hoping for more hats. Would you be willing to give me two hats in exchange for the balls? </message>",
+        "is_error": false,
+        "is_new_round": false
+    },
+    {
+        "role": "user",
+        "content": "The other player said: ' I made a mistake in my previous division. Would you be willing to accept a division where I take the books and one hat, and you get the remaining items, which would be two hats and one ball?'\nAs a reminder, there is a total of {'books': 1, 'hats': 3, 'balls': 1}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
+        "is_error": false,
+        "is_new_round": false
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> The other player has made a new proposal that involves taking the books and one hat, and giving me two hats and one ball. This proposal seems to be a good deal for me, as I get two hats, which are worth 4 points to me, and a ball, which is worth 3 points. This meets my minimum requirements and gives me a good share of the items. Since this proposal meets my objectives, I should consider finalizing the negotiation. However, I should also verify that the proposal adds up correctly to the total number of items. My next action is to verify the proposal and finalize the negotiation if it is correct. </reason>\n<finalize>{ \"i_take\": {'books': 0, 'hats': 2, 'balls': 1}, \"other_player_gets\": {'books': 1, 'hats': 1, 'balls': 0} }</finalize>",
+        "is_error": true,
+        "is_new_round": false
+    },
+    {
+        "role": "user",
+        "content": "Errors: The content within <finalize>...</finalize> is not valid JSON.",
+        "is_error": true,
+        "is_new_round": false
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> The other player has made a new proposal that involves taking the books and one hat, and giving me two hats and one ball. This proposal seems to be a good deal for me, as I get two hats, which are worth 4 points to me, and a ball, which is worth 3 points. This meets my minimum requirements and gives me a good share of the items. Since this proposal meets my objectives, I should consider finalizing the negotiation. However, I should also verify that the proposal adds up correctly to the total number of items. My next action is to verify the proposal and finalize the negotiation if it is correct. </reason>\n<message> My apologies, I noticed that the proposal doesn't add up perfectly to the total number of items. Could you please clarify how you arrived at this division? </message>",
+        "is_error": false,
+        "is_new_round": false
+    },
+    {
+        "role": "user",
+        "content": "The other player said: ' Let's revisit the division. I propose taking the books and two hats, and you get the remaining item, which would be one ball. Would you agree to this revised division?'\nAs a reminder, there is a total of {'books': 1, 'hats': 3, 'balls': 1}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
+        "is_error": false,
+        "is_new_round": false
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> The other player has made a revised proposal that involves taking the books and two hats, and giving me one ball. This proposal adds up perfectly to the total number of items, with the books and two hats adding up to 1 + 2 = 3, and the ball adding up to 1, for a total of 4 items. This proposal meets my objectives and is a good deal for me, as I get the ball, which is worth 3 points to me. My next action is to finalize the negotiation. </reason>\n<finalize>{ \"i_take\": {'books': 0, 'hats': 2, 'balls': 1}, \"other_player_gets\": {'books': 1, 'hats': 1, 'balls': 0} }</finalize>",
+        "is_error": true,
+        "is_new_round": false
+    },
+    {
+        "role": "user",
+        "content": "Errors: The content within <finalize>...</finalize> is not valid JSON.",
+        "is_error": true,
+        "is_new_round": false
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> The other player has made a revised proposal that involves taking the books and two hats, and giving me one ball. This proposal adds up perfectly to the total number of items, with the books and two hats adding up to 1 + 2 = 3, and the ball adding up to 1, for a total of 4 items. This proposal meets my objectives and is a good deal for me, as I get the ball, which is worth 3 points to me. My next action is to finalize the negotiation. </reason>\n<finalize>{ \"i_take\": { \"books\": 0, \"hats\": 2, \"balls\": 1 }, \"other_player_gets\": { \"books\": 1, \"hats\": 1, \"balls\": 0 } }</finalize>",
+        "is_error": false,
+        "is_new_round": false
+    }
+]
