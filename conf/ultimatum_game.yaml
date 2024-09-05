@@ -1,0 +1,9 @@
+defaults:
+  - config
+
+env: "ultimatum"
+
+player_0:
+  player_args:
+    game_intro_file: "src/prompts/ultimatum/rules.txt"
+    chain_of_thought_file: "src/prompts/ultimatum/cot.txt"

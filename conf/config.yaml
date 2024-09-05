@@ -5,6 +5,8 @@ hydra:
 
 cuda: true
 
+env: dond
+
 playing:
   nb_iterations: 10
   games_per_iteration: 1
@@ -41,10 +43,10 @@ player_0:
   type: hf
 
   player_args:
-    game_intro_file: "src/prompts/rules.txt"
-    chain_of_thought_file: "src/prompts/cot.txt" # false if none, else link to txt file 
-    finalization_file: "src/prompts/finalization.txt"
-    new_round_file: "src/prompts/new_round.txt"
+    game_intro_file: "src/prompts/dond/rules.txt"
+    chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
+    finalization_file: "src/prompts/dond/finalization.txt"
+    new_round_file: "src/prompts/dond/new_round.txt"
     max_retries: 1
 
   agent_args:

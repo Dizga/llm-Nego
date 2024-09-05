@@ -7,7 +7,7 @@ import time
 # local imports
 from experiments.dond_iteration_runner import DondIterationRunner
 from environments.dond_game import DondGame
-from agents.get_dond_players import get_dond_players
+from players.get_dond_players import get_dond_players
 from training.train_ppo_agent import train_agent_ppo
 from utils.dond_statistics import compute_dond_statistics
 from utils.inherit_args import inherit_args
