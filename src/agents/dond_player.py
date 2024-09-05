@@ -199,12 +199,12 @@ class DondPlayer():
                     if not (isinstance(i_take, dict) and 
                             all(key in i_take for key in self.dond_game.items) and 
                             all(isinstance(i_take[key], int) for key in self.dond_game.items)):
-                        errors.append('The "i_take" value must be a dictionary with integer values for the game items.')
+                        errors.append(f'The "i_take" value must be a dictionary with integer values for {self.dond_game.items}.')
                     
                     if not (isinstance(other_player_gets, dict) and 
                             all(key in other_player_gets for key in self.dond_game.items) and 
                             all(isinstance(other_player_gets[key], int) for key in self.dond_game.items)):
-                        errors.append('The "other_player_gets" value must be a dictionary with integer values for the game items.')
+                        errors.append(f'The "other_player_gets" value must be a dictionary with integer values {self.dond_game.items}.')
             except json.JSONDecodeError:
                 errors.append("The content within <finalize>...</finalize> is not valid JSON.")
 
