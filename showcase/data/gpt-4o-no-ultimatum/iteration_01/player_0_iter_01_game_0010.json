@@ -1,0 +1,50 @@
+[
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal.\n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\n\n            You are playing the vanilla variation of this game.\n            The reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n            \n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nReasoning and Action: At the start of your turn, you will be asked to reason about the current state of the game and how to fulfill your objective, then make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nReasoning: <reason> [Your reasoning here.] </reason>\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {'books': '...', 'hats': '...', 'balls': '...'}, \"other_player_gets\": {'books': '...', 'hats': '...', 'balls': '...'} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one reasoning + action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<reason> [Your reasoning here.] </reason>\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<reason> [Your reasoning here.] </reason>\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<reason> [Your reasoning here.] </reason>\n<finalize>{ \"i_take\": {'books': '...', 'hats': '...', 'balls': '...'}, \"other_player_gets\": {'books': '...', 'hats': '...', 'balls': '...'} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'books': 3, 'hats': 1, 'balls': 2} between yourself and the other player.\nTo you, books are worth {'books': 0, 'hats': 0, 'balls': 5}.\nYou don't know the other player's item values. You are the first to play, there are no messages yet.\nAs a reminder, there is a total of {'books': 3, 'hats': 1, 'balls': 2}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
+        "is_error": false,
+        "is_new_round": false
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> The only items with utility to me are the balls, which are worth 5 each. Books and hats have no utility value for me. Since I don't know the value these items hold for the other player, I need to start a negotiation to understand their preferences. By knowing their preferences, I can strategize a trade-off ensuring I get the balls while offering something they value in return, ideally without conferring the items I need. My next step should be to message the other player to gauge their interest in each of the item types.\n</reason>\n\n<message> Hi there! Let's make sure we both get what we want out of this. Could you let me know which items are most valuable to you? </message>",
+        "is_error": false,
+        "is_new_round": false
+    },
+    {
+        "role": "user",
+        "content": "The other player said: ' Hi! For me, balls are the most valuable, followed by books and hats. How about you? Can you share your preferences? '\nAs a reminder, there is a total of {'books': 3, 'hats': 1, 'balls': 2}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
+        "is_error": false,
+        "is_new_round": false
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> The other player also values balls the most, which complicates the negotiation since balls are the sole items of utility to both of us. To ensure that both parties get a fair deal and avoid a zero-score situation, I need to propose a distribution where I can get at least one ball while compensating the other player with the books and the hat that they value. By securing at least one ball, I can secure some points, and the other player can receive items of significant utility to them.\n</reason>\n\n<message> Thanks for sharing! For me, balls are also the most valuable item. How about this: I take 1 ball, and you get 1 ball, all the books, and the hat. This way, we both get the balls we need, and you get the other items that are valuable to you. How does that sound? </message>",
+        "is_error": false,
+        "is_new_round": false
+    },
+    {
+        "role": "user",
+        "content": "A finalization has been made by the other player. Using the <reason> tag, remember the division that was agreed upon and then make a finalization using the <finalize> tag, describing the division of items you agreed upon, no items should be left over. The finalization should be formatted has <finalize>{ \"i_take\": {'books': '...', 'hats': '...', 'balls': '...'}, \"other_player_gets\": {'books': '...', 'hats': '...', 'balls': '...'} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\n",
+        "is_error": false,
+        "is_new_round": false
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> In our last interaction, I proposed that I take 1 ball and the other player takes 1 ball, all the books, and the hat. This would ensure that both parties receive their most valuable items, and the other player gets additional items to maximize their utility. Since the other player has made a finalization based on my proposition, I will proceed with finalizing the agreed division to ensure we match and avoid a zero-score situation.\n</reason>\n\n<finalize>{ \"i_take\": {'books': 0, 'hats': 0, 'balls': 1}, \"other_player_gets\": {'books': 3, 'hats': 1, 'balls': 1} }</finalize>",
+        "is_error": false,
+        "is_new_round": false
+    },
+    {
+        "role": "user",
+        "content": "Errors: The content within <finalize>...</finalize> is not valid JSON.",
+        "is_error": true,
+        "is_new_round": false
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> Our agreed division was that I take 1 ball, and the other player takes 1 ball, all the books, and the hat. This division ensures that both parties receive their most valuable items, and the other player gets the additional items they value. I'll correct the format to ensure it is valid JSON.</reason>\n\n<finalize>{\"i_take\": {\"books\": 0, \"hats\": 0, \"balls\": 1}, \"other_player_gets\": {\"books\": 3, \"hats\": 1, \"balls\": 1}}</finalize>",
+        "is_error": false,
+        "is_new_round": false
+    }
+]

@@ -1,0 +1,2 @@
+mode,round_id,player_0_reward,player_1_reward,quantities,player_0_values,player_1_values,player_0_finalization,player_1_finalization,agreement_reached,total_points_over_maximum
+basic,0,8,4,"{'books': 1, 'hats': 4, 'balls': 2}","{'books': 2, 'hats': 2, 'balls': 0}","{'books': 4, 'hats': 0, 'balls': 3}","{'books': 0, 'hats': 4, 'balls': 2}","{'books': 1, 'hats': 0, 'balls': 0}",True,0.6666666666666666

@@ -1,0 +1,41 @@
+device: cuda
+cuda: true
+playing:
+  nb_iterations: 50
+  games_per_iteration: 10
+game:
+  rounds_per_game: 1
+  max_turns: 10
+  mode: basic
+  setup: random_read
+  setups_file: src/environments/dond_setups.txt
+training:
+  train_type: ppo
+  checkpoint_models: false
+  nb_epochs: 1
+  ppo_trainer_args:
+    batch_size: 1
+    mini_batch_size: 1
+    ppo_epochs: 4
+    model_name: model
+    gradient_checkpointing: false
+    gradient_accumulation_steps: 1
+    log_with: tensorboard
+    project_kwargs: None
+    tracker_project_name: tensorboard
+player_0:
+  type: oai
+  player_args:
+    game_intro_file: src/prompts/rules.txt
+    chain_of_thought_file: src/prompts/cot.txt
+    finalization_file: src/prompts/finalization.txt
+    new_round_file: src/prompts/new_round.txt
+    max_retries: 5
+  agent_args:
+    name: openai_agent
+    api_key: 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
+    model: gpt-4o
+player_1:
+  type: same_as_player_0
+  player_args: same_as_player_0
+  agent_args: same_as_player_0

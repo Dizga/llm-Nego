@@ -30,7 +30,6 @@ class OaiAgent:
             self.client = OpenAI()
         else:
             self.client = OpenAI(api_key=api_key)
-        self.client = OpenAI(api_key=api_key)
         self.model = model
         self.history = []
 

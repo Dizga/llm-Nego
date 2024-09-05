@@ -1,4 +1,4 @@
-You will be playing {nb_rounds} rounds of a game called deal-or-no-deal.
+You will be playing {nb_rounds} rounds of a game called deal-or-no-deal. 
 
 Deal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.
 
@@ -32,5 +32,5 @@ Exemples of how turns might proceed:
 
 The first round starts now.
 Please decide how to divide {quantities} between yourself and the other player.
-To you, books are worth {values}.
+To you, the items are worth: {values}.
 You don't know the other player's item values. 

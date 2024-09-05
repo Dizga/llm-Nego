@@ -33,6 +33,7 @@ def train_agent_ppo(
     responses = responses + responses_player_1
     scores = scores + scores_player_1
 
+
     ds = len(queries)
     bs = ppo_trainer_args.batch_size
     nb_batches = ds // bs
@@ -57,6 +58,6 @@ def train_agent_ppo(
     delete_tensor_list(responses)
     delete_tensor_list(scores)
     torch.cuda.empty_cache()
-
-    return stats
+    if nb_batches > 0:
+        return stats
         

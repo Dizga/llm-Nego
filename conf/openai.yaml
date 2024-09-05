@@ -7,10 +7,10 @@ cuda: true
 
 playing:
   nb_iterations: 50
-  games_per_iteration: 5
+  games_per_iteration: 10
 
 game:
-  rounds_per_game: 5
+  rounds_per_game: 1
   max_turns: 10
   mode: basic
   setup: random_read
@@ -47,7 +47,7 @@ player_0:
 
   agent_args:
     name: "openai_agent"
-    api_key: 
+    api_key: ""
     model: gpt-4o-mini
 
 player_1:

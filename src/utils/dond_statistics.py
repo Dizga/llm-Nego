@@ -14,7 +14,7 @@ def compute_dond_statistics(folder_path):
 
     # Iterate over each file in the folder
     pattern = re.compile(r'^iter_\d{2}_game_\d{4}\.csv$')
-    for file_name in os.listdir(folder_path):
+    for file_name in sorted(os.listdir(folder_path)):
         if pattern.match(file_name):
 
             file_path = os.path.join(folder_path, file_name)
