@@ -57,46 +57,40 @@ class DondPlayer():
         self.other_has_finalized = False  # whether the other player has made a finalization
         self.error_overload_message = False
 
-    def play_move(self, state):
+
+    def get_context(self):
+        return self.context
+    
+    def add_to_context(self, message: str, information: dict):
+        pass
+        # TODO
+
+
+    def get_user_response(self, assistant_message, state):
         """
-        Plays a move in the DoND game.
-
+        
         """
 
-        # Check if new round
-        if state['round_number'] > self.round_nb:
-            self.new_round()
-            self.round_nb+=1
-        else: 
-            self.is_new_round = False
+        is_valid_response, error_message = self.validate(assistant_message)
 
-        # Get the context message to be passed to the model to get its response
-        user_message = self.get_usr_message(state)
 
-        # Get response from the model
-        response = self.agent.prompt(user_message, is_new_round=self.is_new_round)
-
-        # Validate the response from the model
-        valid_response, error_message = self.validate(response)
-
-        # Allow safety nets which gives retry attempts to the model
-        retries = 0
-        while not valid_response and retries <= self.max_retries:
-            response = self.agent.prompt(error_message, is_error=True)
-            valid_response, error_message = self.validate(response)
-            if not valid_response:
-                self.agent.set_error_last_message() # Set error in agent history for last message
-            retries += 1
+        if not is_valid_response: self.retries = 1
+        else: self.retries = 0
 
         # Too many mistakes were made
-        if not valid_response and retries > self.max_retries:
+        if self.retries > self.max_retries:
             response = "<reason></reason><message>I have failed to provide a proper response.</message>"
             self.error_overload_message = f"""Last turn, you made too many errors. The final one was: "{error_message}". The dummy response "{response}" was sent to the other player in place of the one you sent."""
+
 
         self.first_move = False
 
         # Process the response
-        return self.extract(response)
+        usr_message =  self.get_usr_message(state)
+
+        # TODO: add user response to context
+
+        return context
 
 
     def get_usr_message(self, state):
@@ -115,6 +109,13 @@ class DondPlayer():
         state['game_mode_specificities'] = self.game_state_specificities(state['mode'])
 
         user_message = ""
+
+        # Check if new round
+        if state['round_number'] > self.round_nb:
+            self.new_round()
+            self.round_nb+=1
+        else: 
+            self.is_new_round = False
 
         if self.is_new_game:
             user_message += self.game_basics.format(**state)
@@ -157,7 +158,7 @@ class DondPlayer():
 
 
     
-    def validate(self, response):
+    def validate(self, response, state):
         """
         Validates the response from the LLM player.
 
@@ -291,15 +292,6 @@ class DondPlayer():
         self.is_new_game = True
         self.first_move = True
         self.other_has_finalized = False
-        history = self.agent.history
-        self.agent.reset_messages()
-        return history
-    
-    def get_history(self):
-        """
-        Returns the current message history of the LLM player.
+        self.context = []
+        return self.context
 
-        Returns:
-            list: The message history.
-        """
-        return self.agent.history

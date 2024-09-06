@@ -22,9 +22,14 @@ import logging
 import time
 import subprocess
 
-os.environ["TOKENIZERS_PARALLELISM"] = "false" # silence warnings when compiling
-import torch._dynamo
-torch._dynamo.config.suppress_errors = True
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from peft import LoraConfig, get_peft_model
+from trl import AutoModelForCausalLMWithValueHead, PPOConfig, PPOTrainer
+import torch
+import subprocess
+import gc
+from vllm import LLM, SamplingParams
+from vllm.lora.request import LoRARequest
 
 torch.set_default_device('cuda')
 
@@ -41,7 +46,6 @@ class HfAgent:
         device: str = "cuda",  # 'cuda' or 'cpu'
         tokenizer_name: str = "microsoft/Phi-3-mini-128k-instruct",
         model_training_args: dict = None,
-        out_folder: str = "checkpoints",
     ) -> None:
         """
         Initializes the HfAgent.
@@ -62,37 +66,12 @@ class HfAgent:
         self.device = torch.device(device)
 
         # Initialize tokenizer
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
-
-        # Set training arguments
-        if model_training_args:
-            self.training_args = TrainingArguments(**model_training_args)
-
-        self.out_folder = out_folder
-
-        self.history = []
-
-    def _initialize_model(self, pretrained_args: dict, bits_and_bytes_args: dict, lora_args: dict):
-        """Initializes the model with LoRA and quantization configurations."""
-
-        # Initialize the quantization configuration
-        self.quantization_conf = BitsAndBytesConfig(**bits_and_bytes_args)
-
-        # Initialize the LoRA configuration
-        self.lora_config = LoraConfig(**lora_args)
+        self.tokenizer_config = # TODO
+        self.training_args = TrainingArguments(**model_training_args)
+        self.bits_and_bytes_configs = # TODO 
+        self.lora_config = LoraConfig(r=8, lora_alpha=16, target_modules=["q_proj", "v_proj"], lora_dropout=0, bias="none") # TODO
+        self.ppo_training_config = # TODO
         
-        # Load the model with quantization
-        self.model = AutoModelForCausalLMWithValueHead.from_pretrained(
-            **pretrained_args,
-            quantization_config=self.quantization_conf,
-            peft_config=self.lora_config
-        )
-
-        # Compile for faster generation (https://github.com/huggingface/huggingface-llama-recipes/blob/main/torch_compile.py)
-        # self.model.forward = torch.compile(self.model.forward, mode="reduce-overhead", fullgraph=True)
-        # self.model.generation_config.cache_implementation = "static"
-        # self.model.generation_config.max_length = 128
-
 
     def init_ppo_trainer(self, out_directory: str, ppo_training_args: dict) -> None:
         """
@@ -120,7 +99,6 @@ class HfAgent:
             data (List[Dict]): A list of JSON objects representing conversations.
 
         Returns:
-            
         """
 
         formatted = self.tokenizer.apply_chat_template(data, tokenize=False, add_generation_prompt=False)
@@ -209,70 +187,73 @@ class HfAgent:
         for tensor in tensor_list:
             del tensor
 
-    def reset_messages(self) -> None:
+
+    def prompt(self, contexts) -> str:
         """
-        Resets the conversation history.
-        """
-        self.history = []
-
-    def set_error_last_message(self):
-        self.history[-1]["is_error"] = True
-
-    def add_message(self, role: str, message: str, is_error: bool = False, is_new_round: bool = False) -> None:
-        """
-        Adds a message to the conversation history.
-
-        Args:
-            role (str): The role of the message sender (e.g., 'user', 'assistant').
-            message (str): The message content.
-            is_error (bool): Indicates if the message is an error message.
-            is_new_round (bool): Indicates if the message starts a new conversation round.
-        """
-
-        self.history.append({
-            "role": role,
-            "content": message,
-            "is_error": is_error,
-            "is_new_round": is_new_round
-        })
-
-    def add_system_message(self, message: str) -> None:
-        """
-        Adds a system message to the conversation history.
-
-        Args:
-            message (str): The system message content.
-        """
-        self.add_message("system", message)
-
-
-    def prompt(self, message: str, is_error: bool = False, is_new_round: bool = False, model_args: dict = None) -> str:
-        """
-        Adds a user message to the conversation history and generates a response.
-
-        Args:
-            message (str): The user message to be added to the conversation history.
-            is_error (bool): Indicates if the user message is an error message.
-            is_new_round (bool): Indicates if the message starts a new conversation round.
-            model_args (dict): Arguments to switch to a model without the value head for generation.
 
         Returns:
             str: The generated response from the model.
         """
-        user_msg = message
-        self.add_message(role="user", message=user_msg, is_error=is_error, is_new_round=is_new_round)
 
-        text = self.tokenizer.apply_chat_template(self.history, tokenize=False, add_generation_prompt=True) # https://huggingface.co/docs/transformers/main/en/chat_templating
-        model_inputs = self.tokenizer([text], return_tensors="pt").to(self.device)
-        with torch.no_grad():
-            generated_ids = self.model.generate(**model_inputs, max_new_tokens=1000, do_sample=True) 
-        generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
-        response = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        texts = self.tokenizer.apply_chat_template(contexts, tokenize=False, add_generation_prompt=True)
+         # https://huggingface.co/docs/transformers/main/en/chat_templating
+        
+        if self.inference_library == "hf":
+            model_inputs = self.tokenizer(texts, return_tensors="pt").to(self.device)
+            with torch.no_grad():
+                generated_ids = self.model.generate(**model_inputs, max_new_tokens=1000, do_sample=True) 
+            generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
+            responses = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
-        self.add_message(role="assistant", message=response)
-        return response
+        elif self.inference_library == "vllm":
+            self.model.generate(texts, 
+                                sampling_params=self.sampling_params, 
+                                lora_request=LoRARequest("dummy_lora", 1, self.lora_weights_path)
+                                )
+
+        return responses
     
-    def save_lora_weights(self, save_directory: str) -> None:
+
+    def switch_to_hf(self, lora_weights_path=None):
+
+        if self.inference_library == "vllm":
+            # TODO
+            pass
+            # Empty vllm memory used
+
+        self.inference_library = "hf"        
+        self.model = AutoModelForCausalLM.from_pretrained(self.model_name
+                                                          **self.pretrained_args,
+                                                            quantization_config=self.quantization_conf,
+                                                          )
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+
+        # add LoRA
+        if lora_weights_path:
+            self.load_lora_weights = lora_weights_path
+        self.model.add_adapter(self.lora_config, adapter_name="adapter_1")
+    
+    def switch_to_vllm(self, lora_weights_path=None):
+
+        if self.inference_library == "hf":
+            log_gpu_usage()
+            move_model_to_cpu(model)
+            del model
+            del ppo_trainer
+            gc.collect()
+            torch.cuda.empty_cache()
+            log_gpu_usage()
+
+
+        # Get VLLM model
+        self.inference_library = "vllm"
+        self.model = LLM(self.model_name, enable_lora=True)
+        self.sampling_params = SamplingParams(temperature=0.7)
+        if lora_weights_path:
+            self.load_lora_weights = lora_weights_path
+                    
+    
+    def save_lora_weights(self, lora_weights_path: str) -> None:
         """
         Saves only the LoRA weights to a specified directory.
 
@@ -282,24 +263,11 @@ class HfAgent:
         if not isinstance(self.model, LoraModel):
             raise ValueError("The model is not a LoRA model, cannot save LoRA weights.")
 
-        os.makedirs(save_directory, exist_ok=True)
+        os.makedirs(lora_weights_path, exist_ok=True)
         # Save the LoRA weights only
-        self.model.save_pretrained(save_directory)
+        self.model.save_pretrained(lora_weights_path)
+        self.lora_weights_path = lora_weights_path
+        logging.info(f"LoRA weights saved to {lora_weights_path}")
 
-        logging.info(f"LoRA weights saved to {save_directory}")
-
-    def load_lora_weights(self, load_directory: str) -> None:
-        """
-        Loads only the LoRA weights from a specified directory.
-
-        Args:
-            load_directory (str): The directory from where the LoRA weights will be loaded.
-        """
-        if not isinstance(self.model, LoraModel):
-            raise ValueError("The model is not a LoRA model, cannot load LoRA weights.")
-
-        # Load the LoRA weights
-        self.model = LoraModel.from_pretrained(self.model, load_directory)
-
-        logging.info(f"LoRA weights loaded from {load_directory}")
+  
 

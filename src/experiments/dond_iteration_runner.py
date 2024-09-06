@@ -45,7 +45,7 @@ class DondIterationRunner:
         for _ in range(self.games_per_iteration):
             self.run_game()
 
-    def run_game(self):
+    def run_games(self, parallel):
         logging.info(f"Game {self.game_nb} of iteration {self.iteration_nb} started.")
         self.new_game()
         self.player_0.new_game()
