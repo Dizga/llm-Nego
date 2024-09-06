@@ -21,6 +21,8 @@ models:
     bits_and_bytes_args:
       load_in_8bit: False
 
+    model_name: '' # TODO
+
     lora_args:
         task_type: TaskType.CAUSAL_LM
         r: 16

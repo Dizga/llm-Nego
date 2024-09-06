@@ -66,12 +66,12 @@ class DondPlayer():
         # TODO
 
 
-    def get_user_response(self, assistant_message, state):
+    def process_model_response(self, response, state):
         """
         
         """
 
-        is_valid_response, error_message = self.validate(assistant_message)
+        is_valid_response, error_message = self.validate(response)
 
 
         if not is_valid_response: self.retries = 1

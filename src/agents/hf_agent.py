@@ -18,6 +18,7 @@ from peft import LoraConfig, LoraModel
 import os
 
 from utils.log_gpu_usage import log_gpu_usage
+from utils.model_to_cpu import move_model_to_cpu
 import logging
 import time
 import subprocess
@@ -42,10 +43,14 @@ class HfAgent:
 
     def __init__(
         self,
-        name: str = "agent",
-        device: str = "cuda",  # 'cuda' or 'cpu'
-        tokenizer_name: str = "microsoft/Phi-3-mini-128k-instruct",
-        model_training_args: dict = None,
+        name: str = "your_friendly_llm",
+        device: str = "cuda",
+        bits_and_bytes_args = None,
+        lora_args = None,
+        pretrained_args = None,
+        
+
+        
     ) -> None:
         """
         Initializes the HfAgent.

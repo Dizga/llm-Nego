@@ -17,6 +17,8 @@ from agents.dummy_hf_agent import DummyHfAgent
 from agents.oai_agent import OaiAgent
 from utils.log_gpu_usage import log_gpu_usage
 
+from collections import deque
+
 
 class DondIterationRunner:
     def __init__(self, 
@@ -41,31 +43,42 @@ class DondIterationRunner:
         self.round_nb = 0
 
     def run_iteration(self):
+        # TODO: verify
         self.new_iteration()
-        for _ in range(self.games_per_iteration):
-            self.run_game()
+        logging.info(f"Iteration {self.iteration_nb} with {self.game_nb} started.")
+        matches = None # TODO
 
-    def run_games(self, parallel):
-        logging.info(f"Game {self.game_nb} of iteration {self.iteration_nb} started.")
-        self.new_game()
-        self.player_0.new_game()
-        self.player_1.new_game()
-        game_state = self.game.reset()
-        player_id = 0
-        while not game_state['game_ended']:
-            if game_state['new_round']:
-                pass
-                # self._start_new_round() TODO
-            is_finalization, content = self.players[player_id].play_move(game_state)
-            game_state = self.game.step(content, is_finalization=is_finalization)
-            player_id = (player_id + 1) % 2
-            
-        # while True:
-        self.log_game(self.game.export(), 
-                             self.player_0.get_history(), 
-                             self.player_1.get_history())
-        logging.info("Game completed.")
+        while self.game_nb < self.games_per_iteration:
 
+            # Get prompt batch for each model
+            for match in matches:
+                player = match['queue'][0]
+                player.agent.append_to_input_batch(player.get_context())
+
+            # Process prompt batch of each model
+            for model in self.models:
+                model.batched_responses = model.prompt(model.prompt_batch)
+
+            # Play moves for each player by using the model outputs
+            for match in matches:
+                player = match['queue'][0]
+                response = player.model.batch_response.pop(0)
+                processed_move, send_to_game, is_finalization = player.process_model_response(response, match['game_state'])
+
+                if send_to_game:
+                    
+                    match['game_state'] = match['game'].step(processed_move, is_finalization)
+
+                    if match['game_state']['game_ended']:
+                        self.log_game(match['queue'].export(), match['queue'][0], match['queue'][1])
+                        logging.info(f"Game {self.game_nb} completed.")
+                        for player in match['queue']: player.new_game()
+                        match['game'].reset()
+                        self.new_game()
+
+                    elif match['game_state']['round_ended']:
+                        for player in match['queue']: player.new_round()
+                
     def new_iteration(self)-> str:
         """
         Starts a new iteration, resets metrics, and logs stats for the previous iteration.
