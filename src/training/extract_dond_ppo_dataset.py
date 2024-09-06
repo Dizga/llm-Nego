@@ -51,20 +51,19 @@ def extract_hf_ppo_dataset(folder_path: str,
                 # Don't add mistakes to training data
                 if message['is_error']: continue
 
+                context.append(message)
+
                 # An action has been made
                 if message['role'] == "assistant":
 
-                    queries.append(context)
+                    queries.append(context[:-1])
 
                     responses.append([message])
 
                     scores.append(rewards[count])
 
-                elif message.get('is_new_round'):
+                if message.get('is_new_round'):
                     count += 1
-
-                context = copy.deepcopy(context)
-                context.append(message)
 
             
 

@@ -7,12 +7,12 @@ cuda: true
 
 playing:
   nb_iterations: 10
-  games_per_iteration: 1
+  games_per_iteration: 20
 
 game:
   rounds_per_game: 1
-  max_turns: 4
-  mode: basic # basic, coop
+  max_turns: 10
+  mode: coop # basic, coop
   setup: random_read
   setups_file: src/environments/dond_setups.txt
 
@@ -20,13 +20,13 @@ training:
 
   train_type: "ppo"
   checkpoint_models: False
-  nb_epochs: 1 # Number of passes on entire dataset.
+  nb_epochs: 4 # Number of passes on entire dataset.
 
   ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
     # For batch size vs mini confusion https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_trainer.py#L647)
-    batch_size: 2 # Number of examples put on the GPU at once. batch_size = mini_batch_size * gradient_accumulation_steps
+    batch_size: 4 # Number of examples put on the GPU at once. batch_size = mini_batch_size * gradient_accumulation_steps
     mini_batch_size: 1 # Number of examples fed in parallel to the model
-    gradient_accumulation_steps: 2 # Number of minibatch gradient accumulation before step. Should be equal to batch size.
+    gradient_accumulation_steps: 4 # Number of minibatch gradient accumulation before step. Should be equal to batch size.
     ppo_epochs: 1 # Default: 4. Number of optimisation epochs per batch of samples
     model_name: "model"
     learning_rate: 1.41e-5
@@ -45,7 +45,7 @@ player_0:
     chain_of_thought_file: "src/prompts/cot.txt" # false if none, else link to txt file 
     finalization_file: "src/prompts/finalization.txt"
     new_round_file: "src/prompts/new_round.txt"
-    max_retries: 1
+    max_retries: 3
 
   agent_args:
     name: "agent_0"
@@ -62,13 +62,13 @@ player_0:
         device_map: "auto"
 
     bits_and_bytes_args:
-      load_in_4bit: False
+      load_in_8bit: False
 
     lora_args:
         task_type: TaskType.CAUSAL_LM
         r: 16
         lora_alpha: 16
-        lora_dropout: 0.1
+        lora_dropout: 0
         target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
 
 
@@ -82,7 +82,6 @@ player_1:
 
 
     
-
 
 
 

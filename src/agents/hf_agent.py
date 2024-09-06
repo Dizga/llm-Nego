@@ -94,7 +94,6 @@ class HfAgent:
         # self.model.generation_config.max_length = 128
 
 
-
     def init_ppo_trainer(self, out_directory: str, ppo_training_args: dict) -> None:
         """
         Initializes the PPO (Proximal Policy Optimization) trainer.
@@ -245,7 +244,6 @@ class HfAgent:
             message (str): The system message content.
         """
         self.add_message("system", message)
-
 
 
     def prompt(self, message: str, is_error: bool = False, is_new_round: bool = False, model_args: dict = None) -> str:
