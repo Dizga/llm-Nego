@@ -23,6 +23,7 @@ class DondGame:
         """
         self.mode = mode
         self.max_turns = max_turns
+        self.player_order = player_order
         self.setup = setup
         self.setups_file = setups_file
         self.rounds_per_game = rounds_per_game

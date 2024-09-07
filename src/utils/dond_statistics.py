@@ -4,7 +4,6 @@ import re
 from statistics import *
 
 def compute_dond_statistics(folder_path):
-
     game_stats = {
         'player_0_total_returns': [],
         'player_1_total_returns': [],
@@ -18,10 +17,10 @@ def compute_dond_statistics(folder_path):
         if pattern.match(file_name):
 
             file_path = os.path.join(folder_path, file_name)
-            df = pd.read_csv(file_path)
+            df = pd.read_csv(file_path, index_col=0)
 
-            # Get number of rounds in game
-            num_rounds = len(df)
+            # Transpose the DataFrame so that rows represent rounds and columns represent attributes
+            df = df.transpose()
 
             # Convert string representations of dictionaries to actual dictionaries
             df['quantities'] = df['quantities'].apply(eval)
@@ -29,6 +28,9 @@ def compute_dond_statistics(folder_path):
             df['player_1_values'] = df['player_1_values'].apply(eval)
             df['player_0_finalization'] = df['player_0_finalization'].apply(eval)
             df['player_1_finalization'] = df['player_1_finalization'].apply(eval)
+
+            # Get number of rounds in game
+            num_rounds = len(df)
 
             # Get total rewards of game
             player_0_total_rewards = df['player_0_reward'].sum()
@@ -44,9 +46,9 @@ def compute_dond_statistics(folder_path):
                 if row['agreement_reached']:
                     for key in row['quantities'].keys():
                         maximum += max(row['player_0_values'][key], row['player_1_values'][key]) * row['quantities'][key]
-                        p0_points += row['player_0_finalization'][key] * row['player_0_values'][key]
-                        p1_points += row['player_1_finalization'][key] * row['player_1_values'][key]
-                    total_points_over_maximum = (p0_points + p1_points) / maximum
+                        p0_points += row['player_0_finalization'].get(key, 0) * row['player_0_values'][key]
+                        p1_points += row['player_1_finalization'].get(key, 0) * row['player_1_values'][key]
+                    total_points_over_maximum = (p0_points + p1_points) / maximum if maximum > 0 else 0
                 else:
                     total_points_over_maximum = 0 
                 
@@ -56,11 +58,11 @@ def compute_dond_statistics(folder_path):
             df['total_points_over_maximum'] = total_points_over_maximum_list
 
             # Calculate and store statistics
-            agreements_reached_percentage = df['agreement_reached'].sum() / num_rounds * 100
+            #agreements_reached_percentage = df['agreement_reached'].sum() / num_rounds * 100
 
             game_stats['player_0_total_returns'].append(player_0_total_rewards)
             game_stats['player_1_total_returns'].append(player_1_total_rewards)
-            game_stats['agreement_reached_percentage'].append(agreements_reached_percentage)
+            #game_stats['agreement_reached_percentage'].append(agreements_reached_percentage)
             game_stats['total_points_over_maximum'].extend(total_points_over_maximum_list)
 
             # Save the updated DataFrame back to the CSV file
@@ -69,7 +71,14 @@ def compute_dond_statistics(folder_path):
     # Compute desired statistics
     global_game_stats = {}
     for key in game_stats.keys():
-        global_game_stats["mean_" + key] = mean(game_stats[key])
+        # Filter out non-numeric values and log if necessary
+        numeric_values = [value for value in game_stats[key] if isinstance(value, (int, float))]
+        
+        # Check if there are any numeric values before calculating the mean
+        if numeric_values:
+            global_game_stats["mean_" + key] = mean(numeric_values)
+        else:
+            global_game_stats["mean_" + key] = None  # or 0, depending on how you want to handle it
 
     # Create DataFrames from the dictionaries
     game_stats_df = pd.DataFrame(list(game_stats.items()), columns=['Statistic', 'Value'])
@@ -83,4 +92,3 @@ def compute_dond_statistics(folder_path):
     global_stats_df.to_csv(global_stats_file, index=False)
 
     print(f"Statistics exported to {game_stats_file} and {global_stats_file}")
-

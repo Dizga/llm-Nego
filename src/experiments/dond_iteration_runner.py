@@ -46,8 +46,9 @@ class DondIterationRunner:
         for _ in range(self.nb_parallel_games):
             match = {}
             match['player_list'] = copy.deepcopy(self.players)
-            order = match['game'].get_play_order()
             match['game'] = copy.deepcopy(self.game)
+            match['game_state'] = match['game'].get_state()
+            order = match['game'].get_play_order()
             match['player_deque'] = deque([match['player_list'][id] for id in order])
             self.matches.append(match)
 
@@ -62,17 +63,20 @@ class DondIterationRunner:
             # Get prompt batch for each model
             for match in self.matches:
                 player = match['player_deque'][0]
-                player.agent.append_to_input_batch(player.get_context())
+                model = self.models[player.model_name]
+                model.prompt_batch.append(player.get_context())
 
             # Process prompt batch of each model
-            for model in self.models:
+            for model in self.models.values():
                 model.batched_responses = model.prompt(model.prompt_batch)
+                assert len(model.batched_responses) == len(model.prompt_batch)
 
             # Play moves for each player by using the model outputs
             for match in self.matches:
 
                 player = match['player_deque'][0]
-                response = player.model.batch_response.pop(0)
+                model = self.models[player.model_name]
+                response = model.batched_responses.pop(0)
                 processed_move, send_to_game, is_finalization = player.process_model_response(response, match['game_state'])
 
                 # Player has made an official move (will be other player's turn next)
@@ -81,11 +85,11 @@ class DondIterationRunner:
                     match['game_state'] = match['game'].step(processed_move, is_finalization)
 
                     if match['game_state']['game_ended']:
-                        self.export_match(match['game'].export(), match['player_deque'])
+                        self.game_nb += 1
+                        self.export_match(match['game'], match['player_deque'])
                         logging.info(f"Game {self.game_nb} completed.")
                         for player in match['player_deque']: player.reset_game()
                         match['game'].reset()
-                        self.reset_game()
 
                     elif match['game_state']['round_ended']:
                         play_order = match['game'].get_play_order()
@@ -111,11 +115,8 @@ class DondIterationRunner:
         self.game_log_file = os.path.join(self.it_folder, "games.csv")
         return self.it_folder
 
-    def reset_game(self):
-        self.game_nb += 1
-        self.round_nb = 0
-        self.rounds_path = os.path.join(self.it_folder, 
-                f"iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.csv")
+
+        
         
 
     def export_match(self, game, players):
@@ -131,8 +132,7 @@ class DondIterationRunner:
 
         # Export the player contexts
         for player in players:
-            player_context_path = os.path.join(self.it_folder, f"{player.name}_{game_name}.json")
-            os.makedirs(self.player_context_path, exist_ok=True)
+            player_context_path = os.path.join(self.it_folder, f"{player.player_name}_{game_name}.json")
             with open(player_context_path, 'w') as f:
                 json.dump(player.get_context(), f, indent=4)
 
@@ -141,7 +141,7 @@ class DondIterationRunner:
         df = pd.DataFrame(rounds_data)
         df.set_index('round_id', inplace=True)
         df_transposed = df.transpose()
-        df_transposed.to_csv(os.path.join(self.it_folder, f"{game_name}.json"))
+        df_transposed.to_csv(os.path.join(self.it_folder, f"{game_name}.csv"))
             
 
 

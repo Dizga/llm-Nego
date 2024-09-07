@@ -54,9 +54,9 @@ models:
 
 players: 
   player_0:
-    model_name: 'llama'
     id: 0 # Will be used by game to determine which player starts
     dond_player_args:
+      model_name: 'llama'
       game_intro_file: "src/prompts/rules.txt"
       chain_of_thought_file: "src/prompts/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/finalization.txt"
@@ -64,9 +64,9 @@ players:
       max_retries: 3
 
   player_1:
-    model_name: 'llama'
     id: 1
     dond_player_args:
+      model_name: 'llama'
       game_intro_file: "src/prompts/rules.txt"
       chain_of_thought_file: "src/prompts/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/finalization.txt"

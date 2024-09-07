@@ -7,14 +7,14 @@ from environments.dond_game import DondGame
 
 class DondPlayer():
     def __init__(self, 
-                 dond_game,
+                 player_name,
                  game_intro_file, 
                  chain_of_thought_file, 
                  new_round_file,
                  max_retries,
                  finalization_file,
-                 agent, 
-                 player_type="player_0"):
+                 game_state,
+                 model_name):
         """
         The Player acts as a middle-man between the game and a LLM player.
         Initializes the DoNDPlayer.
@@ -49,13 +49,16 @@ class DondPlayer():
             with open(chain_of_thought_file, 'r') as file:
                 self.chain_of_thought = file.read()
 
+        self.player_name = player_name
         self.round_nb = 1
-        self.dond_game = dond_game
+        self.retries = 0
         self.max_retries = max_retries
-        self.agent = agent
-        self.player_type = player_type
+        self.model_name = model_name
         self.other_has_finalized = False  # whether the other player has made a finalization
         self.error_overload_message = False
+        self.context = []
+        self.init_game_state = game_state
+        self.reset_game()
 
 
     def get_context(self):
@@ -75,20 +78,19 @@ class DondPlayer():
         send_to_game = False
         is_finalization= False
 
-        # Add to context
-        self.add_to_context()
-
         # Verify if model response was valid
         is_error, error_message = self.validate(response, state)
 
         if is_error: 
-            self.retries = 1
+            self.retries += 1
             # Too many mistakes were made
             if self.retries > self.max_retries:
                 response = "<reason></reason><message>I have failed to provide a proper response.</message>"
                 self.error_overload_message = f"""Last turn, you made too many errors. 
                 The final one was: "{error_message}". 
                 The dummy response "{response}" was sent to the other player in place of the one you sent."""
+                send_to_game = True
+
 
         else: 
             self.retries = 0
@@ -101,14 +103,12 @@ class DondPlayer():
         self.add_to_context(model_response)
 
         # Add user response to context
-        usr_message =  self.get_usr_message(state)
-        usr_prompt = {'role': 'user', 'content': usr_message, 'is_error': is_error, 'is_new_round': self.is_new_round}
-        self.add_to_context(usr_prompt) 
+        self.set_usr_message(state, is_error=is_error)
 
         return processed_response, send_to_game, is_finalization
 
 
-    def get_usr_message(self, state):
+    def set_usr_message(self, state, is_error=False):
         """
         Constructs a user message based on the current game state.
 
@@ -153,7 +153,8 @@ class DondPlayer():
             if self.chain_of_thought is not None:
                 user_message += self.chain_of_thought.format(**state)
 
-        return user_message
+        usr_prompt = {'role': 'user', 'content': user_message, 'is_error': is_error, 'is_new_round': self.is_new_round}
+        self.add_to_context(usr_prompt) 
     
     def game_state_specificities(self, mode):
         if mode == "basic":
@@ -300,5 +301,5 @@ class DondPlayer():
         self.first_move = True
         self.other_has_finalized = False
         self.context = []
-        return self.context
+        self.set_usr_message(self.init_game_state)
 

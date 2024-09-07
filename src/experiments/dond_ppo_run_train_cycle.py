@@ -9,9 +9,10 @@ from experiments.dond_iteration_runner import DondIterationRunner
 from environments.dond_game import DondGame
 from utils.dond_statistics import compute_dond_statistics
 from utils.inherit_args import inherit_args
-from models import hf_agent
-from src.environments import dond_player
-from src.utils import extract_dond_ppo_dataset
+from models.hf_agent import HfAgent
+from models.dummy_hf_agent import DummyHfAgent
+from environments.dond_player import DondPlayer
+from utils import extract_dond_ppo_dataset
 
 def dond_ppo_run_train_cycle(cfg): 
 
@@ -25,20 +26,21 @@ def dond_ppo_run_train_cycle(cfg):
 
     # Get models
     models = {}
-    for model_name in cfg.agents.keys():
-        models[model_name] = hf_agent(**cfg.agents[model_name])
+    for model_name in cfg.models.keys():
+        models[model_name] = DummyHfAgent(**cfg.models[model_name])
         models[model_name].switch_to_vllm()
-    
-    # Get players
-    players = [None*len(cfg.players.keys())]
-    for player_name in cfg.players.keys():
-        id = cfg.players['player_name'].id
-        players[id] = dond_player(**cfg.players[player_name].dond_player_args)
-        players[id].model = models[players[player_name].model_name]
-        players[id].name = player_name
 
     # Get game
     dond_game = DondGame(**cfg.iterations.dond_game_args)
+    
+    # Get players
+    players = [None]*len(cfg.players.keys())
+    for player_name in cfg.players.keys():
+        id = cfg.players[player_name].id
+        players[id] = DondPlayer(**cfg.players[player_name].dond_player_args, 
+                                 player_name=player_name,
+                                 game_state=dond_game.get_state()
+                                 )
 
     iteration_runner = DondIterationRunner(
         **cfg.iterations.iteration_runner_args, 
@@ -50,16 +52,16 @@ def dond_ppo_run_train_cycle(cfg):
 
     for _ in range(cfg.iterations.nb_iterations):
         
-        it_folder = iteration_runner.it_folder
         
         # Run iteration
         iteration_runner.run_iteration()
+        it_folder = iteration_runner.it_folder
 
         # Get iteration statistics
         compute_dond_statistics(it_folder)
 
         # Train every model on last iteration data
-        for model_name in cfg.agents.keys():
+        for model_name in cfg.models.keys():
 
             model = models[model_name]
             model.switch_to_hf()
@@ -69,7 +71,7 @@ def dond_ppo_run_train_cycle(cfg):
 
                 if players[player_name].model_name == model_name:
                     new_queries, new_responses, new_scores = extract_dond_ppo_dataset(it_folder, player_name)
-                    queries += new_queries; responses += new_responses; new_scores += new_scores
+                    queries += new_queries; responses += new_responses; scores += new_scores
 
             model.train_ppo(queries, responses, scores)
 
