@@ -14,14 +14,14 @@ playing:
 
 models: 
 
-  model_0:
+  llama:
+
+    model_name: "meta-llama/Meta-Llama-3.1-8B-Instruct" # TODO
 
     device: "cuda"
 
     bits_and_bytes_args:
       load_in_8bit: False
-
-    model_name: '' # TODO
 
     lora_args:
         task_type: TaskType.CAUSAL_LM
@@ -49,6 +49,7 @@ models:
 
 players: 
   player_0:
+    model: 'llama'
     player_args:
       game_intro_file: "src/prompts/rules.txt"
       chain_of_thought_file: "src/prompts/cot.txt" # false if none, else link to txt file 
@@ -57,11 +58,13 @@ players:
       max_retries: 3
 
   player_1:
-    type: "same_as_player_0"
-    player_args: "same_as_player_0"
-    agent_args: "same_as_player_0"
-    inherit_model: True
-    model_args: "same_as_player_0"
+    model: 'llama'
+    player_args:
+      game_intro_file: "src/prompts/rules.txt"
+      chain_of_thought_file: "src/prompts/cot.txt" # false if none, else link to txt file 
+      finalization_file: "src/prompts/finalization.txt"
+      new_round_file: "src/prompts/new_round.txt"
+      max_retries: 3
 
 
 

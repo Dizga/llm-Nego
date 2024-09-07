@@ -44,13 +44,12 @@ class HfAgent:
     def __init__(
         self,
         name: str = "your_friendly_llm",
+        model_name: str = "meta-llama/Meta-Llama-3.1-8B-Instruct",
         device: str = "cuda",
         bits_and_bytes_args = None,
         lora_args = None,
         pretrained_args = None,
-        
-
-        
+        ppo_trainer_args = None
     ) -> None:
         """
         Initializes the HfAgent.
@@ -71,30 +70,11 @@ class HfAgent:
         self.device = torch.device(device)
 
         # Initialize tokenizer
-        self.tokenizer_config = # TODO
-        self.training_args = TrainingArguments(**model_training_args)
-        self.bits_and_bytes_configs = # TODO 
-        self.lora_config = LoraConfig(r=8, lora_alpha=16, target_modules=["q_proj", "v_proj"], lora_dropout=0, bias="none") # TODO
-        self.ppo_training_config = # TODO
+        self.model_name = model_name
+        self.bits_and_bytes_configs = BitsAndBytesConfig(**bits_and_bytes_args)
+        self.lora_config = LoraConfig(**lora_args) # TODO
+        self.ppo_training_config = PPOConfig(**ppo_trainer_args)
         
-
-    def init_ppo_trainer(self, out_directory: str, ppo_training_args: dict) -> None:
-        """
-        Initializes the PPO (Proximal Policy Optimization) trainer.
-
-        Args:
-            out_directory (str): The directory where training logs and checkpoints will be saved.
-            ppo_training_args (dict): Arguments specific to PPO training.
-        """
-        os.makedirs(out_directory, exist_ok=True)
-        ppo_training_args['project_kwargs'] = {'logging_dir': out_directory}
-        ppo_config = PPOConfig(**ppo_training_args)
-
-        self.ppo_trainer = PPOTrainer(
-            model=self.model,
-            config=ppo_config,
-            tokenizer=self.tokenizer,
-        )
 
     def encode_jsons(self, data: List[dict]) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
         """
@@ -122,6 +102,21 @@ class HfAgent:
 
 
         return tokenized
+    
+    def init_ppo_trainer(self) -> None:
+        """
+        Initializes the PPO (Proximal Policy Optimization) trainer.
+
+        Args:
+            out_directory (str): The directory where training logs and checkpoints will be saved.
+            ppo_training_args (dict): Arguments specific to PPO training.
+        """
+
+        self.ppo_trainer = PPOTrainer(
+            model=self.model,
+            config=self.ppo_training_config,
+            tokenizer=self.tokenizer,
+        )
 
 
     def train_ppo_json(
@@ -171,16 +166,6 @@ class HfAgent:
 
         return stats
 
-    def checkpoint_model(self, model_checkp_dir: str) -> None:
-        """
-        Saves the model and tokenizer to a specified directory.
-
-        Args:
-            model_checkp_dir (str): The directory where the model checkpoint will be saved.
-        """
-        os.makedirs(model_checkp_dir, exist_ok=True)
-        self.model.save_pretrained(model_checkp_dir)
-        self.tokenizer.save_pretrained(model_checkp_dir)
 
     def delete_tensor_list(self, tensor_list: List[Any]) -> None:
         """
@@ -200,8 +185,8 @@ class HfAgent:
             str: The generated response from the model.
         """
 
+        # https://huggingface.co/docs/transformers/main/en/chat_templating
         texts = self.tokenizer.apply_chat_template(contexts, tokenize=False, add_generation_prompt=True)
-         # https://huggingface.co/docs/transformers/main/en/chat_templating
         
         if self.inference_library == "hf":
             model_inputs = self.tokenizer(texts, return_tensors="pt").to(self.device)

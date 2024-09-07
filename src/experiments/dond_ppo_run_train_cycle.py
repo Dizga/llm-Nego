@@ -38,7 +38,7 @@ def dond_ppo_run_train_cycle(cfg):
         # Time for game generation (playing)
         play_start_time = time.time()
         
-        # Play games
+        # Run iteration
         logging.info(f"Started playing {cfg.playing.games_per_iteration} games.")
         iteration_runner.run_iteration()
         logging.info(f"Completed {cfg.playing.games_per_iteration} games.")
@@ -47,12 +47,13 @@ def dond_ppo_run_train_cycle(cfg):
         play_duration = play_end_time - play_start_time
         logging.info(f"Time taken for playing {cfg.playing.games_per_iteration} games: {play_duration:.2f} seconds")
 
+        # Get iteration statistics
         compute_dond_statistics(iteration_runner.it_folder)
 
         # Time for training
         train_start_time = time.time()
 
-        # Train on games played
+        # Train on iteration
         logging.info(f"Started {cfg.training.train_type} training.")
         if cfg.training.train_type == "ppo":
             train_agent_ppo(
