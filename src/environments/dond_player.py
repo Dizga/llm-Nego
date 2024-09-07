@@ -61,9 +61,8 @@ class DondPlayer():
     def get_context(self):
         return self.context
     
-    def add_to_context(self, message: str, information: dict):
-        pass
-        # TODO
+    def add_to_context(self, element: dict):
+        self.context.append(element)
 
 
     def process_model_response(self, response, state):
@@ -71,26 +70,42 @@ class DondPlayer():
         
         """
 
-        is_valid_response, error_message = self.validate(response)
+        # Initiate what will be returned
+        processed_response = None
+        send_to_game = False
+        is_finalization= False
+
+        # Add to context
+        self.add_to_context()
+
+        # Verify if model response was valid
+        is_error, error_message = self.validate(response, state)
+
+        if is_error: 
+            self.retries = 1
+            # Too many mistakes were made
+            if self.retries > self.max_retries:
+                response = "<reason></reason><message>I have failed to provide a proper response.</message>"
+                self.error_overload_message = f"""Last turn, you made too many errors. 
+                The final one was: "{error_message}". 
+                The dummy response "{response}" was sent to the other player in place of the one you sent."""
+
+        else: 
+            self.retries = 0
+            send_to_game = True
+            processed_response, is_finalization = self.extract(response)
 
 
-        if not is_valid_response: self.retries = 1
-        else: self.retries = 0
+        # Add raw response to context
+        model_response = {'role': 'assistant', 'content': response, 'is_error': is_error, 'is_new_round': self.is_new_round}
+        self.add_to_context(model_response)
 
-        # Too many mistakes were made
-        if self.retries > self.max_retries:
-            response = "<reason></reason><message>I have failed to provide a proper response.</message>"
-            self.error_overload_message = f"""Last turn, you made too many errors. The final one was: "{error_message}". The dummy response "{response}" was sent to the other player in place of the one you sent."""
-
-
-        self.first_move = False
-
-        # Process the response
+        # Add user response to context
         usr_message =  self.get_usr_message(state)
+        usr_prompt = {'role': 'user', 'content': usr_message, 'is_error': is_error, 'is_new_round': self.is_new_round}
+        self.add_to_context(usr_prompt) 
 
-        # TODO: add user response to context
-
-        return context
+        return processed_response, send_to_game, is_finalization
 
 
     def get_usr_message(self, state):
@@ -112,7 +127,7 @@ class DondPlayer():
 
         # Check if new round
         if state['round_number'] > self.round_nb:
-            self.new_round()
+            self.reset_round()
             self.round_nb+=1
         else: 
             self.is_new_round = False
@@ -141,20 +156,12 @@ class DondPlayer():
         return user_message
     
     def game_state_specificities(self, mode):
-
         if mode == "basic":
-            return """
-            You are playing the vanilla variation of this game.
-            The reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.
-            """
-        
+            with open('src/prompts/basic.txt', 'r') as file:
+                return file.read()
         if mode == "coop":
-            return """
-            You are playing the cooperative variation of the deal-or-no-deal game. 
-            The reward you are trying to maximize is calculated as follows: your utility values multiplied by items you take + the other player's utility values multiplied by the items they take
-
-            I repeat, it is the reward that you are trying to maximize and not only your utility values multiplied by items you take. It is the sum of both total utilities, per the cooperation mode.
-            """
+            with open('src/prompts/coop.txt', 'r') as file:
+                return file.read()
 
 
     
@@ -166,7 +173,7 @@ class DondPlayer():
             response (str): The response from the LLM player.
 
         Returns:
-            tuple: A tuple containing a boolean indicating validity and an error message if invalid.
+            tuple: A tuple containing a boolean indicating if error is present and an error message if invalid.
         """
         errors = []
         
@@ -228,9 +235,9 @@ class DondPlayer():
 
         # Generate error message or return success
         if errors:
-            return False, "Errors: " + "; ".join(errors)
+            return True, "Errors: " + "; ".join(errors)
         else:
-            return True, "Response is valid."
+            return False, "Response is valid."
 
 
     def extract(self, response):
@@ -272,7 +279,7 @@ class DondPlayer():
         return False, ""
 
         
-    def new_round(self):
+    def reset_round(self):
         """
         Resets round attributes.
         """
@@ -280,14 +287,14 @@ class DondPlayer():
         self.other_has_finalized = False
         self.first_move = True
     
-    def new_game(self):
+    def reset_game(self):
         """
         Resets the message history of the LLM player.
 
         Returns:
             list: The message history before resetting.
         """
-        self.new_round()
+        self.reset_round()
         self.round_nb = 1
         self.is_new_game = True
         self.first_move = True

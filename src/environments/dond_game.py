@@ -253,6 +253,10 @@ class DondGame:
         else:
             self.player_1_prop = finalization['i_take']
 
+    def get_play_order():
+        "Get order of players"
+        pass
+        # TODO
 
     def export(self):
         """

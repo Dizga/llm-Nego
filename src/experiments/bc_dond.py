@@ -44,16 +44,16 @@ class BcDondTrainer:
 
     def run_game(self):
         self.logger.log_info("Game started.")
-        self.logger.new_game()
+        self.logger.reset_game()
         players = [self.player_0, self.player_1]
-        self.player_0.new_game()
-        self.player_1.new_game()
+        self.player_0.reset_game()
+        self.player_1.reset_game()
         game_state = self.game.reset()
         player_id = 0
         while not game_state['game_ended']:
-            if game_state['new_round']:
-                self.player_0.new_round()
-                self.player_1.new_round()
+            if game_state['reset_round']:
+                self.player_0.reset_round()
+                self.player_1.reset_round()
             is_finalization, content = players[player_id].play_move(game_state)
             game_state = self.game.step(content, is_finalization=is_finalization)
             player_id = (player_id + 1) % 2

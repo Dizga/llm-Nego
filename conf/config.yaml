@@ -2,12 +2,15 @@ hydra:
   job:
     chdir: false
 
-playing:
+iterations:
   nb_iterations: 10
-  games_per_iteration: 20
-  game_args:
+  iteration_runner_args:
+    nb_parallel_games: 2
+    games_per_iteration: 20
+  dond_game_args:
     rounds_per_game: 1
     max_turns: 10
+    player_order: deterministic # deterministic or random player who start beginning of each round
     mode: coop # basic, coop
     setup: random_read
     setups_file: src/environments/dond_setups.txt
@@ -49,8 +52,9 @@ models:
 
 players: 
   player_0:
-    model: 'llama'
-    player_args:
+    model_name: 'llama'
+    id: 0 # Will be used by game to determine which player starts
+    dond_player_args:
       game_intro_file: "src/prompts/rules.txt"
       chain_of_thought_file: "src/prompts/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/finalization.txt"
@@ -58,8 +62,9 @@ players:
       max_retries: 3
 
   player_1:
-    model: 'llama'
-    player_args:
+    model_name: 'llama'
+    id: 1
+    dond_player_args:
       game_intro_file: "src/prompts/rules.txt"
       chain_of_thought_file: "src/prompts/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/finalization.txt"
