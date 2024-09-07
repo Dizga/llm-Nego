@@ -30,7 +30,7 @@ class DondIterationRunner:
         self.out_dir = out_dir
         self.nb_parallel_games = nb_parallel_games
         self.games_per_iteration = games_per_iteration
-        self.game
+        self.game = game
         self.players = players
         self.models = models
 
@@ -38,7 +38,6 @@ class DondIterationRunner:
         # Local
         self.iteration_nb = 0
         self.game_nb = 0
-        self.round_nb = 0
         self.run_dir = out_dir
         self.datenow = datetime.now().strftime('%Y_%m_%d_%H_%M')
 
@@ -51,7 +50,6 @@ class DondIterationRunner:
             match['game'] = copy.deepcopy(self.game)
             match['player_deque'] = deque([match['player_list'][id] for id in order])
             self.matches.append(match)
-
 
 
     def run_iteration(self):
@@ -83,7 +81,7 @@ class DondIterationRunner:
                     match['game_state'] = match['game'].step(processed_move, is_finalization)
 
                     if match['game_state']['game_ended']:
-                        self.log_game(match['game'].export(), match['player_deque'])
+                        self.export_match(match['game'].export(), match['player_deque'])
                         logging.info(f"Game {self.game_nb} completed.")
                         for player in match['player_deque']: player.reset_game()
                         match['game'].reset()
@@ -116,56 +114,36 @@ class DondIterationRunner:
     def reset_game(self):
         self.game_nb += 1
         self.round_nb = 0
-        self.rounds_log = pd.DataFrame([])
         self.rounds_path = os.path.join(self.it_folder, 
                 f"iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.csv")
         
 
-    def log_game(self, game, player_0_history, player_1_history):
+    def export_match(self, game, players):
         """
         Logs game data, saves player histories, and updates metrics.
 
         Args:
             game List(dict): A list of dictionaries, each containing the data of a round.
         """
-        # TODO: refactor
-        
-        # Export the conversations
-        player_0_game_name = f"player_0_iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.json"
-        player_1_game_name = f"player_1_iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.json"
-        os.makedirs(self.run_dir, exist_ok=True)
-        with open(os.path.join(self.it_folder, player_0_game_name), 'w') as f:
-            json.dump(player_0_history, f, indent=4)
-        with open(os.path.join(self.it_folder, player_1_game_name), 'w') as f:
-            json.dump(player_1_history, f, indent=4)
 
-        # Log every round
-        for round in game: self.log_round(round)
+        # Create path
+        game_name = f"iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}"
+
+        # Export the player contexts
+        for player in players:
+            player_context_path = os.path.join(self.it_folder, f"{player.name}_{game_name}.json")
+            os.makedirs(self.player_context_path, exist_ok=True)
+            with open(player_context_path, 'w') as f:
+                json.dump(player.get_context(), f, indent=4)
+
+        # Export game metrics
+        rounds_data = game.export()
+        df = pd.DataFrame(rounds_data)
+        df.set_index('round_id', inplace=True)
+        df_transposed = df.transpose()
+        df_transposed.to_csv(os.path.join(self.it_folder, f"{game_name}.json"))
+            
 
 
-    def log_round(self, round: dict):
-        """
-        Logs game data, saves player histories, and updates metrics.
 
-        Args:
-            game (dict): A dictionary containing game data.
-        """
-        # TODO: refactor
 
-        # Log round metrics
-        self.rounds_log = pd.concat([self.rounds_log, pd.DataFrame([round])], ignore_index=True)
-        self.rounds_log.to_csv(self.rounds_path, index=False)
-
-    def save_player_messages(self, player_name: str, messages: list):
-        """
-        Saves player messages to a JSON file.
-
-        Args:
-            player_name (str): The name of the player.
-            messages (list): A list of messages from the player.
-        """
-        # TODO: refactor
-
-        file_path = os.path.join(self.run_dir, f"{player_name}.json")
-        with open(file_path, 'w') as f:
-            json.dump(messages, f, indent=4)

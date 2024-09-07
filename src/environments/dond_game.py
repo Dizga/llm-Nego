@@ -6,6 +6,7 @@ class DondGame:
     def __init__(self, 
                  mode='coop',
                  max_turns=None,
+                 player_order='deterministic',
                  setup="random_read",
                  setups_file=None,
                  rounds_per_game = 10,
@@ -253,10 +254,25 @@ class DondGame:
         else:
             self.player_1_prop = finalization['i_take']
 
-    def get_play_order():
-        "Get order of players"
-        pass
-        # TODO
+
+    def get_play_order(self):
+        """
+        Get the order of players.
+        
+        Returns:
+            list: The order of player indices.
+        """
+        if self.player_order == 'deterministic':
+            # If the order is deterministic, the players will always be [0, 1]
+            return [0, 1]
+        elif self.player_order == 'stochastic':
+            # If the order is stochastic, randomly shuffle the player order
+            return random.sample([0, 1], 2)  # Randomly shuffle between [0, 1]
+        else:
+            # Handle invalid player_order values
+            raise ValueError(f"Invalid player_order: {self.player_order}. Must be 'deterministic' or 'stochastic'.")
+
+        
 
     def export(self):
         """

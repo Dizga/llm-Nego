@@ -40,15 +40,17 @@ models:
 
     ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
       # For batch size vs mini confusion https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_trainer.py#L647)
-      batch_size: 4 # Number of examples put on the GPU at once. batch_size = mini_batch_size * gradient_accumulation_steps
-      mini_batch_size: 1 # Number of examples fed in parallel to the model
-      gradient_accumulation_steps: 4 # Number of minibatch gradient accumulation before step. Should be equal to batch size.
+      batch_size: 4 # Default is 64 Number of examples put on the GPU at once. batch_size = mini_batch_size * gradient_accumulation_steps
+      mini_batch_size: 1 # Default: 1. Number of examples fed in parallel to the model
+      gradient_accumulation_steps: 4 # Default: 64. Number of minibatch gradient accumulation before step. Should be equal to batch size.
       ppo_epochs: 1 # Default: 4. Number of optimisation epochs per batch of samples
       learning_rate: 1.41e-5
       gradient_checkpointing: False # Whether to keep all activations in memory at once.
       log_with: "tensorboard"
       project_kwargs: None # don't touch, will be set later
       tracker_project_name: "tensorboard"
+
+    save_lora_weights: True
 
 players: 
   player_0:

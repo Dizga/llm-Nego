@@ -61,7 +61,7 @@ class BcDondTrainer:
         # while True:
         #     if self.player_0.play_move(): break
         #     if self.player_1.play_move(): break
-        self.logger.log_game(*self.game.export(), 
+        self.logger.export_match(*self.game.export(), 
                              self.player_0.get_history(), 
                              self.player_1.get_history())
         self.logger.log_info("Game completed.")

@@ -5,8 +5,7 @@ import regex as re
 import copy
 
 def extract_hf_ppo_dataset(folder_path: str, 
-                           player_0=True, 
-                           full_context=True,
+                           player_name, 
                            export_for_debugging=True):
     """
     Extracts data for HF PPO training from game logs.
@@ -21,7 +20,7 @@ def extract_hf_ppo_dataset(folder_path: str,
         tuple: Lists of queries, responses, and scores.
     """
 
-    player_prefix = "player_0_" if player_0 else "player_1_"
+    player_prefix = player_name + "_" 
     queries, responses, scores = [], [], []
 
     # For each game player
