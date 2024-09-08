@@ -91,7 +91,6 @@ class DondPlayer():
                 The dummy response "{response}" was sent to the other player in place of the one you sent."""
                 send_to_game = True
 
-
         else: 
             self.retries = 0
             send_to_game = True
@@ -133,9 +132,9 @@ class DondPlayer():
 
         if self.error_overload_message:
             user_message += self.error_overload_message
-            self.error_overload_message = False
             usr_prompt = {'role': 'user', 'content': user_message, 'is_error': is_error, 'is_new_round': False}
             self.add_to_context(usr_prompt) 
+            self.error_overload_message = False
             return
 
         # if state['round_number'] > self.round_nb:
@@ -296,6 +295,8 @@ class DondPlayer():
         """
         self.is_new_round = True
         self.other_has_finalized = False
+        self.error_overload_message = False
+
     
     def reset_game(self, state):
         """
@@ -310,6 +311,7 @@ class DondPlayer():
         self.is_new_round = True
         self.first_move = True
         self.other_has_finalized = False
+        self.error_overload_message = False
         self.context = []
         self.set_usr_message(state)
 
