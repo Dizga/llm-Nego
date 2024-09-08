@@ -61,6 +61,7 @@ def dond_ppo_run_train_cycle(cfg):
         compute_dond_statistics(it_folder)
 
         # Train every model on last iteration data
+        # TODO: fix!
         for model_name in cfg.models.keys():
 
             model = models[model_name]

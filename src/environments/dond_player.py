@@ -57,8 +57,8 @@ class DondPlayer():
         self.other_has_finalized = False  # whether the other player has made a finalization
         self.error_overload_message = False
         self.context = []
-        self.init_game_state = game_state
-        self.reset_game()
+        self.reset_game(game_state)
+
 
 
     def get_context(self):
@@ -79,7 +79,7 @@ class DondPlayer():
         is_finalization= False
 
         # Verify if model response was valid
-        is_error, error_message = self.validate(response, state)
+        is_error, self.error_message = self.validate(response, state)
 
         if is_error: 
             self.retries += 1
@@ -87,7 +87,7 @@ class DondPlayer():
             if self.retries > self.max_retries:
                 response = "<reason></reason><message>I have failed to provide a proper response.</message>"
                 self.error_overload_message = f"""Last turn, you made too many errors. 
-                The final one was: "{error_message}". 
+                The final one was: "{self.error_message}". 
                 The dummy response "{response}" was sent to the other player in place of the one you sent."""
                 send_to_game = True
 
@@ -97,13 +97,12 @@ class DondPlayer():
             send_to_game = True
             is_finalization, processed_response = self.extract(response)
 
-
         # Add raw response to context
-        model_response = {'role': 'assistant', 'content': response, 'is_error': is_error, 'is_new_round': self.is_new_round}
+        model_response = {'role': 'assistant', 'content': response, 'is_error': is_error, 'is_finalization': is_finalization, 'is_new_round': self.is_new_round}
         self.add_to_context(model_response)
 
-        # Add user response to context
-        self.set_usr_message(state, is_error=is_error)
+        if not is_finalization: # Add user response to context
+            self.set_usr_message(state, is_error=is_error)
 
         return processed_response, send_to_game, is_finalization
 
@@ -118,6 +117,7 @@ class DondPlayer():
         Returns:
             str: The constructed user message.
         """
+
         # Create dummy finalization to include in game explanation
         dummy_finalization = {key: "..." for key in state['quantities']}
         state['dummy_finalization'] = dummy_finalization
@@ -125,36 +125,46 @@ class DondPlayer():
 
         user_message = ""
 
-        # Check if new round
-        if state['round_number'] > self.round_nb:
-            self.reset_round()
-            self.round_nb+=1
-        else: 
-            self.is_new_round = False
+        if is_error:
+            user_message = self.error_message
+            usr_prompt = {'role': 'user', 'content': user_message, 'is_error': is_error, 'is_new_round': False}
+            self.add_to_context(usr_prompt) 
+            return
+
+        if self.error_overload_message:
+            user_message += self.error_overload_message
+            self.error_overload_message = False
+            usr_prompt = {'role': 'user', 'content': user_message, 'is_error': is_error, 'is_new_round': False}
+            self.add_to_context(usr_prompt) 
+            return
+
+        # if state['round_number'] > self.round_nb:
+        #     self.reset_round()
+        #     user_message += self.new_round_prompt.format(**state)
+        #     self.round_nb+=1
+        #     self.is_new_round = True
+        # else: self.is_new_round = False
 
         if self.is_new_game:
             user_message += self.game_basics.format(**state)
             self.is_new_game = False
 
-        if self.is_new_round: 
-            user_message += self.new_round_prompt.format(**state)
-
-        if self.error_overload_message:
-            user_message += self.error_overload_message
-            self.error_overload_message = False
-
         if state["has_finalized"]:
             self.other_has_finalized = True
             user_message += self.finalization_prompt.format(**state)
 
-        else:
-            user_message += f"The other player said: '{state['last_message']}'\n" if state['last_message'] else "You are the first to play, there are no messages yet.\n"
+        if state['last_message'] == None:
+            user_message += "You are the first to play, there are no messages yet.\n"
 
-            if self.chain_of_thought is not None:
+        else:
+            user_message += f"The other player said: '{state['last_message']}'\n"
+
+        if self.chain_of_thought is not None:
                 user_message += self.chain_of_thought.format(**state)
 
         usr_prompt = {'role': 'user', 'content': user_message, 'is_error': is_error, 'is_new_round': self.is_new_round}
         self.add_to_context(usr_prompt) 
+
     
     def game_state_specificities(self, mode):
         if mode == "basic":
@@ -216,14 +226,14 @@ class DondPlayer():
 
                     # Does not self-attribute right set of items for self
                     if not (isinstance(i_take, dict) and 
-                            all(key in i_take for key in self.dond_game.items) and 
-                            all(isinstance(i_take[key], int) for key in self.dond_game.items)):
+                            all(key in i_take for key in state['items']) and 
+                            all(isinstance(i_take[key], int) for key in state['items'])):
                         errors.append('The "i_take" value must be a dictionary with integer values for the game items.')
                     
                     # Does not attribute right set of items for other player
                     if not (isinstance(other_player_gets, dict) and 
-                            all(key in other_player_gets for key in self.dond_game.items) and 
-                            all(isinstance(other_player_gets[key], int) for key in self.dond_game.items)):
+                            all(key in other_player_gets for key in state['items']) and 
+                            all(isinstance(other_player_gets[key], int) for key in state['items'])):
                         errors.append('The "other_player_gets" value must be a dictionary with integer values for the game items.')
 
 
@@ -286,9 +296,8 @@ class DondPlayer():
         """
         self.is_new_round = True
         self.other_has_finalized = False
-        self.first_move = True
     
-    def reset_game(self):
+    def reset_game(self, state):
         """
         Resets the message history of the LLM player.
 
@@ -298,8 +307,9 @@ class DondPlayer():
         self.reset_round()
         self.round_nb = 1
         self.is_new_game = True
+        self.is_new_round = True
         self.first_move = True
         self.other_has_finalized = False
         self.context = []
-        self.set_usr_message(self.init_game_state)
+        self.set_usr_message(state)
 

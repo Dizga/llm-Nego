@@ -45,7 +45,7 @@ class DondIterationRunner:
         self.matches = []
         for _ in range(self.nb_parallel_games):
             match = {}
-            match['player_list'] = copy.deepcopy(self.players)
+            match['player_list'] = [copy.deepcopy(player) for player in self.players]
             match['game'] = copy.deepcopy(self.game)
             match['game_state'] = match['game'].get_state()
             order = match['game'].get_play_order()
@@ -83,21 +83,23 @@ class DondIterationRunner:
                 # Player has made an official move (will be other player's turn next)
                 if send_to_game:
 
+                    match['player_deque'].rotate(1)
+
                     match['game_state'] = match['game'].step(processed_move, is_finalization)
 
                     if match['game_state']['game_ended']:
                         self.game_nb += 1
                         self.export_match(match['game'], match['player_deque'])
-                        logging.info(f"Game {self.game_nb} completed.")
-                        for player in match['player_deque']: player.reset_game()
                         match['game'].reset()
+                        for player in match['player_deque']: player.reset_game(match['game'].get_state())
 
-                    elif match['game_state']['round_ended']:
-                        play_order = match['game'].get_play_order()
-                        match['player_deque'] = deque([match['player_list'][id] for id in play_order])
-                        for player in match['player_deque']: player.reset_round()
+                    # elif match['game_state']['round_ended']:
+                    #     play_order = match['game'].get_play_order()
+                    #     match['player_deque'] = deque([match['player_list'][id] for id in play_order])
 
-                    match['player_deque'].rotate(1)
+                    
+            for model in self.models.values():
+                assert len(model.batched_responses) == 0
                     
                 
                 
@@ -127,6 +129,8 @@ class DondIterationRunner:
         Args:
             game List(dict): A list of dictionaries, each containing the data of a round.
         """
+
+        logging.info(f"Game {self.game_nb} completed.")
 
         # Create path
         game_name = f"iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}"
