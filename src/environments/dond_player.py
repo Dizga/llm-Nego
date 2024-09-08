@@ -29,12 +29,6 @@ class DondPlayer():
         self.first_move = True
         self.is_new_game = True
 
-        # Pattern to match the message part
-        self.message_pattern = r'<message>(.*?)</message>'
-        
-        # Pattern to match the finalization part
-        self.finalize_pattern = r'<finalize>\s*\{\s*"i_take"\s*:\s*(.*?)\s*,\s*"other_player_gets"\s*:\s*(.*?)\s*\}\s*</finalize>'
-        
         with open(game_intro_file, 'r') as file:
             self.game_basics = file.read()
 
