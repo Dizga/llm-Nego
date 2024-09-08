@@ -62,12 +62,18 @@ class DondIterationRunner:
 
             # Get prompt batch for each model
             for match in self.matches:
+
+                # Add user message to context
                 player = match['player_deque'][0]
+                player.set_usr_message(match['game'].get_state())
+
+                # Send player context to right model
                 model = self.models[player.model_name]
                 model.prompt_batch.append(player.get_context())
 
             # Process prompt batch of each model
             for model in self.models.values():
+
                 model.batched_responses = model.prompt(model.prompt_batch)
                 assert len(model.batched_responses) == len(model.prompt_batch)
                 model.prompt_batch = []
@@ -78,20 +84,20 @@ class DondIterationRunner:
                 player = match['player_deque'][0]
                 model = self.models[player.model_name]
                 response = model.batched_responses.pop(0)
-                processed_move, send_to_game, is_finalization = player.process_model_response(response, match['game_state'])
+                send_to_game, is_finalization, processed_response = player.process_model_response(response, match['game_state'])
 
                 # Player has made an official move (will be other player's turn next)
                 if send_to_game:
 
                     match['player_deque'].rotate(1)
 
-                    match['game_state'] = match['game'].step(processed_move, is_finalization)
+                    match['game_state'] = match['game'].step(processed_response, is_finalization)
 
                     if match['game_state']['game_ended']:
                         self.game_nb += 1
                         self.export_match(match['game'], match['player_deque'])
                         match['game'].reset()
-                        for player in match['player_deque']: player.reset_game(match['game'].get_state())
+                        for player in match['player_deque']: player.reset_game()
 
                     # elif match['game_state']['round_ended']:
                     #     play_order = match['game'].get_play_order()

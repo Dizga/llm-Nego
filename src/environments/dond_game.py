@@ -69,7 +69,7 @@ class DondGame:
             bool: False if game ended else True.
         """
 
-        self.move_nb += 1
+        self.turn += 1
         
         self.last_message = output
 
@@ -101,7 +101,6 @@ class DondGame:
             self.has_finalized = True
             self.finalize(output)
         
-        self.turn += 1
 
         if self.turn > self.max_turns:
             self.end_round()
@@ -127,7 +126,7 @@ class DondGame:
             'game_ended': self.game_ended,
             "round_ended": self.new_round,
             "items": self.items,
-            "move_nb": self.move_nb,
+            "move_nb": self.turn,
             "current_turn": self.current_turn(),
             "round_number": self.round_nb,
             "nb_rounds": self.rounds_per_game,
@@ -235,14 +234,13 @@ class DondGame:
         Returns:
             tuple: The quantities of items and the values for player 0 and player 1.
         """
-        self.turn = 0
         self.has_finalized = False
         self.player_0_prop = {}
         self.player_1_prop = {}
         self.agreement_reached = False
         self.last_message = None
-        self.round_nb = 0
-        self.move_nb = 0
+        self.round_nb = 1
+        self.turn = 1
         self.new_round = True
         self.game_ended = False
         self.last_message = None
@@ -262,7 +260,7 @@ class DondGame:
     def end_round(self):
         self.archive_player_states()
         self.round_nb += 1
-        self.turn = 0
+        self.turn = 1
         self.has_finalized = False
         self.last_message = None
         self.player_0_prop = {}
