@@ -5,11 +5,11 @@ hydra:
 iterations:
   nb_iterations: 10
   iteration_runner_args:
-    nb_parallel_games: 2
+    nb_parallel_games: 10
     games_per_iteration: 20
   dond_game_args:
     rounds_per_game: 1
-    max_turns: 10
+    max_turns: 5
     player_order: deterministic # deterministic or random player who start beginning of each round
     mode: coop # basic, coop
     setup: random_read

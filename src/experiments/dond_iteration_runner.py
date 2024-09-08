@@ -70,6 +70,7 @@ class DondIterationRunner:
             for model in self.models.values():
                 model.batched_responses = model.prompt(model.prompt_batch)
                 assert len(model.batched_responses) == len(model.prompt_batch)
+                model.prompt_batch = []
 
             # Play moves for each player by using the model outputs
             for match in self.matches:

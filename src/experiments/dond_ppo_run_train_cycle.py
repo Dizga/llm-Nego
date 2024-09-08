@@ -27,7 +27,7 @@ def dond_ppo_run_train_cycle(cfg):
     # Get models
     models = {}
     for model_name in cfg.models.keys():
-        models[model_name] = DummyHfAgent(**cfg.models[model_name])
+        models[model_name] = HfAgent(**cfg.models[model_name])
         models[model_name].switch_to_vllm()
 
     # Get game

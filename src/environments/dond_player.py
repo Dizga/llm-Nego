@@ -95,7 +95,7 @@ class DondPlayer():
         else: 
             self.retries = 0
             send_to_game = True
-            processed_response, is_finalization = self.extract(response)
+            is_finalization, processed_response = self.extract(response)
 
 
         # Add raw response to context
