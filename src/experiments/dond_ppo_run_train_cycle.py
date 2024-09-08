@@ -12,7 +12,7 @@ from utils.inherit_args import inherit_args
 from models.hf_agent import HfAgent
 from models.dummy_hf_agent import DummyHfAgent
 from environments.dond_player import DondPlayer
-from utils import extract_dond_ppo_dataset
+from utils.extract_dond_ppo_dataset import extract_ppo_dataset
 
 def dond_ppo_run_train_cycle(cfg): 
 
@@ -62,16 +62,19 @@ def dond_ppo_run_train_cycle(cfg):
 
         # Train every model on last iteration data
         # TODO: fix!
-        for model_name in cfg.models.keys():
+        for model_name in models.keys():
 
             model = models[model_name]
             model.switch_to_hf()
+            model.init_ppo_trainer(os.path.join(it_folder, 'ppo_training_tensorboard'))
+
             queries, responses, scores = [], [], []
 
-            for player_name in cfg.players.keys():
+            # Get all training data for model
+            for player in players:
 
-                if players[player_name].model_name == model_name:
-                    new_queries, new_responses, new_scores = extract_dond_ppo_dataset(it_folder, player_name)
+                if player.model_name == model_name:
+                    new_queries, new_responses, new_scores = extract_ppo_dataset(it_folder, player_name)
                     queries += new_queries; responses += new_responses; scores += new_scores
 
             model.train_ppo(queries, responses, scores)

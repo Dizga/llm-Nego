@@ -72,12 +72,12 @@ class BcDondTrainer:
         
         # Train player 0
         self.player_0.agent.init_ppo_trainer()
-        queries, responses, scores = self.logger.extract_hf_ppo_dataset(folder_path, player_0=True)
+        queries, responses, scores = self.logger.extract_ppo_dataset(folder_path, player_0=True)
         self.player_0.agent.train_ppo_json(queries, responses, scores)
 
         # Train player 1
         self.player_1.agent.init_ppo_trainer()
-        queries, responses, scores = self.logger.extract_hf_ppo_dataset(folder_path, player_0=False)
+        queries, responses, scores = self.logger.extract_ppo_dataset(folder_path, player_0=False)
         self.player_1.agent.train_ppo_json(queries, responses, scores)
 
         self.logger.log_info("PPO training ended.")

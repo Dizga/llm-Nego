@@ -85,7 +85,14 @@ class DondPlayer():
             send_to_game = True
 
         # Add raw response to context
-        model_response = {'role': 'assistant', 'content': response, 'is_error': is_error, 'is_finalization': is_finalization, 'is_new_round': state['is_new_round']}
+        model_response = {'role': 'assistant', 
+                          'content': response, 
+                          'is_error': is_error, 
+                          'is_finalization': is_finalization, 
+                          'is_new_round': state['is_new_round'],
+                          'round_nb': state['round_number']
+                          }
+        
         self.add_to_context(model_response)
 
 
@@ -227,7 +234,13 @@ class DondPlayer():
             with open('src/prompts/coop.txt', 'r') as file:
                 return file.read()
             
-        
+    def set_round_scores(self, round_nb, self_score, other_score):
+        # TODO: make more efficient
+        for item in self.context:
+            if item['role'] == 'assistant' and item['round_nb'] == round_nb:
+                item['self_score'] = self_score
+                item['other_score'] = other_score
+
     def reset_round(self):
         """
         Resets round attributes.

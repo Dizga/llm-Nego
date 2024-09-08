@@ -106,8 +106,6 @@ class DondGame:
             self.end_round()
             return self.get_state()  # round ended due to exceeding max turns
         
-        self.new_round = False
-
         return self.get_state()  # game not ended
 
     def get_state(self):
@@ -120,6 +118,15 @@ class DondGame:
         Returns:
             dict: The current state of the game.
         """
+
+        last_scores = []
+        if len(self.points_player_0_history) != 0:
+            last_scores.append(self.points_player_0_history[-1])
+        else: last_scores.append(None)
+        if len(self.points_player_1_history) != 0:
+            last_scores.append(self.points_player_1_history[-1])
+        else: last_scores.append(None)
+
 
         out = {
             'mode': self.mode,
@@ -135,18 +142,19 @@ class DondGame:
             "quantities": self.quantities,
             "agreement_reached": self.agreement_reached,
             "has_finalized": self.has_finalized,
-            "last_message": self.last_message
+            "last_message": self.last_message,
+            "last_scores": last_scores
         }
 
         player = self.current_turn()
         
         if player == "player_0":
             out["values"] = self.values_player_0
-            out["last_score"] = self.points_player_0
+            out["last_score"] = self.points_player_0_history[-1] if len(self.points_player_0_history) != 0 else None
         
         elif player == "player_1":
             out["values"] = self.values_player_1
-            out["last_score"] = self.points_player_1
+            out["last_score"] = self.points_player_1_history[-1] if len(self.points_player_1_history) != 0 else None
 
         return out
 
@@ -239,6 +247,8 @@ class DondGame:
         self.has_finalized = False
         self.player_0_prop = {}
         self.player_1_prop = {}
+        self.points_player_0 = 0
+        self.points_player_1 = 0
         self.agreement_reached = False
         self.last_message = None
         self.round_nb = 1
@@ -246,8 +256,6 @@ class DondGame:
         self.new_round = True
         self.game_ended = False
         self.last_message = None
-        self.points_player_0 = 0
-        self.points_player_1 = 0
         self.player_0_prop_history = []
         self.player_1_prop_history = []
         self.points_player_0_history = []
@@ -264,14 +272,14 @@ class DondGame:
         self.has_finalized = False
         self.player_0_prop = {}
         self.player_1_prop = {}
+        self.points_player_0 = 0
+        self.points_player_1 = 0
         self.agreement_reached = False
         self.last_message = None
         self.turn = 0
         self.new_round = True
         self.game_ended = False
         self.last_message = None
-        self.points_player_0 = 0
-        self.points_player_1 = 0
         if self.round_nb > self.rounds_per_game: self.game_ended = True
         self.set_new_game_settings()
 

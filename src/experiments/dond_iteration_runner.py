@@ -48,8 +48,8 @@ class DondIterationRunner:
             match['player_list'] = [copy.deepcopy(player) for player in self.players]
             match['game'] = copy.deepcopy(self.game)
             match['game_state'] = match['game'].get_state()
-            order = match['game'].get_play_order()
-            match['player_deque'] = deque([match['player_list'][id] for id in order])
+            match['play_order'] = match['game'].get_play_order()
+            match['player_deque'] = deque([match['player_list'][id] for id in match['play_order']])
             self.matches.append(match)
 
 
@@ -93,15 +93,24 @@ class DondIterationRunner:
 
                     match['game_state'] = match['game'].step(processed_response, is_finalization)
 
+                    if match['game_state']['round_ended']:
+                        # TODO: put this logic inside the player (add order id inside players)
+                        # Set the scores of the last round for each player according to play order
+                        last_scores = match['game_state']['last_scores']
+                        for i, player_id in enumerate(match['play_order']):
+                            player = match['player_list'][player_id]
+                            self_score = last_scores[i]  
+                            other_score = last_scores[1 - i]  
+                            player.set_round_scores(match['game_state']['round_number'], self_score, other_score)
+
+                        match['play_order'] = match['game'].get_play_order()
+                        match['player_deque'] = deque([match['player_list'][id] for id in match['play_order']])
+
                     if match['game_state']['game_ended']:
                         self.game_nb += 1
                         self.export_match(match['game'], match['player_deque'])
                         match['game'].reset()
                         #for player in match['player_deque']: player.reset_game()
-
-                    elif match['game_state']['round_ended']:
-                        play_order = match['game'].get_play_order()
-                        match['player_deque'] = deque([match['player_list'][id] for id in play_order])
 
                     
             for model in self.models.values():

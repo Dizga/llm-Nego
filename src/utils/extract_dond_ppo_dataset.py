@@ -4,7 +4,7 @@ import pandas as pd
 import regex as re
 import copy
 
-def extract_hf_ppo_dataset(folder_path: str, 
+def extract_ppo_dataset(folder_path: str, 
                            player_name, 
                            export_for_debugging=True):
     """
@@ -34,6 +34,7 @@ def extract_hf_ppo_dataset(folder_path: str,
 
             # Get list of rewards
             game = pd.read_csv(os.path.join(folder_path, file_name))
+            game = game.T
             rewards = game[player_prefix + "reward"].tolist()
 
             # Import conversation
@@ -71,7 +72,7 @@ def extract_hf_ppo_dataset(folder_path: str,
         debug_data = [{"query": q, "response": r, "score": s} 
                       for q, r, s in zip(queries, responses, scores)]
         
-        debug_file_path = os.path.join(folder_path, "debug_output.json")
+        debug_file_path = os.path.join(folder_path, "extracted_training_dataset.json")
         with open(debug_file_path, 'w') as debug_file:
             json.dump(debug_data, debug_file, indent=4)
 
