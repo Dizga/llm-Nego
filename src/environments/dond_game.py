@@ -125,8 +125,10 @@ class DondGame:
             'mode': self.mode,
             'game_ended': self.game_ended,
             "round_ended": self.new_round,
+            "is_new_round": True if self.turn <= 2 else False,
+            "is_new_game": True if self.turn <= 2 and self.round_nb == 1 else False,
             "items": self.items,
-            "move_nb": self.turn,
+            "turn": self.turn,
             "current_turn": self.current_turn(),
             "round_number": self.round_nb,
             "nb_rounds": self.rounds_per_game,
@@ -240,7 +242,7 @@ class DondGame:
         self.agreement_reached = False
         self.last_message = None
         self.round_nb = 1
-        self.turn = 1
+        self.turn = 0
         self.new_round = True
         self.game_ended = False
         self.last_message = None
@@ -254,22 +256,23 @@ class DondGame:
         self.values_player_1_history = []
         self.quantities_history = []
         self.agreement_reached_history = []
-
         self.set_new_game_settings()
 
     def end_round(self):
         self.archive_player_states()
         self.round_nb += 1
-        self.turn = 1
         self.has_finalized = False
-        self.last_message = None
         self.player_0_prop = {}
         self.player_1_prop = {}
         self.agreement_reached = False
         self.last_message = None
+        self.turn = 0
         self.new_round = True
-        if self.round_nb > self.rounds_per_game:
-            self.game_ended = True
+        self.game_ended = False
+        self.last_message = None
+        self.points_player_0 = 0
+        self.points_player_1 = 0
+        if self.round_nb > self.rounds_per_game: self.game_ended = True
         self.set_new_game_settings()
 
     def export(self):

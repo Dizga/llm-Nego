@@ -44,14 +44,9 @@ class DondPlayer():
                 self.chain_of_thought = file.read()
 
         self.player_name = player_name
-        self.round_nb = 1
-        self.retries = 0
         self.max_retries = max_retries
         self.model_name = model_name
-        self.error_message = None
-        self.context = []
         self.reset_game()
-
 
 
     def get_context(self):
@@ -90,7 +85,7 @@ class DondPlayer():
             send_to_game = True
 
         # Add raw response to context
-        model_response = {'role': 'assistant', 'content': response, 'is_error': is_error, 'is_finalization': is_finalization, 'is_new_round': self.is_new_round}
+        model_response = {'role': 'assistant', 'content': response, 'is_error': is_error, 'is_finalization': is_finalization, 'is_new_round': state['is_new_round']}
         self.add_to_context(model_response)
 
 
@@ -129,9 +124,13 @@ class DondPlayer():
         #     self.is_new_round = True
         # else: self.is_new_round = False
 
-        if self.is_new_game:
+        if state['is_new_round']:
+            self.reset_round()
+            user_message += self.new_round_prompt.format(**state)
+
+        if state["is_new_game"]:
+            self.reset_game()
             user_message += self.game_basics.format(**state)
-            self.is_new_game = False
 
         if state["has_finalized"]:
             self.other_has_finalized = True
@@ -146,7 +145,7 @@ class DondPlayer():
         if self.chain_of_thought is not None:
                 user_message += self.chain_of_thought.format(**state)
 
-        usr_prompt = {'role': 'user', 'content': user_message, 'is_error': is_error, 'is_new_round': self.is_new_round}
+        usr_prompt = {'role': 'user', 'content': user_message, 'is_error': is_error, 'is_new_round': state['is_new_round']}
         self.add_to_context(usr_prompt) 
 
     
@@ -233,8 +232,7 @@ class DondPlayer():
         """
         Resets round attributes.
         """
-        self.is_new_round = True
-        self.other_has_finalized = False
+        self.retries = 0
         self.error_message = None
 
     
@@ -245,12 +243,7 @@ class DondPlayer():
         Returns:
             list: The message history before resetting.
         """
-        self.reset_round()
-        self.round_nb = 1
-        self.is_new_game = True
-        self.is_new_round = True
-        self.first_move = True
-        self.other_has_finalized = False
+        self.retries = 0
         self.error_message = None
         self.context = []
 

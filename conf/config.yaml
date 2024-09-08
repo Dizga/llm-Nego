@@ -3,10 +3,10 @@ hydra:
     chdir: false
 
 iterations:
-  nb_iterations: 10
+  nb_iterations: 5
   iteration_runner_args:
     nb_parallel_games: 50
-    games_per_iteration: 500
+    games_per_iteration: 50
   dond_game_args:
     rounds_per_game: 1
     max_turns: 10

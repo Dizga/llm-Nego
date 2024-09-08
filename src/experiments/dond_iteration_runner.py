@@ -97,11 +97,11 @@ class DondIterationRunner:
                         self.game_nb += 1
                         self.export_match(match['game'], match['player_deque'])
                         match['game'].reset()
-                        for player in match['player_deque']: player.reset_game()
+                        #for player in match['player_deque']: player.reset_game()
 
-                    # elif match['game_state']['round_ended']:
-                    #     play_order = match['game'].get_play_order()
-                    #     match['player_deque'] = deque([match['player_list'][id] for id in play_order])
+                    elif match['game_state']['round_ended']:
+                        play_order = match['game'].get_play_order()
+                        match['player_deque'] = deque([match['player_list'][id] for id in play_order])
 
                     
             for model in self.models.values():
