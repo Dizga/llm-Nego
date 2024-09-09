@@ -7,13 +7,15 @@ import time
 # local imports
 from experiments.dond_iteration_runner import DondIterationRunner
 from environments.dond_game import DondGame
-from players.get_dond_players import get_dond_players
-from training.train_ppo_agent import train_agent_ppo
 from utils.dond_statistics import compute_dond_statistics
 from utils.inherit_args import inherit_args
-
+from models.hf_agent import HfAgent
+from models.dummy_hf_agent import DummyHfAgent
+from environments.dond_player import DondPlayer
+from utils.extract_dond_ppo_dataset import extract_ppo_dataset
 
 def dond_ppo_run_train_cycle(cfg): 
+
     # Log total time
     total_start_time = time.time()
 
@@ -22,58 +24,65 @@ def dond_ppo_run_train_cycle(cfg):
     output_directory = hydra_cfg['runtime']['output_dir']
     os.makedirs(output_directory, exist_ok=True)
 
-    dond_game = DondGame(**cfg.game)
-    inherit_args(cfg.player_0, cfg.player_1, "same_as_player_0")
-    player_0, player_1 = get_dond_players(dond_game, cfg.player_0, cfg.player_1)
+    # Get models
+    models = {}
+    for model_name in cfg.models.keys():
+        models[model_name] = HfAgent(**cfg.models[model_name])
+        models[model_name].switch_to_vllm()
+
+    # Get game
+    dond_game = DondGame(**cfg.iterations.dond_game_args)
+    
+    # Get players
+    players = [None]*len(cfg.players.keys())
+    for player_name in cfg.players.keys():
+        id = cfg.players[player_name].id
+        players[id] = DondPlayer(**cfg.players[player_name].dond_player_args, 
+                                 player_name=player_name,
+                                 game_state=dond_game.get_state()
+                                 )
 
     iteration_runner = DondIterationRunner(
-        output_directory,
-        cfg.playing.games_per_iteration, 
+        **cfg.iterations.iteration_runner_args, 
+        out_dir=output_directory,
         game=dond_game,
-        players=[player_0, player_1]
+        players=players,
+        models=models
     )
 
-    for _ in range(cfg.playing.nb_iterations):
+    for _ in range(cfg.iterations.nb_iterations):
         
-        # Time for game generation (playing)
-        play_start_time = time.time()
         
-        # Play games
-        logging.info(f"Started playing {cfg.playing.games_per_iteration} games.")
+        # Run iteration
         iteration_runner.run_iteration()
-        logging.info(f"Completed {cfg.playing.games_per_iteration} games.")
-        
-        play_end_time = time.time()
-        play_duration = play_end_time - play_start_time
-        logging.info(f"Time taken for playing {cfg.playing.games_per_iteration} games: {play_duration:.2f} seconds")
+        it_folder = iteration_runner.it_folder
 
-        compute_dond_statistics(iteration_runner.it_folder)
+        # Get iteration statistics
+        compute_dond_statistics(it_folder)
 
-        # Time for training
-        train_start_time = time.time()
+        # Train every model on last iteration data
+        # TODO: fix!
+        for model_name in models.keys():
 
-        # Train on games played
-        logging.info(f"Started {cfg.training.train_type} training.")
-        if cfg.training.train_type == "ppo":
-            train_agent_ppo(
-                agent=player_0.agent, 
-                ppo_trainer_args=cfg.training.ppo_trainer_args, 
-                folder_path=iteration_runner.it_folder, 
-                nb_epochs=cfg.training.nb_epochs
-            )
-        elif cfg.training.train_type == "bc":
-            # TODO: Add behavior cloning training if needed
-            pass
+            model = models[model_name]
+            model.switch_to_hf()
+            model.init_ppo_trainer(os.path.join(it_folder, 'ppo_training_tensorboard'))
 
-        train_end_time = time.time()
-        train_duration = train_end_time - train_start_time
-        logging.info(f"Time taken for {cfg.training.train_type} training: {train_duration:.2f} seconds")
+            queries, responses, scores = [], [], []
 
-        if cfg.training.checkpoint_models:  # Export LoRA model weights
-            player_0.agent.checkpoint_model(iteration_runner.it_folder)
+            # Get all training data for model
+            for player in players:
 
-        logging.info(f"Ended {cfg.training.train_type} training.")
-    
+                if player.model_name == model_name:
+                    new_queries, new_responses, new_scores = extract_ppo_dataset(it_folder, player_name)
+                    queries += new_queries; responses += new_responses; scores += new_scores
+
+            model.train_ppo(queries, responses, scores)
+
+            if model.save_lora_weights: 
+                model.save_lora_weights(os.path.join(it_folder, model_name+'_lora_weights'))
+
+   
     # Total run time
     total_end_time = time.time()
     total_duration = total_end_time - total_start_time

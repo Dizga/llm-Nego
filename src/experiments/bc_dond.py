@@ -8,10 +8,17 @@ from omegaconf import OmegaConf
 
 # local imports
 from environments.dond_game import DondGame
+<<<<<<< HEAD
 from players.dond_player import DondPlayer
 from agents.hf_agent import HfAgent
 from agents.dummy_hf_agent import DummyHfAgent
 from agents.oai_agent import OaiAgent
+=======
+from environments.dond_player import DondPlayer
+from models.hf_agent import HfAgent
+from models.dummy_hf_agent import DummyHfAgent
+from models.oai_agent import OaiAgent
+>>>>>>> dede2
 
 
 class BcDondTrainer:
@@ -44,16 +51,16 @@ class BcDondTrainer:
 
     def run_game(self):
         self.logger.log_info("Game started.")
-        self.logger.new_game()
+        self.logger.reset_game()
         players = [self.player_0, self.player_1]
-        self.player_0.new_game()
-        self.player_1.new_game()
+        self.player_0.reset_game()
+        self.player_1.reset_game()
         game_state = self.game.reset()
         player_id = 0
         while not game_state['game_ended']:
-            if game_state['new_round']:
-                self.player_0.new_round()
-                self.player_1.new_round()
+            if game_state['reset_round']:
+                self.player_0.reset_round()
+                self.player_1.reset_round()
             is_finalization, content = players[player_id].play_move(game_state)
             game_state = self.game.step(content, is_finalization=is_finalization)
             player_id = (player_id + 1) % 2
@@ -61,7 +68,7 @@ class BcDondTrainer:
         # while True:
         #     if self.player_0.play_move(): break
         #     if self.player_1.play_move(): break
-        self.logger.log_game(*self.game.export(), 
+        self.logger.export_match(*self.game.export(), 
                              self.player_0.get_history(), 
                              self.player_1.get_history())
         self.logger.log_info("Game completed.")
@@ -72,12 +79,12 @@ class BcDondTrainer:
         
         # Train player 0
         self.player_0.agent.init_ppo_trainer()
-        queries, responses, scores = self.logger.extract_hf_ppo_dataset(folder_path, player_0=True)
+        queries, responses, scores = self.logger.extract_ppo_dataset(folder_path, player_0=True)
         self.player_0.agent.train_ppo_json(queries, responses, scores)
 
         # Train player 1
         self.player_1.agent.init_ppo_trainer()
-        queries, responses, scores = self.logger.extract_hf_ppo_dataset(folder_path, player_0=False)
+        queries, responses, scores = self.logger.extract_ppo_dataset(folder_path, player_0=False)
         self.player_1.agent.train_ppo_json(queries, responses, scores)
 
         self.logger.log_info("PPO training ended.")

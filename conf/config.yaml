@@ -1,90 +1,81 @@
-device: "cuda"
 hydra:
   job:
     chdir: false
 
-cuda: true
+iterations:
+  nb_iterations: 5
+  iteration_runner_args:
+    nb_parallel_games: 100
+    games_per_iteration: 512
+  dond_game_args:
+    rounds_per_game: 1
+    max_turns: 10
+    player_order: deterministic # deterministic or random player who start beginning of each round
+    mode: coop # basic, coop
+    setup: random_read
+    setups_file: src/environments/dond_setups.txt
 
-env: dond
+models: 
 
-playing:
-  nb_iterations: 10
-  games_per_iteration: 1
+  llama:
 
-game:
-  rounds_per_game: 1
-  max_turns: 4
-  mode: basic # basic, coop
-  setup: random_read
-  setups_file: src/environments/dond_setups.txt
+    model_name: "meta-llama/Meta-Llama-3.1-8B-Instruct" # TODO
 
-training:
-
-  train_type: "ppo"
-  checkpoint_models: False
-  nb_epochs: 1 # Number of passes on entire dataset.
-
-  ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
-    # For batch size vs mini confusion https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_trainer.py#L647)
-    batch_size: 2 # Number of examples put on the GPU at once. batch_size = mini_batch_size * gradient_accumulation_steps
-    mini_batch_size: 1 # Number of examples fed in parallel to the model
-    gradient_accumulation_steps: 2 # Number of minibatch gradient accumulation before step. Should be equal to batch size.
-    ppo_epochs: 1 # Default: 4. Number of optimisation epochs per batch of samples
-    model_name: "model"
-    learning_rate: 1.41e-5
-    gradient_checkpointing: False # Whether to keep all activations in memory at once.
-    log_with: "tensorboard"
-    project_kwargs: None # don't touch, will be set later
-    tracker_project_name: "tensorboard"
-
-
-player_0:
-
-  type: hf
-
-  player_args:
-    game_intro_file: "src/prompts/dond/rules.txt"
-    chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
-    finalization_file: "src/prompts/dond/finalization.txt"
-    new_round_file: "src/prompts/dond/new_round.txt"
-    max_retries: 1
-
-  agent_args:
-    name: "agent_0"
-    device: cuda
-    tokenizer_name: "meta-llama/Meta-Llama-3.1-8B-Instruct" # Default: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-
-  inherit_model: False
-
-  model_args: # https://github.com/huggingface/huggingface-llama-recipes?tab=readme-ov-file
-
-    pretrained_args: 
-        pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct" # Default: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-        torch_dtype: "bfloat16"
-        device_map: "auto"
+    device: "cuda"
 
     bits_and_bytes_args:
-      load_in_4bit: False
+      load_in_8bit: False
 
     lora_args:
         task_type: TaskType.CAUSAL_LM
         r: 16
         lora_alpha: 16
-        lora_dropout: 0.1
+        lora_dropout: 0
         target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
 
+    pretrained_args: 
+        pretrained_model_name_or_path: None
+        torch_dtype: "bfloat16"
+        device_map: "auto"
 
-player_1:
-  type: "same_as_player_0"
-  player_args: "same_as_player_0"
-  agent_args: "same_as_player_0"
-  inherit_model: True
-  model_args: "same_as_player_0"
+    ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
+      # For batch size vs mini confusion https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_trainer.py#L647)
+      batch_size: 4 # Default is 64 Number of examples put on the GPU at once. batch_size = mini_batch_size * gradient_accumulation_steps
+      mini_batch_size: 1 # Default: 1. Number of examples fed in parallel to the model
+      gradient_accumulation_steps: 4 # Default: 64. Number of minibatch gradient accumulation before step. Should be equal to batch size.
+      ppo_epochs: 1 # Default: 4. Number of optimisation epochs per batch of samples
+      learning_rate: 1.41e-5
+      gradient_checkpointing: False # Whether to keep all activations in memory at once.
+      log_with: "tensorboard"
+      project_kwargs: None # don't touch, will be set later
+      tracker_project_name: "tensorboard"
+
+    save_lora_weights: True
+
+players: 
+  player_0:
+    id: 0 # Will be used by game to determine which player starts
+    dond_player_args:
+      model_name: 'llama'
+      game_intro_file: "src/prompts/rules.txt"
+      chain_of_thought_file: "src/prompts/cot.txt" # false if none, else link to txt file 
+      finalization_file: "src/prompts/finalization.txt"
+      new_round_file: "src/prompts/new_round.txt"
+      max_retries: 5
+
+  player_1:
+    id: 1
+    dond_player_args:
+      model_name: 'llama'
+      game_intro_file: "src/prompts/rules.txt"
+      chain_of_thought_file: "src/prompts/cot.txt" # false if none, else link to txt file 
+      finalization_file: "src/prompts/finalization.txt"
+      new_round_file: "src/prompts/new_round.txt"
+      max_retries: 5
 
 
 
     
-
 
 
 

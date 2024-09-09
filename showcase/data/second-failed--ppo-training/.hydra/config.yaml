@@ -1,0 +1,65 @@
+device: cuda
+cuda: true
+playing:
+  nb_iterations: 10
+  games_per_iteration: 20
+game:
+  rounds_per_game: 1
+  max_turns: 10
+  mode: coop
+  setup: random_read
+  setups_file: src/environments/dond_setups.txt
+training:
+  train_type: ppo
+  checkpoint_models: false
+  nb_epochs: 4
+  ppo_trainer_args:
+    batch_size: 4
+    mini_batch_size: 1
+    gradient_accumulation_steps: 4
+    ppo_epochs: 1
+    model_name: model
+    learning_rate: 1.41e-05
+    gradient_checkpointing: false
+    log_with: tensorboard
+    project_kwargs: None
+    tracker_project_name: tensorboard
+player_0:
+  type: hf
+  player_args:
+    game_intro_file: src/prompts/rules.txt
+    chain_of_thought_file: src/prompts/cot.txt
+    finalization_file: src/prompts/finalization.txt
+    new_round_file: src/prompts/new_round.txt
+    max_retries: 3
+  agent_args:
+    name: agent_0
+    device: cuda
+    tokenizer_name: meta-llama/Meta-Llama-3.1-8B-Instruct
+  inherit_model: false
+  model_args:
+    pretrained_args:
+      pretrained_model_name_or_path: meta-llama/Meta-Llama-3.1-8B-Instruct
+      torch_dtype: bfloat16
+      device_map: auto
+    bits_and_bytes_args:
+      load_in_4bit: false
+    lora_args:
+      task_type: TaskType.CAUSAL_LM
+      r: 16
+      lora_alpha: 16
+      lora_dropout: 0.1
+      target_modules:
+      - q_proj
+      - k_proj
+      - v_proj
+      - o_proj
+      - gate_proj
+      - up_proj
+      - down_proj
+player_1:
+  type: same_as_player_0
+  player_args: same_as_player_0
+  agent_args: same_as_player_0
+  inherit_model: true
+  model_args: same_as_player_0
