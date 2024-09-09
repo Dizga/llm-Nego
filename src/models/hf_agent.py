@@ -33,6 +33,7 @@ import subprocess
 import gc
 from vllm import LLM, SamplingParams
 from vllm.lora.request import LoRARequest
+from omegaconf import OmegaConf
 
 torch.set_default_device('cuda')
 
@@ -73,19 +74,15 @@ class HfAgent:
         self.device = torch.device(device)
 
         self.model_name = model_name
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.pretrained_args = pretrained_args
-        self.pretrained_args['pretrained_model_name_or_path'] = self.model_name
+        self.tokenizer = AutoTokenizer.from_pretrained(pretrained_args['pretrained_model_name_or_path'])
         self.bits_and_bytes_configs = BitsAndBytesConfig(**bits_and_bytes_args)
-        self.lora_config = LoraConfig(**lora_args) # TODO
+        self.lora_config = LoraConfig(**lora_args) 
         self.ppo_training_args = ppo_trainer_args
-        self.save_lora_weights = save_lora_weights
 
         self.inference_library = None
         self.ppo_trainer = None
-        self.prompt_batch = []
-        self.batched_responses = []
-        self.lora_weights_path = None
+        self.lora_pretrained_path = None
 
 
         
@@ -149,7 +146,7 @@ class HfAgent:
         """
 
         ds = len(queries)
-        bs = self.ppo_training_args.batch_size
+        bs = self.ppo_training_args['batch_size']
         nb_batches = ds // bs
 
         # Initiate training 
@@ -223,10 +220,10 @@ class HfAgent:
 
         # Generate with VLLM
         elif self.inference_library == "vllm":
-            if self.lora_weights_path:
+            if self.lora_pretrained_path:
                 responses = self.model.generate(texts, 
                                     sampling_params=self.sampling_params, 
-                                    lora_request=LoRARequest("dond_lora", 1, self.lora_weights_path)
+                                    lora_request=LoRARequest("dond_lora", 1, self.lora_pretrained_path)
                                     )
             else:
                 responses = self.model.generate(texts, 
@@ -251,23 +248,23 @@ class HfAgent:
 
         self.inference_library = "hf"        
 
+        if self.lora_pretrained_path:
+            self.pretrained_args['pretrained_model_name_or_path'] = self.lora_pretrained_path
+
         self.model = AutoModelForCausalLMWithValueHead.from_pretrained(
                                                           **self.pretrained_args,
                                                             quantization_config=self.bits_and_bytes_configs,
                                                             peft_config=self.lora_config
                                                           )
-        # TODO: user save lora path as model_name_or path in pretrained args
-        # use save_pretrained for LORA export
-        # They make no distinction between LoRA + Model vs Model
-        # They will load automatically from just LoRA save!
+
 
     def switch_to_vllm(self):
 
         # Free GPU memory taken by Hugging Face
         if self.inference_library == "hf":
-            move_model_to_cpu(model)
-            del model
-            del ppo_trainer
+            move_model_to_cpu(self.model)
+            del self.model
+            del self.ppo_trainer
             gc.collect()
             torch.cuda.empty_cache()
 
@@ -277,7 +274,7 @@ class HfAgent:
 
         # Get VLLM model
         self.inference_library = "vllm"
-        if self.lora_weights_path:
+        if self.lora_pretrained_path:
             self.model = LLM(self.model_name, enable_lora=True)
         else:
             self.model = LLM(self.model_name, enable_lora=False)
@@ -290,7 +287,7 @@ class HfAgent:
             )
         
                     
-    
+        
     def save_lora_weights(self, lora_weights_path: str) -> None:
         """
         Saves only the LoRA weights to a specified directory.
@@ -298,14 +295,11 @@ class HfAgent:
         Args:
             save_directory (str): The directory where the LoRA weights will be saved.
         """
-        if not isinstance(self.model, LoraModel):
-            raise ValueError("The model is not a LoRA model, cannot save LoRA weights.")
 
         os.makedirs(lora_weights_path, exist_ok=True)
-        # Save the LoRA weights only
-        self.model.save_pretrained(lora_weights_path)
-        self.lora_weights_path = lora_weights_path
+        self.ppo_trainer.save_pretrained(lora_weights_path)
+        self.lora_pretrained_path = lora_weights_path
         logging.info(f"LoRA weights saved to {lora_weights_path}")
 
-  
+    
 

@@ -34,7 +34,7 @@ models:
         target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
 
     pretrained_args: 
-        pretrained_model_name_or_path: None
+        pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
         torch_dtype: "bfloat16"
         device_map: "auto"
 
