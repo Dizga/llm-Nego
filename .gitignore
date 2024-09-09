@@ -7,4 +7,3 @@ conf/local.yaml
 *.log
 venv/
 *.pyc
-postactivate
