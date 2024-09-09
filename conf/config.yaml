@@ -5,8 +5,8 @@ hydra:
 iterations:
   nb_iterations: 10
   iteration_runner_args:
-    nb_parallel_games: 100
-    games_per_iteration: 512
+    nb_parallel_games: 50
+    games_per_iteration: 50
   dond_game_args:
     rounds_per_game: 1
     max_turns: 10

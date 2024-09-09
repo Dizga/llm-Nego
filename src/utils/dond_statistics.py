@@ -28,9 +28,9 @@ def compute_dond_statistics(folder_path):
             # Get number of rounds in game
             num_rounds = len(df)
 
-            # Get total rewards of game
-            player_0_total_rewards = df['player_0_reward'].sum()
-            player_1_total_rewards = df['player_1_reward'].sum()
+            # Get total points of game
+            player_0_total_points = df['player_0_points'].sum()
+            player_1_total_points = df['player_1_points'].sum()
 
             # Calculate total_points_over_maximum for each row
             total_points_over_maximum_list = []
@@ -57,8 +57,8 @@ def compute_dond_statistics(folder_path):
 
             # Create a dictionary with the statistics for this game
             game_stat = {
-                'player_0_total_return': player_0_total_rewards,
-                'player_1_total_return': player_1_total_rewards,
+                'player_0_total_points': player_0_total_points,
+                'player_1_total_points': player_1_total_points,
                 'agreement_rate': agreement_rate,
                 'total_points_over_maximum': mean(total_points_over_maximum_list) if total_points_over_maximum_list else 0,
                 'round_agreements': df['agreement_reached'].apply(lambda x: 1 if x else 0).tolist()  # This is a list
@@ -107,5 +107,4 @@ def compute_dond_statistics(folder_path):
     mean_game_stats_file = os.path.join(folder_path, '1_mean_game_stats.csv')
     mean_game_stats_df.to_csv(mean_game_stats_file, index=False)
 
-    return mean_game_stats_df  # Return the mean game stats DataFrame for further use
 

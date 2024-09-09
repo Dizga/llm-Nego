@@ -136,8 +136,8 @@ class HfAgent:
 
 
     def train_ppo(
-        self, queries: List, responses: List, scores: List[float]
-    ) -> dict:
+            self, queries: List, responses: List, scores: List[float]
+        ) -> dict:
         """
         Trains the agent using PPO on a batch of queries, responses, and corresponding rewards.
 
@@ -149,13 +149,22 @@ class HfAgent:
         bs = self.ppo_training_args['batch_size']
         nb_batches = ds // bs
 
-        # Initiate training 
+        logging.info(f"Starting PPO training with {ds} samples, batch size {bs}, total batches {nb_batches}")
 
+        # Start training process
         for b in range(nb_batches):
-
-            beg, end = (b*bs, (b+1)*bs)
-            batch_queries, batch_responses, batch_scores = queries[beg:end], responses[beg:end], scores[beg:end]
+            start_time = time.time()
             
+            logging.info(f"Training on batch {b+1}/{nb_batches} started.")
+            
+            beg, end = (b * bs, (b + 1) * bs)
+            batch_queries = queries[beg:end]
+            batch_responses = responses[beg:end]
+            batch_scores = scores[beg:end]
+
+            # Log the size of the current batch
+            logging.info(f"Batch size: {len(batch_queries)} queries, {len(batch_responses)} responses.")
+
             # Encode the queries into input_ids and convert the batch tensor into a list of 1D tensors
             queries_ids_tensor = self.encode_jsons(batch_queries)['input_ids']
             queries_ids_tensor_list = [queries_ids_tensor[i] for i in range(queries_ids_tensor.size(0))]
@@ -164,7 +173,11 @@ class HfAgent:
             responses_ids_tensor = self.encode_jsons(batch_responses)['input_ids']
             responses_ids_tensor_list = [responses_ids_tensor[i] for i in range(responses_ids_tensor.size(0))]
 
+            # Convert batch scores to tensors
             batch_tensor_scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in batch_scores]
+
+            # Log the start of PPO trainer step
+            logging.info(f"Starting PPO step for batch {b+1}/{nb_batches}...")
 
             # Step through PPO training 
             stats = self.ppo_trainer.step(
@@ -173,11 +186,22 @@ class HfAgent:
                 scores=batch_tensor_scores,
             )
 
-            self.ppo_trainer.log_stats(
-                stats=stats,
-                batch={"query": queries_ids_tensor_list, "response": responses_ids_tensor_list},
-                rewards=batch_tensor_scores,
-            )
+        # Log statistics and rewards
+        logging.info(f"PPO step for batch {b+1}/{nb_batches} completed. Logging stats...")
+
+        # Log the training stats for the current batch
+        self.ppo_trainer.log_stats(
+            stats=stats,
+            batch={"query": queries_ids_tensor_list, "response": responses_ids_tensor_list},
+            rewards=batch_tensor_scores,
+        )
+
+        # Calculate and log the time taken for this batch
+        batch_duration = time.time() - start_time
+        logging.info(f"Batch {b+1}/{nb_batches} training completed in {batch_duration:.2f} seconds.")
+    
+        logging.info("PPO training completed for all batches.")
+
 
         
         # Ensure garbage collection is performed
