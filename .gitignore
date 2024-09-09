@@ -2,10 +2,8 @@
 logs/
 test.py
 test.ipynb
-models/
 outputs/
 conf/local.yaml
 *.log
 venv/
 *.pyc
-postactivate
