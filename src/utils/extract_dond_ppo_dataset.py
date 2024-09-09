@@ -10,40 +10,25 @@ def extract_ppo_dataset(folder_path: str,
     """
     Extracts data for HF PPO training from game logs.
 
-    Args:
-        folder_path (str): Path to the folder containing game logs.
-        player_0 (bool): If True, extracts data for player 0, otherwise for player 1.
-        full_context (bool): If True, includes full context of the conversation.
-        export_for_debugging (bool): If True, exports the queries, responses, and scores to a JSON file for debugging.
-
-    Returns:
-        tuple: Lists of queries, responses, and scores.
     """
 
     player_prefix = player_name + "_" 
     queries, responses, scores = [], [], []
 
-    # For each game player
     for file_name in os.listdir(folder_path):
         
-        pattern = re.compile(r'^iter_\d{2}_game_\d{4}\.csv$')
+        pattern = re.compile(rf'^{re.escape(player_prefix)}iter_\d{{2}}_game_\d{{4}}\.json$')
 
         context = []
 
         if pattern.match(file_name):
 
-            # Get list of rewards
-            game = pd.read_csv(os.path.join(folder_path, file_name))
-            game = game.T
-            rewards = game[player_prefix + "reward"].tolist()
-
             # Import conversation
-            conversation_path = os.path.join(folder_path, player_prefix+file_name.replace(".csv", ".json"))
+            conversation_path = os.path.join(folder_path, file_name)
             with open(conversation_path, 'r') as file: conversation = json.load(file)
 
             # Extract queries, responses, and scores
             context = []
-            count = -1
 
             # extract queries, responses and scores
             for message in conversation:
@@ -60,10 +45,10 @@ def extract_ppo_dataset(folder_path: str,
 
                     responses.append([message])
 
-                    scores.append(rewards[count])
+                    scores.append(message['self_score'])
 
-                if message.get('is_new_round'):
-                    count += 1
+                # if message.get('is_new_round'):
+                #    count += 1
 
             
 

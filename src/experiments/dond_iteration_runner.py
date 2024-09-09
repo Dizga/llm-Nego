@@ -53,6 +53,14 @@ class DondIterationRunner:
             for i, player in enumerate(match['player_deque']): player.game_id = i
             self.matches.append(match)
 
+        # Initiate prompt batches
+        self.prompt_batches = {}
+        self.response_batches = {}
+        for model_name in self.models.keys():
+            self.prompt_batches[model_name] = []
+            self.response_batches[model_name] = []
+
+
 
     def run_iteration(self):
 
@@ -72,22 +80,20 @@ class DondIterationRunner:
                 player.set_usr_message(match['game'].get_state())
 
                 # Send player context to right model
-                model = self.models[player.model_name]
-                model.prompt_batch.append(copy.deepcopy(player.get_context()))
+                self.prompt_batches[player.model_name].append(copy.deepcopy(player.get_context()))
 
             # Process prompt batch of each model
-            for model in self.models.values():
-
-                model.batched_responses = model.prompt(model.prompt_batch)
-                assert len(model.batched_responses) == len(model.prompt_batch)
-                model.prompt_batch = []
+            for model_name in self.models.keys():
+                model = self.models[model_name]
+                self.response_batches[model_name] = model.prompt(self.prompt_batches[model_name])
+                assert len(self.response_batches[model_name]) == len(self.prompt_batches[model_name])
+                self.prompt_batches[model_name] = []
 
             # Play moves for each player by using the model outputs
             for match in self.matches:
 
                 player = match['player_deque'][0]
-                model = self.models[player.model_name]
-                response = model.batched_responses.pop(0)
+                response = self.response_batches[player.model_name].pop(0)
                 send_to_game, is_finalization, processed_response = player.process_model_response(response, match['game_state'])
 
                 # Player has made an official move (will be other player's turn next)
@@ -109,10 +115,8 @@ class DondIterationRunner:
                         match['game'].reset()
                         for player in match['player_deque']: player.reset_game()
 
-                    
-            for model in self.models.values():
-                assert len(model.batched_responses) == 0
-
+        # TODO: assert that the response batches now all have a size of 0
+        
         end_time = time.time()
         iteration_duration = end_time - start_time
         logging.info(f"{iteration_name} completed in {iteration_duration:.2f} seconds.")
