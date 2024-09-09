@@ -41,10 +41,12 @@ class DondIterationRunner:
 
         # Initiate parallel matches
         self.matches = []
-        for _ in range(self.nb_parallel_games):
+        nb_matches = min(self.nb_parallel_games, self.games_per_iteration)
+        for _ in range(nb_matches):
             match = {}
             match['player_list'] = [copy.deepcopy(player) for player in self.players]
             match['game'] = copy.deepcopy(self.game)
+            match['game'].reset()
             match['game_state'] = match['game'].get_state()
             match['play_order'] = match['game'].get_play_order()
             match['player_deque'] = deque([match['player_list'][id] for id in match['play_order']])

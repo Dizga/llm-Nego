@@ -120,7 +120,7 @@ class DondPlayer():
             user_message = self.error_message
             usr_prompt = {'role': 'user', 
                           'content': user_message, 
-                          'is_error': is_error, 
+                          'is_error': True, 
                           'round_nb': state['round_number']}
             self.add_to_context(usr_prompt) 
             self.error_message = None
