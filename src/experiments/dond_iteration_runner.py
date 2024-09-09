@@ -15,6 +15,8 @@ from utils.log_gpu_usage import log_gpu_usage
 
 from collections import deque
 import copy 
+import time
+import logging
 
 
 class DondIterationRunner:
@@ -56,8 +58,11 @@ class DondIterationRunner:
 
     def run_iteration(self):
 
+        iteration_name = f"Iteration {self.iteration_nb}"
+        start_time = time.time()  # Start time for iteration
+
         self.new_iteration()
-        logging.info(f"Iteration {self.iteration_nb} with {self.game_nb} started.")
+        logging.info(f"Iteration {self.iteration_nb} with {self.games_per_iteration} games started.")
 
         while self.game_nb < self.games_per_iteration:
 
@@ -109,6 +114,10 @@ class DondIterationRunner:
                     
             for model in self.models.values():
                 assert len(model.batched_responses) == 0
+
+        end_time = time.time()
+        iteration_duration = end_time - start_time
+        logging.info(f"{iteration_name} completed in {iteration_duration:.2f} seconds.")
                     
                 
                 
