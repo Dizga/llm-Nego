@@ -50,6 +50,7 @@ class DondIterationRunner:
             match['game_state'] = match['game'].get_state()
             match['play_order'] = match['game'].get_play_order()
             match['player_deque'] = deque([match['player_list'][id] for id in match['play_order']])
+            for i, player in enumerate(match['player_deque']): player.game_id = i
             self.matches.append(match)
 
 
@@ -69,7 +70,7 @@ class DondIterationRunner:
 
                 # Send player context to right model
                 model = self.models[player.model_name]
-                model.prompt_batch.append(player.get_context())
+                model.prompt_batch.append(copy.deepcopy(player.get_context()))
 
             # Process prompt batch of each model
             for model in self.models.values():
@@ -94,23 +95,16 @@ class DondIterationRunner:
                     match['game_state'] = match['game'].step(processed_response, is_finalization)
 
                     if match['game_state']['round_ended']:
-                        # TODO: put this logic inside the player (add order id inside players)
-                        # Set the scores of the last round for each player according to play order
-                        last_scores = match['game_state']['last_scores']
-                        for i, player_id in enumerate(match['play_order']):
-                            player = match['player_list'][player_id]
-                            self_score = last_scores[i]  
-                            other_score = last_scores[1 - i]  
-                            player.set_round_scores(match['game_state']['round_number'], self_score, other_score)
-
+                        for player in match['player_list']: player.set_round_scores(match['game_state'])
                         match['play_order'] = match['game'].get_play_order()
                         match['player_deque'] = deque([match['player_list'][id] for id in match['play_order']])
+                        for i, player in enumerate(match['player_deque']): player.game_id = i
 
                     if match['game_state']['game_ended']:
                         self.game_nb += 1
                         self.export_match(match['game'], match['player_deque'])
                         match['game'].reset()
-                        #for player in match['player_deque']: player.reset_game()
+                        for player in match['player_deque']: player.reset_game()
 
                     
             for model in self.models.values():

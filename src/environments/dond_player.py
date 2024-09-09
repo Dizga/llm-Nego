@@ -46,6 +46,7 @@ class DondPlayer():
         self.player_name = player_name
         self.max_retries = max_retries
         self.model_name = model_name
+        self.game_id = None # ID of player in game
         self.reset_game()
 
 
@@ -89,12 +90,10 @@ class DondPlayer():
                           'content': response, 
                           'is_error': is_error, 
                           'is_finalization': is_finalization, 
-                          'is_new_round': state['is_new_round'],
                           'round_nb': state['round_number']
                           }
         
         self.add_to_context(model_response)
-
 
         return send_to_game, is_finalization, processed_response
 
@@ -119,25 +118,20 @@ class DondPlayer():
 
         if self.error_message:
             user_message = self.error_message
-            usr_prompt = {'role': 'user', 'content': user_message, 'is_error': is_error, 'is_new_round': False}
+            usr_prompt = {'role': 'user', 
+                          'content': user_message, 
+                          'is_error': is_error, 
+                          'round_nb': state['round_number']}
             self.add_to_context(usr_prompt) 
             self.error_message = None
             return
 
-        # if state['round_number'] > self.round_nb:
-        #     self.reset_round()
-        #     user_message += self.new_round_prompt.format(**state)
-        #     self.round_nb+=1
-        #     self.is_new_round = True
-        # else: self.is_new_round = False
+        if state["is_new_game"]:
+            user_message += self.game_basics.format(**state)
 
-        if state['is_new_round']:
+        if state['is_new_round'] and not state["is_new_game"]:
             self.reset_round()
             user_message += self.new_round_prompt.format(**state)
-
-        if state["is_new_game"]:
-            self.reset_game()
-            user_message += self.game_basics.format(**state)
 
         if state["has_finalized"]:
             self.other_has_finalized = True
@@ -152,7 +146,11 @@ class DondPlayer():
         if self.chain_of_thought is not None:
                 user_message += self.chain_of_thought.format(**state)
 
-        usr_prompt = {'role': 'user', 'content': user_message, 'is_error': is_error, 'is_new_round': state['is_new_round']}
+        usr_prompt = {'role': 'user', 
+                      'content': user_message, 
+                      'is_error': is_error, 
+                      'round_nb': state['round_number']
+                      }
         self.add_to_context(usr_prompt) 
 
     
@@ -234,12 +232,11 @@ class DondPlayer():
             with open('src/prompts/coop.txt', 'r') as file:
                 return file.read()
             
-    def set_round_scores(self, round_nb, self_score, other_score):
-        # TODO: make more efficient
+    def set_round_scores(self, state):
         for item in self.context:
-            if item['role'] == 'assistant' and item['round_nb'] == round_nb:
-                item['self_score'] = self_score
-                item['other_score'] = other_score
+            if item['role'] == 'assistant' and item['round_nb'] == state['round_number']-1:
+                item['self_score'] = state['last_scores'][self.game_id]
+                item['other_score'] = state['last_scores'][1-self.game_id]
 
     def reset_round(self):
         """

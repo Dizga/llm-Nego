@@ -131,9 +131,9 @@ class DondGame:
         out = {
             'mode': self.mode,
             'game_ended': self.game_ended,
-            "round_ended": self.new_round,
+            "round_ended": self.round_ended,
             "is_new_round": True if self.turn <= 2 else False,
-            "is_new_game": True if self.turn <= 2 and self.round_nb == 1 else False,
+            "is_new_game": True if (self.turn <= 2 and self.round_nb == 1) else False,
             "items": self.items,
             "turn": self.turn,
             "current_turn": self.current_turn(),
@@ -252,8 +252,8 @@ class DondGame:
         self.agreement_reached = False
         self.last_message = None
         self.round_nb = 1
-        self.turn = 0
-        self.new_round = True
+        self.turn = 1
+        self.round_ended = False
         self.game_ended = False
         self.last_message = None
         self.player_0_prop_history = []
@@ -276,8 +276,8 @@ class DondGame:
         self.points_player_1 = 0
         self.agreement_reached = False
         self.last_message = None
-        self.turn = 0
-        self.new_round = True
+        self.turn = 1
+        self.round_ended = True
         self.game_ended = False
         self.last_message = None
         if self.round_nb > self.rounds_per_game: self.game_ended = True
