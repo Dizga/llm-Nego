@@ -138,58 +138,49 @@ class HfAgent:
         )
 
 
-    def train_ppo_json(
+    def train_ppo(
         self, queries: List, responses: List, scores: List[float]
     ) -> dict:
         """
         Trains the agent using PPO on a batch of queries, responses, and corresponding rewards.
-
-        Args:
-            queries (List): A list of query JSON objects.
-            responses (List): A list of response JSON objects.
-            scores (List): A list of rewards (scores) associated with each query-response pair.
 
         Returns:
             dict: A dictionary containing training statistics.
         """
 
         ds = len(queries)
-        bs = self.ppo_trainer_args.batch_size
+        bs = self.ppo_training_args.batch_size
         nb_batches = ds // bs
 
-        if nb_batches > 0:
-            return stats
-
         # Initiate training 
-        for _ in range(self.nb_epochs):
 
-            for b in range(nb_batches):
+        for b in range(nb_batches):
 
-                beg, end = (b*bs, (b+1)*bs)
-                batch_queries, batch_responses, batch_scores = queries[beg:end], responses[beg:end], scores[beg:end]
-                
-                # Encode the queries into input_ids and convert the batch tensor into a list of 1D tensors
-                queries_ids_tensor = self.encode_jsons(batch_queries)['input_ids']
-                queries_ids_tensor_list = [queries_ids_tensor[i] for i in range(queries_ids_tensor.size(0))]
+            beg, end = (b*bs, (b+1)*bs)
+            batch_queries, batch_responses, batch_scores = queries[beg:end], responses[beg:end], scores[beg:end]
+            
+            # Encode the queries into input_ids and convert the batch tensor into a list of 1D tensors
+            queries_ids_tensor = self.encode_jsons(batch_queries)['input_ids']
+            queries_ids_tensor_list = [queries_ids_tensor[i] for i in range(queries_ids_tensor.size(0))]
 
-                # Encode the responses into input_ids and convert the batch tensor into a list of 1D tensors
-                responses_ids_tensor = self.encode_jsons(batch_responses)['input_ids']
-                responses_ids_tensor_list = [responses_ids_tensor[i] for i in range(responses_ids_tensor.size(0))]
+            # Encode the responses into input_ids and convert the batch tensor into a list of 1D tensors
+            responses_ids_tensor = self.encode_jsons(batch_responses)['input_ids']
+            responses_ids_tensor_list = [responses_ids_tensor[i] for i in range(responses_ids_tensor.size(0))]
 
-                scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in batch_scores]
+            batch_tensor_scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in batch_scores]
 
-                # Step through PPO training 
-                stats = self.ppo_trainer.step(
-                    queries=queries_ids_tensor_list,
-                    responses=responses_ids_tensor_list,
-                    scores=scores,
-                )
+            # Step through PPO training 
+            stats = self.ppo_trainer.step(
+                queries=queries_ids_tensor_list,
+                responses=responses_ids_tensor_list,
+                scores=batch_tensor_scores,
+            )
 
-                self.ppo_trainer.log_stats(
-                    stats=stats,
-                    batch={"query": queries_ids_tensor_list, "response": responses_ids_tensor_list},
-                    rewards=scores,
-                )
+            self.ppo_trainer.log_stats(
+                stats=stats,
+                batch={"query": queries_ids_tensor_list, "response": responses_ids_tensor_list},
+                rewards=batch_tensor_scores,
+            )
 
         
         # Ensure garbage collection is performed
@@ -197,10 +188,10 @@ class HfAgent:
         self.delete_tensor_list(responses)
         self.delete_tensor_list(scores)
         torch.cuda.empty_cache()
-
-        # Memory management
-        del queries_ids_tensor_list, responses_ids_tensor_list, scores
-        torch.cuda.empty_cache()
+        if nb_batches > 0:
+            # Memory management
+            del queries_ids_tensor_list, responses_ids_tensor_list, batch_tensor_scores
+            torch.cuda.empty_cache()
 
 
     def delete_tensor_list(self, tensor_list: List[Any]) -> None:
@@ -260,19 +251,16 @@ class HfAgent:
 
         self.inference_library = "hf"        
 
-        self.model = AutoModelForCausalLM.from_pretrained(
+        self.model = AutoModelForCausalLMWithValueHead.from_pretrained(
                                                           **self.pretrained_args,
-                                                            quantization_config=self.bits_and_bytes_configs
+                                                            quantization_config=self.bits_and_bytes_configs,
+                                                            peft_config=self.lora_config
                                                           )
+        # TODO: user save lora path as model_name_or path in pretrained args
+        # use save_pretrained for LORA export
+        # They make no distinction between LoRA + Model vs Model
+        # They will load automatically from just LoRA save!
 
-        # add LoRA
-        if self.lora_weights_path:
-            model = PeftModel.from_pretrained(model, self.lora_weights_path)
-        else:
-            self.model.add_adapter(self.lora_config, adapter_name="dond_lora")
-
-        self.model = AutoModelForCausalLMWithValueHead(self.model) # required for PPO training
-    
     def switch_to_vllm(self):
 
         # Free GPU memory taken by Hugging Face
