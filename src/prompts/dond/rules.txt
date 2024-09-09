@@ -32,5 +32,5 @@ Exemples of how turns might proceed:
 
 The first round starts now.
 Please decide how to divide {quantities} between yourself and the other player.
-To you, books are worth {values}.
+To you, the items are worth: {values}.
 You don't know the other player's item values. 

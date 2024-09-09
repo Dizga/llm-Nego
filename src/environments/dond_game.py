@@ -302,8 +302,8 @@ class DondGame:
         return {
             'mode': self.mode,
             'round_id': id,
-            'player_0_reward': self.points_player_0_history[id],
-            'player_1_reward': self.points_player_1_history[id],
+            'player_0_points': self.points_player_0_history[id],
+            'player_1_points': self.points_player_1_history[id],
             'quantities': self.quantities_history[id],
             'player_0_values': self.values_player_0_history[id],
             'player_1_values': self.values_player_1_history[id],

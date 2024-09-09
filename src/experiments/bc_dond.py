@@ -8,10 +8,17 @@ from omegaconf import OmegaConf
 
 # local imports
 from environments.dond_game import DondGame
+<<<<<<< HEAD
+from players.dond_player import DondPlayer
+from agents.hf_agent import HfAgent
+from agents.dummy_hf_agent import DummyHfAgent
+from agents.oai_agent import OaiAgent
+=======
 from environments.dond_player import DondPlayer
 from models.hf_agent import HfAgent
 from models.dummy_hf_agent import DummyHfAgent
 from models.oai_agent import OaiAgent
+>>>>>>> dede2
 
 
 class BcDondTrainer:

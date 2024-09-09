@@ -1,4 +1,4 @@
 You scored {last_score} points in this round.
 This is a new round, please decide how to divide {quantities} balls between yourself and the other player.
-To you, books are worth {values}.
+To you, the items are worth: {values}.
 You don't know the other player's item values, as they are not the same as in previous rounds. 
