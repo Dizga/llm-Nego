@@ -136,7 +136,7 @@ class HfAgent:
 
 
     def train_ppo(
-            self, queries: List, responses: List, scores: List[float]
+            self, path, queries: List, responses: List, scores: List[float]
         ) -> dict:
         """
         Trains the agent using PPO on a batch of queries, responses, and corresponding rewards.
@@ -145,10 +145,28 @@ class HfAgent:
             dict: A dictionary containing training statistics.
         """
 
-        ds = len(queries)
+        self.switch_to_hf()
+
+        ds = len(queries) # get datasize
+        if ds == 0:
+            logging.warning("train_ppo received empty dataset")
+            self.ppo_trainer = None
+            return
+
+        # adjust sizes with respect to parameters and ds
+        self.ppo_training_args['batch_size'] = min(self.ppo_training_args['batch_size'], ds)
+        self.ppo_training_args['gradient_accumulation_steps'] = self.ppo_training_args['batch_size']
+
+        self.ppo_training_args['project_kwargs'] = {'logging_dir': os.path.join(path, self.name + '_ppo_tensorboard')}
+
+        self.ppo_trainer = PPOTrainer(
+            model=self.model,
+            config=PPOConfig(**self.ppo_training_args),
+            tokenizer=self.tokenizer,
+        )
+
         bs = self.ppo_training_args['batch_size']
         nb_batches = ds // bs
-
         logging.info(f"Starting PPO training with {ds} samples, batch size {bs}, total batches {nb_batches}")
 
         # Start training process
@@ -212,6 +230,8 @@ class HfAgent:
         self.delete_tensor_list(responses)
         self.delete_tensor_list(scores)
         torch.cuda.empty_cache()
+
+        self.save_lora_weights(os.path.join(path, self.name + '_lora_weights'))
 
 
     def delete_tensor_list(self, tensor_list: List[Any]) -> None:
@@ -309,7 +329,6 @@ class HfAgent:
             top_p=0.95
             )
         
-                    
         
     def save_lora_weights(self, lora_weights_path: str) -> None:
         """

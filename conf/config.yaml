@@ -5,8 +5,8 @@ hydra:
 iterations:
   nb_iterations: 10
   iteration_runner_args:
-    nb_parallel_games: 64
-    games_per_iteration: 512
+    nb_parallel_games: 50
+    games_per_iteration: 50
   dond_game_args:
     rounds_per_game: 1
     max_turns: 10
@@ -40,11 +40,11 @@ models:
 
     ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
       # For batch size vs mini confusion https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_trainer.py#L647)
-      batch_size: 64 # Default is 64 Number of examples put on the GPU at once. batch_size = mini_batch_size * gradient_accumulation_steps
+      batch_size: 64 # Default is 64 Number of examples put on the GPU at once. batch_size = mini_batch_size * gradient_accumulation_steps. Will be made smaller if not enough samples.
       mini_batch_size: 1 # Default: 1. Number of examples fed in parallel to the model
-      gradient_accumulation_steps: 64 # TODO : set automatically Default: 64. Number of minibatch gradient accumulation before step. Should be equal to batch size.
+      gradient_accumulation_steps: None # This is set automatically. Default: 64. Number of minibatch gradient accumulation before step. Should be equal to batch size.
       ppo_epochs: 4 # Default: 4. Number of optimisation epochs per batch of samples
-      #learning_rate: 1.41e-5
+      learning_rate: 1e-4
       gradient_checkpointing: False # Whether to keep all activations in memory at once.
       log_with: "tensorboard"
       project_kwargs: None # don't touch, will be set later

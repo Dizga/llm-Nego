@@ -23,12 +23,17 @@ def extract_ppo_dataset(folder_path: str,
 
         if pattern.match(file_name):
 
+
             # Import conversation
             conversation_path = os.path.join(folder_path, file_name)
             with open(conversation_path, 'r') as file: conversation = json.load(file)
 
             # Extract queries, responses, and scores
             context = []
+
+            # TODO: remove if want to train on games with no agreements!
+            if conversation[-1]['self_score'] == 0:
+                continue
 
             # extract queries, responses and scores
             for message in conversation:
