@@ -9,6 +9,8 @@ from experiments.dond_iteration_runner import DondIterationRunner
 from environments.dond_game import DondGame
 from utils.dond_statistics import compute_dond_statistics
 from models.hf_agent import HfAgent
+from models.dummy_hf_agent import DummyHfAgent
+
 from environments.dond_player import DondPlayer
 from utils.extract_dond_ppo_dataset import extract_ppo_dataset
 
@@ -73,7 +75,7 @@ def dond_ppo_run_train_cycle(cfg):
             # Get training data for the model
             for player in players:
                 if player.model_name == model_name:
-                    new_queries, new_responses, new_scores = extract_ppo_dataset(it_folder, player_name)
+                    new_queries, new_responses, new_scores = extract_ppo_dataset(it_folder, player.player_name)
                     queries += new_queries
                     responses += new_responses
                     scores += new_scores

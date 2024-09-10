@@ -186,19 +186,22 @@ class HfAgent:
                 scores=batch_tensor_scores,
             )
 
-        # Log statistics and rewards
-        logging.info(f"PPO step for batch {b+1}/{nb_batches} completed. Logging stats...")
+            # Log statistics and rewards
+            logging.info(f"PPO step for batch {b+1}/{nb_batches} completed. Logging stats...")
 
-        # Log the training stats for the current batch
-        self.ppo_trainer.log_stats(
-            stats=stats,
-            batch={"query": queries_ids_tensor_list, "response": responses_ids_tensor_list},
-            rewards=batch_tensor_scores,
-        )
+            # Log the training stats for the current batch
+            self.ppo_trainer.log_stats(
+                stats=stats,
+                batch={"query": queries_ids_tensor_list, "response": responses_ids_tensor_list},
+                rewards=batch_tensor_scores,
+            )
 
-        # Calculate and log the time taken for this batch
-        batch_duration = time.time() - start_time
-        logging.info(f"Batch {b+1}/{nb_batches} training completed in {batch_duration:.2f} seconds.")
+            del queries_ids_tensor_list, responses_ids_tensor_list, batch_tensor_scores
+            torch.cuda.empty_cache()
+
+            # Calculate and log the time taken for this batch
+            batch_duration = time.time() - start_time
+            logging.info(f"Batch {b+1}/{nb_batches} training completed in {batch_duration:.2f} seconds.")
     
         logging.info("PPO training completed for all batches.")
 
@@ -209,10 +212,6 @@ class HfAgent:
         self.delete_tensor_list(responses)
         self.delete_tensor_list(scores)
         torch.cuda.empty_cache()
-        if nb_batches > 0:
-            # Memory management
-            del queries_ids_tensor_list, responses_ids_tensor_list, batch_tensor_scores
-            torch.cuda.empty_cache()
 
 
     def delete_tensor_list(self, tensor_list: List[Any]) -> None:

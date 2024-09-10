@@ -1,0 +1,65 @@
+iterations:
+  nb_iterations: 10
+  iteration_runner_args:
+    nb_parallel_games: 50
+    games_per_iteration: 50
+  dond_game_args:
+    rounds_per_game: 1
+    max_turns: 10
+    player_order: deterministic
+    mode: basic
+    setup: random_read
+    setups_file: src/environments/dond_setups.txt
+models:
+  llama:
+    model_name: meta-llama/Meta-Llama-3.1-8B-Instruct
+    device: cuda
+    bits_and_bytes_args:
+      load_in_8bit: false
+    lora_args:
+      task_type: TaskType.CAUSAL_LM
+      r: 16
+      lora_alpha: 16
+      lora_dropout: 0
+      target_modules:
+      - q_proj
+      - k_proj
+      - v_proj
+      - o_proj
+      - gate_proj
+      - up_proj
+      - down_proj
+    pretrained_args:
+      pretrained_model_name_or_path: meta-llama/Meta-Llama-3.1-8B-Instruct
+      torch_dtype: bfloat16
+      device_map: auto
+    ppo_trainer_args:
+      batch_size: 64
+      mini_batch_size: 1
+      gradient_accumulation_steps: 64
+      ppo_epochs: 4
+      learning_rate: 1.41e-05
+      gradient_checkpointing: false
+      log_with: tensorboard
+      project_kwargs: None
+      tracker_project_name: tensorboard
+    save_lora_weights: true
+players:
+  player_0:
+    id: 0
+    dond_player_args:
+      model_name: llama
+      game_intro_file: src/prompts/rules.txt
+      chain_of_thought_file: src/prompts/cot.txt
+      finalization_file: src/prompts/finalization.txt
+      new_round_file: src/prompts/new_round.txt
+      max_retries: 5
+  player_1:
+    id: 1
+    dond_player_args:
+      model_name: llama
+      game_intro_file: src/prompts/rules.txt
+      chain_of_thought_file: src/prompts/cot.txt
+      finalization_file: src/prompts/finalization.txt
+      new_round_file: src/prompts/new_round.txt
+      max_retries: 5

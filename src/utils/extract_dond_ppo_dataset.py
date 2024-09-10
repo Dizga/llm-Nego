@@ -57,7 +57,7 @@ def extract_ppo_dataset(folder_path: str,
         debug_data = [{"query": q, "response": r, "score": s} 
                       for q, r, s in zip(queries, responses, scores)]
         
-        debug_file_path = os.path.join(folder_path, "extracted_training_dataset.json")
+        debug_file_path = os.path.join(folder_path, f"{player_prefix}extracted_training_dataset.json")
         with open(debug_file_path, 'w') as debug_file:
             json.dump(debug_data, debug_file, indent=4)
 

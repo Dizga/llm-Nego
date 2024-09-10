@@ -1,0 +1,60 @@
+[
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nReasoning and Action: At the start of your turn, you will be asked to reason about the current state of the game and how to fulfill your objective, then make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nReasoning: <reason> [Your reasoning here.] </reason>\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {'books': '...', 'hats': '...', 'balls': '...'}, \"other_player_gets\": {'books': '...', 'hats': '...', 'balls': '...'} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one reasoning + action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<reason> [Your reasoning here.] </reason>\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<reason> [Your reasoning here.] </reason>\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<reason> [Your reasoning here.] </reason>\n<finalize>{ \"i_take\": {'books': '...', 'hats': '...', 'balls': '...'}, \"other_player_gets\": {'books': '...', 'hats': '...', 'balls': '...'} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'books': 4, 'hats': 1, 'balls': 1} between yourself and the other player.\nTo you, books are worth {'books': 0, 'hats': 7, 'balls': 3}.\nYou don't know the other player's item values. You are the first to play, there are no messages yet.\nAs a reminder, there is a total of {'books': 4, 'hats': 1, 'balls': 1}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
+        "is_error": false,
+        "round_nb": 1
+    },
+    {
+        "role": "assistant",
+        "content": "<reason>Since I'm the first player, I need to make an opening offer to the other player. Given that I have a clear idea of the item values, I should propose a division that maximizes my reward while being cautious not to leave any items left over. I will start by making an opening offer that takes most of the high-value item, 'hats', and a moderate number of the high-value item, 'books'. Since 'balls' has the lowest value, I will propose taking it as well. I will also leave a small number of 'books' for the other player, assuming they might value them highly. This way, I can gauge their reaction and adjust accordingly. I will send an opening offer of 3 'books', 1 'hat', and 1 'ball' to the other player.</reason>\n<message>Take 3 books, 1 hat, and 1 ball, and I'll take 1 book, 0 hats, and 0 balls.</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 2
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I accept your offer, but I'd like to propose a counteroffer: I'll take 2 books, 1 hat, and 1 ball, and you can take the remaining items.'\nAs a reminder, there is a total of {'books': 4, 'hats': 1, 'balls': 1}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
+        "is_error": false,
+        "round_nb": 1
+    },
+    {
+        "role": "assistant",
+        "content": "<reason>The other player has made a counteroffer that is close to the original offer, but with a slight adjustment. Since I value 'hats' highly and only have one of them, I should be cautious not to let the other player take it. I will propose a counteroffer that prioritizes my value for 'hats' and also takes into account the other player's desire for 'books'. I will suggest taking 1 'hat' and 2 'books', and leaving 1 'book' and 0 'balls' for the other player. This way, I maintain control over the high-value item 'hats' and also satisfy the other player's demand for 'books', while not leaving any items left over.</reason>\n<message>Take 1 hat and 2 books, and you can take 1 book and 1 ball.</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 1,
+        "self_score": 0,
+        "other_score": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I accept your offer, but I'd like to propose a counteroffer: I'll take 3 books and 1 ball, and you can take 1 book and 0 hats.'\nAs a reminder, there is a total of {'books': 4, 'hats': 1, 'balls': 1}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
+        "is_error": false,
+        "round_nb": 1
+    },
+    {
+        "role": "assistant",
+        "content": "<reason>The other player is trying to maximize their 'books' while keeping the 'hat' and 'ball' for themselves. However, since I value 'hats' highly, I should not give them up. If I accept this offer, I will end up with 0 'hats' and 1 'book', which is not ideal. Given that the other player is pushing for more 'books', I should propose a final division that still prioritizes my value for 'hats' while giving the other player a fair share of 'books'. I will suggest taking 1 'book', 1 'hat', and 0 'balls', and leaving 3 'books' and 1 'ball' for the other player. This way, I maintain control over the high-value item 'hats' and give the other player a reasonable number of 'books'.</reason>\n<finalize>{ \"i_take\": {'books': 1, 'hats': 1, 'balls': 0}, \"other_player_gets\": {'books': 3, 'hats': 0, 'balls': 1} }</finalize>",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 1,
+        "self_score": 0,
+        "other_score": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: The content within <finalize>...</finalize> is not valid JSON.",
+        "is_error": false,
+        "round_nb": 1
+    },
+    {
+        "role": "assistant",
+        "content": "<reason>The other player is trying to maximize their 'books' while keeping the 'hat' and 'ball' for themselves. However, since I value 'hats' highly, I should not give them up. Given that the other player is pushing for more 'books', I should propose a final division that still prioritizes my value for 'hats' while giving the other player a fair share of 'books'. I will suggest taking 1 'book', 1 'hat', and 0 'balls', and leaving 3 'books' and 1 'ball' for the other player. This way, I maintain control over the high-value item 'hats' and give the other player a reasonable number of 'books.'</reason>\n<finalize>{ \"i_take\": {\"books\": 1, \"hats\": 1, \"balls\": 0}, \"other_player_gets\": {\"books\": 3, \"hats\": 0, \"balls\": 1} }</finalize>",
+        "is_error": false,
+        "is_finalization": true,
+        "round_nb": 1,
+        "self_score": 0,
+        "other_score": 0
+    }
+]

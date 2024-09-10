@@ -1,0 +1,11 @@
+,0
+mode,basic
+player_0_points,0
+player_1_points,0
+quantities,"{'books': 2, 'hats': 1, 'balls': 2}"
+player_0_values,"{'books': 1, 'hats': 4, 'balls': 2}"
+player_1_values,"{'books': 3, 'hats': 4, 'balls': 0}"
+player_0_finalization,{}
+player_1_finalization,{}
+agreement_reached,False
+total_points_over_maximum,0

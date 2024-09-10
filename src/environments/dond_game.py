@@ -106,7 +106,7 @@ class DondGame:
             self.end_round()
             return self.get_state()  # round ended due to exceeding max turns
         
-        return self.get_state()  # game not ended
+        return self.get_state()  # round not ended
 
     def get_state(self):
         """
@@ -280,7 +280,8 @@ class DondGame:
         self.round_ended = True
         self.game_ended = False
         self.last_message = None
-        if self.round_nb > self.rounds_per_game: self.game_ended = True
+        if self.round_nb > self.rounds_per_game: 
+            self.game_ended = True
         self.set_new_game_settings()
 
     def export(self):

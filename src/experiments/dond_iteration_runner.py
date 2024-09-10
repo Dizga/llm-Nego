@@ -77,7 +77,8 @@ class DondIterationRunner:
 
                 # Add user message to context
                 player = match['player_deque'][0]
-                player.set_usr_message(match['game'].get_state())
+                match['game_state'] = match['game'].get_state()
+                player.set_usr_message(match['game_state'])
 
                 # Send player context to right model
                 self.prompt_batches[player.model_name].append(copy.deepcopy(player.get_context()))
@@ -91,7 +92,7 @@ class DondIterationRunner:
 
             # Play moves for each player by using the model outputs
             for match in self.matches:
-
+                match['game_state'] = match['game'].get_state()
                 player = match['player_deque'][0]
                 response = self.response_batches[player.model_name].pop(0)
                 send_to_game, is_finalization, processed_response = player.process_model_response(response, match['game_state'])
@@ -114,6 +115,8 @@ class DondIterationRunner:
                         self.export_match(match['game'], match['player_deque'])
                         match['game'].reset()
                         for player in match['player_deque']: player.reset_game()
+
+
 
         # TODO: assert that the response batches now all have a size of 0
         

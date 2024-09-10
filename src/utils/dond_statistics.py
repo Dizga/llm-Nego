@@ -57,8 +57,8 @@ def compute_dond_statistics(folder_path):
 
             # Create a dictionary with the statistics for this game
             game_stat = {
-                'player_0_total_points': player_0_total_points,
-                'player_1_total_points': player_1_total_points,
+                'player_0_total_points': int(player_0_total_points),
+                'player_1_total_points': int(player_1_total_points),
                 'agreement_rate': agreement_rate,
                 'total_points_over_maximum': mean(total_points_over_maximum_list) if total_points_over_maximum_list else 0,
                 'round_agreements': df['agreement_reached'].apply(lambda x: 1 if x else 0).tolist()  # This is a list
