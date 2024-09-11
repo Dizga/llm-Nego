@@ -3,6 +3,10 @@ import os
 import pandas as pd
 import regex as re
 import copy
+from statistics import mean
+
+# TODO: parameterize this function so that it can be adjusted with the config
+
 
 def extract_ppo_dataset(folder_path: str, 
                            player_name, 
@@ -52,8 +56,11 @@ def extract_ppo_dataset(folder_path: str,
 
                     scores.append(message['self_score'])
 
-                # if message.get('is_new_round'):
-                #    count += 1
+
+    # TODO: determine customize!
+    if len(scores) > 0:
+        mean_score = mean(scores)
+        scores = [s - mean_score for s in scores]
 
             
 
