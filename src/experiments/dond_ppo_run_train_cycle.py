@@ -12,7 +12,7 @@ from models.hf_agent import HfAgent
 from models.dummy_hf_agent import DummyHfAgent
 
 from environments.dond_player import DondPlayer
-from utils.extract_dond_ppo_dataset import extract_ppo_dataset
+from training.extract_ppo_dataset import extract_ppo_dataset
 
 def dond_ppo_run_train_cycle(cfg): 
     # Log total time

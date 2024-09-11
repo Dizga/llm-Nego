@@ -35,6 +35,7 @@ from vllm import LLM, SamplingParams
 from vllm.lora.request import LoRARequest
 from omegaconf import OmegaConf
 
+from training.custom_ppo_trainer import CustomPPOTrainer
 torch.set_default_device('cuda')
 
 
@@ -115,25 +116,6 @@ class HfAgent:
 
         return tokenized
     
-    def init_ppo_trainer(self, tensorboard_folder) -> None:
-        """
-        Initializes the PPO (Proximal Policy Optimization) trainer.
-
-        Args:
-            out_directory (str): The directory where training logs and checkpoints will be saved.
-            ppo_training_args (dict): Arguments specific to PPO training.
-        """
-
-        self.switch_to_hf()
-
-        self.ppo_training_args['project_kwargs'] = {'logging_dir': tensorboard_folder}
-
-        self.ppo_trainer = PPOTrainer(
-            model=self.model,
-            config=PPOConfig(**self.ppo_training_args),
-            tokenizer=self.tokenizer,
-        )
-
 
     def train_ppo(
             self, path, queries: List, responses: List, scores: List[float]
@@ -159,7 +141,7 @@ class HfAgent:
 
         self.ppo_training_args['project_kwargs'] = {'logging_dir': os.path.join(path, self.name + '_ppo_tensorboard')}
 
-        self.ppo_trainer = PPOTrainer(
+        self.ppo_trainer = CustomPPOTrainer(
             model=self.model,
             config=PPOConfig(**self.ppo_training_args),
             tokenizer=self.tokenizer,
