@@ -44,8 +44,8 @@ models:
       mini_batch_size: 1 # Default: 1. Number of examples fed in parallel to the model
       gradient_accumulation_steps: None # This is set automatically. Default: 64. Number of minibatch gradient accumulation before step. Should be equal to batch size.
       ppo_epochs: 1 # Default: 4. Number of optimisation epochs per batch of samples
-      learning_rate: 10e-5
-      vf_coef: 0.0
+      #learning_rate: 10e-4
+      vf_coef: 0.1
       gradient_checkpointing: False # Whether to keep all activations in memory at once.
       log_with: "tensorboard"
       project_kwargs: None # don't touch, will be set later
