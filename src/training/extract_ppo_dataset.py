@@ -36,8 +36,8 @@ def extract_ppo_dataset(folder_path: str,
             context = []
 
             # TODO: remove if want to train on games with no agreements!
-            if conversation[-1]['self_score'] == 0:
-                continue
+            #if conversation[-1]['self_score'] == 0:
+            #    continue
 
             # extract queries, responses and scores
             for message in conversation:

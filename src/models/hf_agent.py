@@ -234,6 +234,9 @@ class HfAgent:
         """
 
         texts = self.tokenizer.apply_chat_template(contexts, tokenize=False, add_generation_prompt=True)
+
+        if len(contexts) == 0:
+            return []
         
         # Generate with Hugging Face
         if self.inference_library == "hf":
