@@ -1,0 +1,77 @@
+[
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nReasoning and Action: At the start of your turn, you will be asked to reason about the current state of the game and how to fulfill your objective, then make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nReasoning: <reason> [Your reasoning here.] </reason>\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {'books': '...', 'hats': '...', 'balls': '...'}, \"other_player_gets\": {'books': '...', 'hats': '...', 'balls': '...'} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one reasoning + action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<reason> [Your reasoning here.] </reason>\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<reason> [Your reasoning here.] </reason>\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<reason> [Your reasoning here.] </reason>\n<finalize>{ \"i_take\": {'books': '...', 'hats': '...', 'balls': '...'}, \"other_player_gets\": {'books': '...', 'hats': '...', 'balls': '...'} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'books': 2, 'hats': 2, 'balls': 1} between yourself and the other player.\nTo you, books are worth {'books': 0, 'hats': 3, 'balls': 4}.\nYou don't know the other player's item values. The other player said: 'I'd like to take the 'balls' and propose a trade: I'll give you one of the 'books' if you give me the other 'book'.'\nAs a reminder, there is a total of {'books': 2, 'hats': 2, 'balls': 1}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
+        "is_error": false,
+        "round_nb": 1
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> The game has started with an initial offer from the other player, proposing a trade of one 'book' for one 'book', effectively taking the 'balls' and giving one 'book' to the other player. This means the other player values 'balls' highly and might be willing to give up other items for it. I should prioritize negotiating for 'balls' while also securing a good deal for myself. Given my utility values, I should focus on getting 'hats' as they are worth the most to me. I should consider proposing a trade that allows me to get 'hats' and 'balls' while giving up less valuable items. </reason>\n<message> I accept your proposal to trade one 'book' for one 'book', but I'd like to propose a counter-offer: I'll give you the remaining 'book' if you give me both 'hats' and the 'balls'. This way, I can get the item I value the least (the remaining 'book') for the items I value the most ('hats' and 'balls'). </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 1,
+        "self_score": 2,
+        "other_score": 7
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I accept your counter-offer, but I'd like to modify it: I'll give you one of the 'hats' if you give me the remaining 'book'. This way, I keep the 'balls' and get one of the 'hats'.'\nAs a reminder, there is a total of {'books': 2, 'hats': 2, 'balls': 1}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
+        "is_error": false,
+        "round_nb": 1
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> The other player has modified the counter-offer, accepting one 'hats' and the 'balls' but keeping the second 'hats' for themselves. This means they still value 'balls' highly, but are also willing to give up one 'hats' for it. Given my utility values, I should focus on getting the remaining 'hats' and the 'balls', as they are worth the most to me. I should also be cautious not to give up too much in the process, considering the other player's willingness to negotiate. I need to make a decision that will maximize my reward while ensuring the final division adds up to the total items. </reason>\n<message> I accept your modified counter-offer, but I'd like to clarify the final division: I'll give you the remaining 'book' and you'll give me one 'hats' and the 'balls'. This way, we can finalize the negotiation and ensure a fair distribution of items. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 1,
+        "self_score": 2,
+        "other_score": 7
+    },
+    {
+        "role": "user",
+        "content": "A finalization has been made by the other player. Using the <reason> tag, remember the division that was agreed upon and then make a finalization using the <finalize> tag, describing the division of items you agreed upon, no items should be left over. The finalization should be formatted has <finalize>{ \"i_take\": {'books': '...', 'hats': '...', 'balls': '...'}, \"other_player_gets\": {'books': '...', 'hats': '...', 'balls': '...'} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nThe other player said: '{'i_take': {'books': 1, 'hats': 1, 'balls': 1}, 'other_player_gets': {'books': 1, 'hats': 1, 'balls': 1}}'\nAs a reminder, there is a total of {'books': 2, 'hats': 2, 'balls': 1}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
+        "is_error": false,
+        "round_nb": 1
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> The other player has made a finalization, but it doesn't match the division we agreed upon. They claim to take {'books': 1, 'hats': 1, 'balls': 1}, while I agreed to give them one 'book', one 'hats', and the 'balls'. This means they are trying to take an extra 'hats' and not give me the second 'hats' as agreed. I should respond by pointing out the discrepancy and proposing the correct division. </reason>\n<message> I don't think the division you proposed matches our agreement. I thought we agreed that I would give you the remaining 'book' and you would give me one 'hats' and the 'balls'. Could we please finalize with the correct division? I would like to finalize with {'i_take': {'books': 1, 'hats': 1, 'balls': 1}, 'other_player_gets': {'books': 1, 'hats': 1, 'balls': 1}}. </message>",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 1,
+        "self_score": 2,
+        "other_score": 7
+    },
+    {
+        "role": "user",
+        "content": "Errors: The other player has made a finalization. You must finalize as well.",
+        "is_error": false,
+        "round_nb": 1
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> The other player has made a finalization, but it doesn't match the division we agreed upon. Since they are trying to take an extra 'hats', I should finalize with the correct division to ensure the game is resolved fairly. I will finalize with the division that I initially proposed, which is the only way to ensure a fair distribution of items. </reason>\n<finalize>{ \"i_take\": {'books': 1, 'hats': 1, 'balls': 1}, \"other_player_gets\": {'books': 1, 'hats': 1, 'balls': 0} }</finalize>",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 1,
+        "self_score": 2,
+        "other_score": 7
+    },
+    {
+        "role": "user",
+        "content": "Errors: The content within <finalize>...</finalize> is not valid JSON.",
+        "is_error": false,
+        "round_nb": 1
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> The other player has made a finalization, but it doesn't match the division we agreed upon. Since they are trying to take an extra 'hats', I should finalize with the correct division to ensure the game is resolved fairly. I will finalize with the division that I initially proposed, which is the only way to ensure a fair distribution of items. </reason>\n<finalize>{ \"i_take\": {\"books\": 1, \"hats\": 1, \"balls\": 0}, \"other_player_gets\": {\"books\": 1, \"hats\": 1, \"balls\": 1} }</finalize>",
+        "is_error": false,
+        "is_finalization": true,
+        "round_nb": 1,
+        "self_score": 2,
+        "other_score": 7
+    }
+]

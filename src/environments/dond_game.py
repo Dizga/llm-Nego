@@ -6,6 +6,7 @@ class DondGame:
     def __init__(self, 
                  mode='coop',
                  max_turns=None,
+                 player_order='deterministic',
                  setup="random_read",
                  setups_file=None,
                  rounds_per_game = 10,
@@ -22,9 +23,11 @@ class DondGame:
         """
         self.mode = mode
         self.max_turns = max_turns
+        self.player_order = player_order
         self.setup = setup
         self.setups_file = setups_file
         self.rounds_per_game = rounds_per_game
+        self.quantities = quantities
 
 
         if self.setup == "random_read":
@@ -54,77 +57,6 @@ class DondGame:
         self.reset()
 
 
-    def reset(self):
-        """
-        Resets the game to its initial state.
-
-        Returns:
-            tuple: The quantities of items and the values for player 0 and player 1.
-        """
-        self.turn = 0
-        self.has_finalized = False
-
-        # changes the quantities and values of the players
-        self.set_new_game_settings()
-
-        self.reset_player_bookkeeping()
-        self.round_nb = 1
-        self.new_round = True
-        self.game_ended = False
-        self.last_message = None
-        self.points_player_0 = 0
-        self.points_player_1 = 0
-        self.player_0_prop_history = []
-        self.player_1_prop_history = []
-        self.points_player_0_history = []
-        self.points_player_1_history = []
-        self.values_player_0_history = []
-        self.values_player_1_history = []
-        self.quantities_history = []
-        self.agreement_reached_history = []
-
-        return self.get_state()
-    
-    def set_new_game_settings(self):
-
-        if self.setup == "manual":
-            return
-
-        # Pick random trio of quantities & values from dataset
-        elif self.setup == "random_read":
-            setting_id = random.randint(0, self.nb_settings-1)
-            self.quantities, self.values_player_0, self.values_player_1 = self.settings[setting_id]
-
-    
-    def reset_player_bookkeeping(self):
-        self.player_0_prop = {}
-        self.player_1_prop = {}
-        self.agreement_reached = False
-        self.last_message = None
-
-    def archive_player_states(self):
-        self.player_0_prop_history.append(self.player_0_prop)
-        self.player_1_prop_history.append(self.player_1_prop)
-        self.points_player_0_history.append(self.points_player_0)
-        self.points_player_1_history.append(self.points_player_1)
-        self.values_player_0_history.append(self.values_player_0)
-        self.values_player_1_history.append(self.values_player_1)
-        self.quantities_history.append(self.quantities)
-        self.agreement_reached_history.append(self.agreement_reached)
-
-    def end_round(self):
-        self.round_nb += 1
-        self.turn = 0
-        self.has_finalized = False
-        self.last_message = None
-
-        self.archive_player_states()
-        self.reset_player_bookkeeping()
-        self.new_round = True
-        if self.round_nb > self.rounds_per_game:
-            self.game_ended = True
-        self.set_new_game_settings()
-
     
     def step(self, output, is_finalization=False)-> bool: 
         """
@@ -137,6 +69,8 @@ class DondGame:
         Returns:
             bool: False if game ended else True.
         """
+
+        self.turn += 1
         
         self.last_message = output
 
@@ -168,17 +102,14 @@ class DondGame:
             self.has_finalized = True
             self.finalize(output)
         
-        self.turn += 1
 
         if self.turn > self.max_turns:
             self.end_round()
             return self.get_state()  # round ended due to exceeding max turns
         
-        self.new_round = False
+        return self.get_state()  # round not ended
 
-        return self.get_state()  # game not ended
-
-    def get_state(self, player="current_turn"):
+    def get_state(self):
         """
         Retrieves the current state of the game.
 
@@ -188,29 +119,44 @@ class DondGame:
         Returns:
             dict: The current state of the game.
         """
-        if player == "current_turn":
-            player = self.current_turn()
+
+        last_scores = []
+        if len(self.points_player_0_history) != 0:
+            last_scores.append(self.points_player_0_history[-1])
+        else: last_scores.append(None)
+        if len(self.points_player_1_history) != 0:
+            last_scores.append(self.points_player_1_history[-1])
+        else: last_scores.append(None)
+
 
         out = {
             'mode': self.mode,
             'game_ended': self.game_ended,
-            "new_round": self.new_round,
+            "round_ended": self.round_ended,
+            "is_new_round": True if self.turn <= 2 else False,
+            "is_new_game": True if (self.turn <= 2 and self.round_nb == 1) else False,
+            "items": self.items,
+            "turn": self.turn,
             "current_turn": self.current_turn(),
             "round_number": self.round_nb,
             "nb_rounds": self.rounds_per_game,
             "quantities": self.quantities,
             "agreement_reached": self.agreement_reached,
             "has_finalized": self.has_finalized,
-            "last_message": self.last_message
+            "last_message": self.last_message,
+            "last_scores": last_scores
         }
+
+        player = self.current_turn()
         
         if player == "player_0":
             out["values"] = self.values_player_0
-            out["last_score"] = self.points_player_0
-            return out
+            out["last_score"] = self.points_player_0_history[-1] if len(self.points_player_0_history) != 0 else None
+        
+        elif player == "player_1":
+            out["values"] = self.values_player_1
+            out["last_score"] = self.points_player_1_history[-1] if len(self.points_player_1_history) != 0 else None
 
-        out["values"] = self.values_player_1
-        out["last_score"] = self.points_player_1
         return out
 
     def verify_finalizations_match(self):
@@ -254,6 +200,91 @@ class DondGame:
             self.player_1_prop = finalization['i_take']
 
 
+    def get_play_order(self):
+        """
+        Get the order of players.
+        
+        Returns:
+            list: The order of player indices.
+        """
+        if self.player_order == 'deterministic':
+            # If the order is deterministic, the players will always be [0, 1]
+            return [0, 1]
+        elif self.player_order == 'stochastic':
+            # If the order is stochastic, randomly shuffle the player order
+            return random.sample([0, 1], 2)  # Randomly shuffle between [0, 1]
+        else:
+            # Handle invalid player_order values
+            raise ValueError(f"Invalid player_order: {self.player_order}. Must be 'deterministic' or 'stochastic'.")
+        
+    def set_new_game_settings(self):
+
+        if self.setup == "manual":
+            return
+
+        # Pick random trio of quantities & values from dataset
+        elif self.setup == "random_read":
+            setting_id = random.randint(0, self.nb_settings-1)
+            self.quantities, self.values_player_0, self.values_player_1 = self.settings[setting_id]
+
+    
+    def archive_player_states(self):
+        self.player_0_prop_history.append(self.player_0_prop)
+        self.player_1_prop_history.append(self.player_1_prop)
+        self.points_player_0_history.append(self.points_player_0)
+        self.points_player_1_history.append(self.points_player_1)
+        self.values_player_0_history.append(self.values_player_0)
+        self.values_player_1_history.append(self.values_player_1)
+        self.quantities_history.append(self.quantities)
+        self.agreement_reached_history.append(self.agreement_reached)
+
+    def reset(self):
+        """
+        Resets the game to its initial state.
+
+        Returns:
+            tuple: The quantities of items and the values for player 0 and player 1.
+        """
+        self.has_finalized = False
+        self.player_0_prop = {}
+        self.player_1_prop = {}
+        self.points_player_0 = 0
+        self.points_player_1 = 0
+        self.agreement_reached = False
+        self.last_message = None
+        self.round_nb = 1
+        self.turn = 1
+        self.round_ended = False
+        self.game_ended = False
+        self.last_message = None
+        self.player_0_prop_history = []
+        self.player_1_prop_history = []
+        self.points_player_0_history = []
+        self.points_player_1_history = []
+        self.values_player_0_history = []
+        self.values_player_1_history = []
+        self.quantities_history = []
+        self.agreement_reached_history = []
+        self.set_new_game_settings()
+
+    def end_round(self):
+        self.archive_player_states()
+        self.round_nb += 1
+        self.has_finalized = False
+        self.player_0_prop = {}
+        self.player_1_prop = {}
+        self.points_player_0 = 0
+        self.points_player_1 = 0
+        self.agreement_reached = False
+        self.last_message = None
+        self.turn = 1
+        self.round_ended = True
+        self.game_ended = False
+        self.last_message = None
+        if self.round_nb > self.rounds_per_game: 
+            self.game_ended = True
+        self.set_new_game_settings()
+
     def export(self):
         """
         Export round metrics.
@@ -273,8 +304,8 @@ class DondGame:
         return {
             'mode': self.mode,
             'round_id': id,
-            'player_0_reward': self.points_player_0_history[id],
-            'player_1_reward': self.points_player_1_history[id],
+            'player_0_points': self.points_player_0_history[id],
+            'player_1_points': self.points_player_1_history[id],
             'quantities': self.quantities_history[id],
             'player_0_values': self.values_player_0_history[id],
             'player_1_values': self.values_player_1_history[id],

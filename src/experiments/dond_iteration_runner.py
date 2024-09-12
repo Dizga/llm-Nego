@@ -7,56 +7,125 @@ import logging.config
 
 # local imports
 from environments.dond_game import DondGame
+from utils.log_gpu_usage import log_gpu_usage
+
+from collections import deque
+import copy 
+import time
+import logging
 
 
 class DondIterationRunner:
     def __init__(self, 
                  out_dir,
+                 nb_parallel_games,
                  games_per_iteration, 
-                 game: DondGame, 
-                 players
+                 game,
+                 players,
+                 models
                  ):
 
+        self.out_dir = out_dir
+        self.nb_parallel_games = nb_parallel_games
         self.games_per_iteration = games_per_iteration
         self.game = game
         self.players = players
-        self.player_0 = players[0]
-        self.player_1 = players[1]
+        self.models = models
 
 
+        # Local
+        self.iteration_nb = 0
+        self.game_nb = 0
         self.run_dir = out_dir
         self.datenow = datetime.now().strftime('%Y_%m_%d_%H_%M')
 
-        self.iteration_nb = 0
-        self.game_nb = 0
-        self.round_nb = 0
+        # Initiate parallel matches
+        self.matches = []
+        nb_matches = min(self.nb_parallel_games, self.games_per_iteration)
+        for _ in range(nb_matches):
+            match = {}
+            match['player_list'] = [copy.deepcopy(player) for player in self.players]
+            match['game'] = copy.deepcopy(self.game)
+            match['game'].reset()
+            match['game_state'] = match['game'].get_state()
+            match['play_order'] = match['game'].get_play_order()
+            match['player_deque'] = deque([match['player_list'][id] for id in match['play_order']])
+            for i, player in enumerate(match['player_deque']): player.game_id = i
+            self.matches.append(match)
+
+        # Initiate prompt batches
+        self.prompt_batches = {}
+        self.response_batches = {}
+        for model_name in self.models.keys():
+            self.prompt_batches[model_name] = []
+            self.response_batches[model_name] = []
+
+
 
     def run_iteration(self):
+
+        iteration_name = f"Iteration {self.iteration_nb}"
+        start_time = time.time()  # Start time for iteration
+
         self.new_iteration()
-        for _ in range(self.games_per_iteration):
-            self.run_game()
+        logging.info(f"Iteration {self.iteration_nb} with {self.games_per_iteration} games started.")
 
-    def run_game(self):
-        logging.info(f"Game {self.game_nb} of iteration {self.iteration_nb} started.")
-        self.new_game()
-        self.player_0.new_game()
-        self.player_1.new_game()
-        game_state = self.game.reset()
-        player_id = 0
-        while not game_state['game_ended']:
-            if game_state['new_round']:
-                pass
-                # self._start_new_round() TODO
-            is_finalization, content = self.players[player_id].play_move(game_state)
-            game_state = self.game.step(content, is_finalization=is_finalization)
-            player_id = (player_id + 1) % 2
-            
-        # while True:
-        self.log_game(self.game.export(), 
-                             self.player_0.get_history(), 
-                             self.player_1.get_history())
-        logging.info("Game completed.")
+        while self.game_nb < self.games_per_iteration:
 
+            # Get prompt batch for each model
+            for match in self.matches:
+
+                # Add user message to context
+                player = match['player_deque'][0]
+                match['game_state'] = match['game'].get_state()
+                player.set_usr_message(match['game_state'])
+
+                # Send player context to right model
+                self.prompt_batches[player.model_name].append(copy.deepcopy(player.get_context()))
+
+            # Process prompt batch of each model
+            for model_name in self.models.keys():
+                model = self.models[model_name]
+                self.response_batches[model_name] = model.prompt(self.prompt_batches[model_name])
+                assert len(self.response_batches[model_name]) == len(self.prompt_batches[model_name])
+                self.prompt_batches[model_name] = []
+
+            # Play moves for each player by using the model outputs
+            for match in self.matches:
+                match['game_state'] = match['game'].get_state()
+                player = match['player_deque'][0]
+                response = self.response_batches[player.model_name].pop(0)
+                send_to_game, is_finalization, processed_response = player.process_model_response(response, match['game_state'])
+
+                # Player has made an official move (will be other player's turn next)
+                if send_to_game:
+
+                    match['player_deque'].rotate(1)
+
+                    match['game_state'] = match['game'].step(processed_response, is_finalization)
+
+                    if match['game_state']['round_ended']:
+                        for player in match['player_list']: player.set_round_scores(match['game_state'])
+                        match['play_order'] = match['game'].get_play_order()
+                        match['player_deque'] = deque([match['player_list'][id] for id in match['play_order']])
+                        for i, player in enumerate(match['player_deque']): player.game_id = i
+
+                    if match['game_state']['game_ended']:
+                        self.game_nb += 1
+                        self.export_match(match['game'], match['player_deque'])
+                        match['game'].reset()
+                        for player in match['player_deque']: player.reset_game()
+
+
+
+        # TODO: assert that the response batches now all have a size of 0
+        
+        end_time = time.time()
+        iteration_duration = end_time - start_time
+        logging.info(f"{iteration_name} completed in {iteration_duration:.2f} seconds.")
+                    
+                
+                
     def new_iteration(self)-> str:
         """
         Starts a new iteration, resets metrics, and logs stats for the previous iteration.
@@ -72,54 +141,37 @@ class DondIterationRunner:
         self.game_log_file = os.path.join(self.it_folder, "games.csv")
         return self.it_folder
 
-    def new_game(self):
-        self.game_nb += 1
-        self.round_nb = 0
-        self.rounds_log = pd.DataFrame([])
-        self.rounds_path = os.path.join(self.it_folder, 
-                f"iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.csv")
+
+        
         
 
-    def log_game(self, game, player_0_history, player_1_history):
+    def export_match(self, game, players):
         """
         Logs game data, saves player histories, and updates metrics.
 
         Args:
             game List(dict): A list of dictionaries, each containing the data of a round.
         """
-        
-        # Export the conversations
-        player_0_game_name = f"player_0_iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.json"
-        player_1_game_name = f"player_1_iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}.json"
-        os.makedirs(self.run_dir, exist_ok=True)
-        with open(os.path.join(self.it_folder, player_0_game_name), 'w') as f:
-            json.dump(player_0_history, f, indent=4)
-        with open(os.path.join(self.it_folder, player_1_game_name), 'w') as f:
-            json.dump(player_1_history, f, indent=4)
 
-        # Log every round
-        for round in game: self.log_round(round)
+        logging.info(f"Game {self.game_nb} completed.")
+
+        # Create path
+        game_name = f"iter_{self.iteration_nb:02d}_game_{self.game_nb:04d}"
+
+        # Export the player contexts
+        for player in players:
+            player_context_path = os.path.join(self.it_folder, f"{player.player_name}_{game_name}.json")
+            with open(player_context_path, 'w') as f:
+                json.dump(player.get_context(), f, indent=4)
+
+        # Export game metrics
+        rounds_data = game.export()
+        df = pd.DataFrame(rounds_data)
+        df.set_index('round_id', inplace=True)
+        df_transposed = df.transpose()
+        df_transposed.to_csv(os.path.join(self.it_folder, f"{game_name}.csv"))
+            
 
 
-    def log_round(self, round: dict):
-        """
-        Logs game data, saves player histories, and updates metrics.
 
-        Args:
-            game (dict): A dictionary containing game data.
-        """
-        # Log round metrics
-        self.rounds_log = pd.concat([self.rounds_log, pd.DataFrame([round])], ignore_index=True)
-        self.rounds_log.to_csv(self.rounds_path, index=False)
 
-    def save_player_messages(self, player_name: str, messages: list):
-        """
-        Saves player messages to a JSON file.
-
-        Args:
-            player_name (str): The name of the player.
-            messages (list): A list of messages from the player.
-        """
-        file_path = os.path.join(self.run_dir, f"{player_name}.json")
-        with open(file_path, 'w') as f:
-            json.dump(messages, f, indent=4)
