@@ -12,7 +12,7 @@ from models.hf_agent import HfAgent
 from models.dummy_hf_agent import DummyHfAgent
 
 from environments.dond_player import DondPlayer
-from utils.extract_dond_ppo_dataset import extract_ppo_dataset
+from training.extract_ppo_dataset import extract_ppo_dataset
 
 def dond_ppo_run_train_cycle(cfg): 
     # Log total time
@@ -68,7 +68,6 @@ def dond_ppo_run_train_cycle(cfg):
         for model_name in models.keys():
             model = models[model_name]
             model.switch_to_hf()
-            model.init_ppo_trainer(os.path.join(it_folder, 'ppo_training_tensorboard'))
 
             queries, responses, scores = [], [], []
 
@@ -80,11 +79,8 @@ def dond_ppo_run_train_cycle(cfg):
                     responses += new_responses
                     scores += new_scores
 
-            # Train the model using PPO
-            model.train_ppo(queries, responses, scores)
-
-            # Save LoRA weights for the model
-            model.save_lora_weights(os.path.join(it_folder, model_name + '_lora_weights'))
+            # Train the model using PPO (will automatically save LoRA weights)
+            model.train_ppo(it_folder, queries, responses, scores)
 
             # Go back to generation
             model.switch_to_vllm()
