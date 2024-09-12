@@ -54,7 +54,9 @@ class HfAgent:
         bits_and_bytes_args = None,
         lora_args = None,
         ppo_trainer_args = None,
-        save_lora_weights= None
+        save_lora_weights= None,
+        max_new_tokens =500,
+        do_sample = False
     ) -> None:
         """
         Initializes the HfAgent.
@@ -81,10 +83,18 @@ class HfAgent:
         self.lora_config = LoraConfig(**lora_args) 
         self.ppo_training_args = ppo_trainer_args
 
+        self.sampling_params = SamplingParams(
+            max_tokens=max_new_tokens,      
+            temperature=0,    
+            top_k=10,          
+            top_p=0.9           
+        )
+
         self.inference_library = None
         self.ppo_trainer = None
         self.lora_pretrained_path = None
-
+        self.do_sample = do_sample
+        self.max_new_tokens = max_new_tokens
 
         
         
@@ -129,7 +139,7 @@ class HfAgent:
 
         self.switch_to_hf()
 
-        ds = len(queries) # get datasize
+        ds = len(queries)  # get datasize
         if ds == 0:
             logging.warning("train_ppo received empty dataset")
             self.ppo_trainer = None
@@ -154,9 +164,9 @@ class HfAgent:
         # Start training process
         for b in range(nb_batches):
             start_time = time.time()
-            
+
             logging.info(f"Training on batch {b+1}/{nb_batches} started.")
-            
+
             beg, end = (b * bs, (b + 1) * bs)
             batch_queries = queries[beg:end]
             batch_responses = responses[beg:end]
@@ -169,9 +179,14 @@ class HfAgent:
             queries_ids_tensor = self.encode_jsons(batch_queries)['input_ids']
             queries_ids_tensor_list = [queries_ids_tensor[i] for i in range(queries_ids_tensor.size(0))]
 
-            # Encode the responses into input_ids and convert the batch tensor into a list of 1D tensors
-            responses_ids_tensor = self.encode_jsons(batch_responses)['input_ids']
+            # Encode the responses into input_ids and attention masks
+            tokenized_responses = self.encode_jsons(batch_responses)
+            responses_ids_tensor = tokenized_responses['input_ids']
             responses_ids_tensor_list = [responses_ids_tensor[i] for i in range(responses_ids_tensor.size(0))]
+
+            # Use the attention masks for the responses
+            response_masks = tokenized_responses['attention_mask']
+            response_masks_list = [response_masks[i] for i in range(response_masks.size(0))]
 
             # Convert batch scores to tensors
             batch_tensor_scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in batch_scores]
@@ -184,6 +199,7 @@ class HfAgent:
                 queries=queries_ids_tensor_list,
                 responses=responses_ids_tensor_list,
                 scores=batch_tensor_scores,
+                response_masks=response_masks_list  # Fill in the TODO here
             )
 
             # Log statistics and rewards
@@ -196,17 +212,15 @@ class HfAgent:
                 rewards=batch_tensor_scores,
             )
 
-            del queries_ids_tensor_list, responses_ids_tensor_list, batch_tensor_scores
+            del queries_ids_tensor_list, responses_ids_tensor_list, response_masks_list, batch_tensor_scores
             torch.cuda.empty_cache()
 
             # Calculate and log the time taken for this batch
             batch_duration = time.time() - start_time
             logging.info(f"Batch {b+1}/{nb_batches} training completed in {batch_duration:.2f} seconds.")
-    
+
         logging.info("PPO training completed for all batches.")
 
-
-        
         # Ensure garbage collection is performed
         self.delete_tensor_list(queries)
         self.delete_tensor_list(responses)
@@ -307,13 +321,6 @@ class HfAgent:
         else:
             self.model = LLM(self.model_name, enable_lora=False)
             
-        # TODO: inherit from HF params!
-        self.sampling_params = SamplingParams(
-            max_tokens=500,
-            temperature=0.7,
-            top_p=0.95
-            )
-        
         
     def save_lora_weights(self, lora_weights_path: str) -> None:
         """

@@ -26,8 +26,6 @@ class DondPlayer():
             agent (NegoAgent): The LLM player instance.
             player_type (str): The type of player, either "player_0" or "player_1".
         """
-        self.first_move = True
-        self.is_new_game = True
 
         with open(game_intro_file, 'r') as file:
             self.game_basics = file.read()
@@ -75,11 +73,14 @@ class DondPlayer():
             self.error_message = error_message
             # Too many mistakes were made
             if self.retries > self.max_retries:
-                response = "<reason></reason><message>I have failed to provide a proper response.</message>"
-                self.error_message = f"""Last turn, you made too many errors. 
-                The final one was: "{self.error_message}". 
-                The dummy response "{response}" was sent to the other player in place of the one you sent."""
+                self.error_message = False
+                response = "<reason></reason><message>I have made too many errors</message>"
+                processed_response = "I have made too many errors"
+                # self.error_message = f"""Last turn, you made too many errors. 
+                # The final one was: "{self.error_message}". 
+                # The dummy response "{response}" was sent to the other player in place of the one you sent."""
                 send_to_game = True
+                self.retries = 0
 
         else: 
             self.retries = 0
@@ -120,7 +121,7 @@ class DondPlayer():
             user_message = self.error_message
             usr_prompt = {'role': 'user', 
                           'content': user_message, 
-                          'is_error': True, 
+                          'is_error': False, 
                           'round_nb': state['round_number']}
             self.add_to_context(usr_prompt) 
             self.error_message = None

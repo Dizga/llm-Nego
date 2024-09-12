@@ -27,6 +27,7 @@ class DondGame:
         self.setup = setup
         self.setups_file = setups_file
         self.rounds_per_game = rounds_per_game
+        self.quantities = quantities
 
 
         if self.setup == "random_read":
