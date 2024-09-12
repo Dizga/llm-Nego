@@ -111,7 +111,7 @@ class DondPlayer():
 
         # Create dummy finalization to include in game explanation
         dummy_finalization = {key: "..." for key in state['quantities']}
-        state['dummy_finalization'] = dummy_finalization
+        state['dummy_finalization'] = json.dumps(dummy_finalization)
         state['game_mode_specificities'] = self.game_state_specificities(state['mode'])
 
         user_message = ""

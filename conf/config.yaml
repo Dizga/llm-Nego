@@ -3,15 +3,15 @@ hydra:
     chdir: false
 
 iterations:
-  nb_iterations: 10
+  nb_iterations: 1
   iteration_runner_args:
     nb_parallel_games: 64
-    games_per_iteration: 512
+    games_per_iteration: 10
   dond_game_args:
     rounds_per_game: 1
     max_turns: 10
     player_order: deterministic # deterministic or random player who start beginning of each round
-    mode: basic # basic, coop
+    mode: coop # basic, coop
     setup: random_read
     setups_file: src/environments/dond_setups.txt
 
@@ -51,6 +51,8 @@ models:
       tracker_project_name: "tensorboard"
 
     save_lora_weights: True
+
+    lora_pretrained_path: null
 
 players: 
   player_a:

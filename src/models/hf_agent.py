@@ -53,7 +53,8 @@ class HfAgent:
         bits_and_bytes_args = None,
         lora_args = None,
         ppo_trainer_args = None,
-        save_lora_weights= None
+        save_lora_weights= None,
+        lora_pretrained_path=None,
     ) -> None:
         """
         Initializes the HfAgent.
@@ -82,7 +83,7 @@ class HfAgent:
 
         self.inference_library = None
         self.ppo_trainer = None
-        self.lora_pretrained_path = None
+        self.lora_pretrained_path = lora_pretrained_path
 
 
         
