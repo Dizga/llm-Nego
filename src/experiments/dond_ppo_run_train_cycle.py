@@ -10,6 +10,7 @@ from environments.dond_game import DondGame
 from utils.dond_statistics import compute_dond_statistics
 from models.hf_agent import HfAgent
 from models.dummy_hf_agent import DummyHfAgent
+from models.oai_agent import OaiAgent
 
 from environments.dond_player import DondPlayer
 from training.extract_ppo_dataset import extract_ppo_dataset
@@ -29,8 +30,13 @@ def dond_ppo_run_train_cycle(cfg):
     # Get models
     models = {}
     for model_name in cfg['models'].keys():
-        models[model_name] = HfAgent(**cfg['models'][model_name])
-        models[model_name].switch_to_vllm()
+        if cfg['models'][model_name]['class'] == "hf":
+            models[model_name] = HfAgent(**cfg['models'][model_name]['init_args'])
+            models[model_name].switch_to_vllm()
+        elif cfg['models'][model_name]['class'] == "dummy_hf":
+            models[model_name] = DummyHfAgent(**cfg['models'][model_name]['init_args'])
+        elif cfg['models'][model_name]['class'] == "oai":
+            models[model_name] = OaiAgent(**cfg['models'][model_name]['init_args'])
 
     # Get game
     dond_game = DondGame(**cfg['iterations']['dond_game_args'])

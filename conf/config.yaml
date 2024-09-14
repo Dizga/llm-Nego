@@ -6,8 +6,8 @@ iterations:
 
   nb_iterations: 40
   iteration_runner_args:
-    nb_parallel_games: 64
-    games_per_iteration: 64
+    nb_parallel_games: 32
+    games_per_iteration: 32
 
   dond_game_args:
     rounds_per_game: 1
@@ -15,54 +15,47 @@ iterations:
     player_order: deterministic # deterministic or random player who start beginning of each round
     mode: coop # basic, coop
     setup: manual # manual or random_read
-    player_0_values: [30]
-    player_1_values: [10]
-    items: ['gold']
-    quantities: [10]
+    player_0_values: [20, 10]
+    player_1_values: [10, 20]
+    items: ['gold', 'silver']
+    quantities: [10, 5]
     setups_file: src/environments/dond_setups.txt
+    finalization_visibility: True
 
 models: 
-
   llama:
-
-    model_name: "meta-llama/Meta-Llama-3.1-8B-Instruct" # TODO
-
-    device: "cuda"
-    max_new_tokens: 500
-    do_sample: False
-
-
-    bits_and_bytes_args:
-      load_in_8bit: False
-
-    lora_args:
-        task_type: TaskType.CAUSAL_LM
-        r: 16
-        lora_alpha: 16
-        lora_dropout: 0
-        target_modules: "all-linear"
-
-    pretrained_args: 
-        pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-        torch_dtype: "bfloat16"
-        device_map: "auto"
-
-    ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
-      # For batch size vs mini confusion https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_trainer.py#L647)
-      batch_size: 64 # Default is 64 Number of examples put on the GPU at once. batch_size = mini_batch_size * gradient_accumulation_steps. Will be made smaller if not enough samples.
-      mini_batch_size: 1 # Default: 1. Number of examples fed in parallel to the model
-      gradient_accumulation_steps: None # This is set automatically. Default: 64. Number of minibatch gradient accumulation before step. Should be equal to batch size.
-      ppo_epochs: 4 # Default: 4. Number of optimisation epochs per batch of samples
-      #learning_rate: 10e-4
-      vf_coef: 0
-      gradient_checkpointing: False # Whether to keep all activations in memory at once.
-      log_with: "tensorboard"
-      project_kwargs: None # don't touch, will be set later
-      tracker_project_name: "tensorboard"
-
-    save_lora_weights: True
-
-    lora_pretrained_path: null
+    class: hf
+    init_args:
+      name: 'llama'
+      device: "cuda"
+      max_new_tokens: 500
+      do_sample: False
+      bits_and_bytes_args:
+        load_in_8bit: False
+      lora_args:
+          task_type: TaskType.CAUSAL_LM
+          r: 16
+          lora_alpha: 16
+          lora_dropout: 0
+          target_modules: "all-linear"
+      pretrained_args: 
+          pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+          torch_dtype: "bfloat16"
+          device_map: "auto"
+      ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
+        # For batch size vs mini confusion https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_trainer.py#L647)
+        batch_size: 64 # Default is 64 Number of examples put on the GPU at once. batch_size = mini_batch_size * gradient_accumulation_steps. Will be made smaller if not enough samples.
+        mini_batch_size: 1 # Default: 1. Number of examples fed in parallel to the model
+        gradient_accumulation_steps: None # This is set automatically. Default: 64. Number of minibatch gradient accumulation before step. Should be equal to batch size.
+        ppo_epochs: 4 # Default: 4. Number of optimisation epochs per batch of samples
+        #learning_rate: 10e-4
+        vf_coef: 0
+        gradient_checkpointing: False # Whether to keep all activations in memory at once.
+        log_with: "tensorboard"
+        project_kwargs: None # don't touch, will be set later
+        tracker_project_name: "tensorboard"
+      save_lora_weights: True
+      lora_pretrained_path: null
 
 players: 
   player_a:
