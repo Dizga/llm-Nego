@@ -9,9 +9,10 @@ import os
 
 from experiments.dond_ppo_run_train_cycle import dond_ppo_run_train_cycle
 #from experiments.ultimatum_run import ultimatum
+from experiments.training_tester import training_tester
 
 @hydra.main(config_path="../conf", config_name="config")
 def main(cfg):
-    dond_ppo_run_train_cycle(cfg)
+    training_tester(cfg)
 if __name__ == "__main__": main()
 
