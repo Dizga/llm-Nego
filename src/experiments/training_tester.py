@@ -87,12 +87,12 @@ def training_tester(cfg):
 
             # TODO: repeat the queries, responses, and scores 100 times (since there are only 2)
             # Filled TODO:
-            repeats = 2  # Since there are 2 items, 2 * 50 = 100
+            repeats = 20  # Since there are 2 items, 2 * 50 = 100
             queries *= repeats
             responses *= repeats
             scores *= repeats
 
-            for i in range(2):
+            for i in range(1000):
                 model.train_ppo(
                     '/home/mila/d/dereck.piche/llm-Nego/src/experiments/data', 
                     queries, 
@@ -103,6 +103,7 @@ def training_tester(cfg):
                 # Filled TODO:
                 output = model.prompt(good_query)
                 logging.info(f"Model output after iteration {i}: {output}")
+                model.switch_to_hf()
 
 
     # Calculate and log total duration
