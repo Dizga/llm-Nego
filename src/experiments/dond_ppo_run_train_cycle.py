@@ -86,7 +86,7 @@ def dond_ppo_run_train_cycle(cfg):
                     scores += new_scores
 
             # Train the model using PPO (will automatically save LoRA weights)
-            model.train_ppo(it_folder, queries, responses, scores)
+            model.train_ppo(output_directory, queries, responses, scores)
 
             # Go back to generation
             model.switch_to_vllm()

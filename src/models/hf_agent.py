@@ -16,6 +16,8 @@ from trl import (
 )
 from peft import LoraConfig, LoraModel
 import os
+from functools import partial
+
 
 from utils.log_gpu_usage import log_gpu_usage
 from utils.model_to_cpu import move_model_to_cpu
@@ -186,30 +188,27 @@ class HfAgent:
             logging.info(f"Batch size: {len(batch_queries)} queries, {len(batch_responses)} responses.")
 
             # Encode the queries into input_ids and convert the batch tensor into a list of 1D tensors
-            queries_ids_tensor = self.encode_jsons(batch_queries)['input_ids']
-            queries_ids_tensor_list = [queries_ids_tensor[i] for i in range(queries_ids_tensor.size(0))]
+            queries = list(self.encode_jsons(batch_queries)['input_ids'])
 
             # Encode the responses into input_ids and attention masks
-            tokenized_responses = self.encode_jsons(batch_responses, format=False)
-            responses_ids_tensor = tokenized_responses['input_ids']
-            responses_ids_tensor_list = [responses_ids_tensor[i] for i in range(responses_ids_tensor.size(0))]
+            responses = list(self.encode_jsons(batch_responses, format=False)['input_ids'])
 
             # Use the attention masks for the responses
-            response_masks = tokenized_responses['attention_mask']
-            response_masks_list = [response_masks[i] for i in range(response_masks.size(0))]
+            response_masks = list(responses['attention_mask'])
 
             # Convert batch scores to tensors
-            batch_tensor_scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in batch_scores]
+            scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in batch_scores]
 
             # Log the start of PPO trainer step
             logging.info(f"Starting PPO step for batch {b+1}/{nb_batches}...")
 
             # Step through PPO training 
+            self.ppo_trainer.optimizer.zero_grad = partial(self.ppo_trainer.optimizer.zero_grad, set_to_none=False)
             stats = self.ppo_trainer.step(
-                queries=queries_ids_tensor_list,
-                responses=responses_ids_tensor_list,
-                scores=batch_tensor_scores,
-                response_masks=response_masks_list  # Fill in the TODO here
+                queries=queries,
+                responses=responses,
+                scores=scores
+                #response_masks=response_masks_list  # Fill in the TODO here
             )
 
             # Log statistics and rewards
@@ -274,6 +273,7 @@ class HfAgent:
         # Generate with VLLM
         elif self.inference_library == "vllm":
             if self.lora_pretrained_path:
+                logging.info('Generating using LoRA weights.')
                 responses = self.model.generate(texts, 
                                     sampling_params=self.vllm_sampling_params, 
                                     lora_request=LoRARequest("dond_lora", 1, self.lora_pretrained_path)
@@ -283,7 +283,6 @@ class HfAgent:
                     sampling_params=self.vllm_sampling_params
                     )
             responses = [response.outputs[0].text for response in responses]
-
 
         return responses
     

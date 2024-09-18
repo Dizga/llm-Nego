@@ -44,10 +44,10 @@ models:
         lora_dropout: 0
         target_modules: "all-linear"
       ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
-        batch_size: 64
+        batch_size: 9999
         mini_batch_size: 1
         gradient_accumulation_steps: None
-        ppo_epochs: 2
+        ppo_epochs: 4
         vf_coef: 0
         gradient_checkpointing: False
         log_with: "tensorboard"
@@ -57,8 +57,9 @@ models:
         cliprange: 0.2
         init_kl_coef: 0.2
         learning_rate: 10e-5
+        is_peft_model: True
       save_lora_weights: True
-      lora_pretrained_path: null
+      lora_pretrained_path: /home/mila/d/dereck.piche/llm-Nego/outputs/2024-09-18/09-10-40/iteration_07/llama_lora_weights
       generation_args:
         max_tokens: 500
         temperature: 0.7

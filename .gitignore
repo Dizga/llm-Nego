@@ -8,3 +8,4 @@ conf/local.yaml
 venv/
 *.pyc
 src/experiments/data
+*.safetensors
