@@ -13,6 +13,6 @@ from experiments.training_tester import training_tester
 
 @hydra.main(config_path="../conf", config_name="config")
 def main(cfg):
-    training_tester(cfg)
+    dond_ppo_run_train_cycle(cfg)
 if __name__ == "__main__": main()
 

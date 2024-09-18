@@ -101,7 +101,10 @@ class HfAgent:
         
         
 
-    def encode_jsons(self, data: List[dict]) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
+    def encode_jsons(self, 
+                     data: List[dict],
+                     format = True
+                     ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
         """
         Encodes JSON conversation data into tensors, ensuring proper padding and attention masks.
 
@@ -110,9 +113,11 @@ class HfAgent:
 
         Returns:
         """
+        if format:
+            formatted = self.tokenizer.apply_chat_template(data, tokenize=False, add_generation_prompt=False)
+        else:
+            formatted = data
 
-        formatted = self.tokenizer.apply_chat_template(data, tokenize=False, add_generation_prompt=False)
-        
         # Ensure a pad_token is set for the tokenizer
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -155,7 +160,7 @@ class HfAgent:
 
 
         # TODO
-        self.ppo_trainer = ReinforceTrainer(
+        self.ppo_trainer = CustomPPOTrainer(
             model=self.model,
             ref_model=self.model,
             config=PPOConfig(**self.ppo_training_args),
@@ -185,7 +190,7 @@ class HfAgent:
             queries_ids_tensor_list = [queries_ids_tensor[i] for i in range(queries_ids_tensor.size(0))]
 
             # Encode the responses into input_ids and attention masks
-            tokenized_responses = self.encode_jsons(batch_responses)
+            tokenized_responses = self.encode_jsons(batch_responses, format=False)
             responses_ids_tensor = tokenized_responses['input_ids']
             responses_ids_tensor_list = [responses_ids_tensor[i] for i in range(responses_ids_tensor.size(0))]
 
@@ -323,9 +328,10 @@ class HfAgent:
         # Get VLLM model
         self.inference_library = "vllm"
         if self.lora_pretrained_path:
-            self.model = LLM(self.model_name, enable_lora=True)
+            # TODO: get max lora from args
+            self.model = LLM(self.model_name, enable_lora=True, max_lora_rank=256)
         else:
-            self.model = LLM(self.model_name, enable_lora=False)
+            self.model = LLM(self.model_name, enable_lora=False, max_lora_rank=256)
             
         
     def save_lora_weights(self, lora_weights_path: str) -> None:

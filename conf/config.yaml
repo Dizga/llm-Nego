@@ -6,10 +6,10 @@ hydra:
 
 iterations:
 
-  nb_iterations: 248
+  nb_iterations: 256
   iteration_runner_args:
-    nb_parallel_games: 64
-    games_per_iteration: 248
+    nb_parallel_games: 32
+    games_per_iteration: 32
 
   dond_game_args:
     rounds_per_game: 1
@@ -39,15 +39,15 @@ models:
         load_in_8bit: False
       lora_args:
         task_type: TaskType.CAUSAL_LM
-        r: 128
-        lora_alpha: 128
+        r: 256
+        lora_alpha: 256
         lora_dropout: 0
         target_modules: "all-linear"
       ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
-        batch_size: 248
+        batch_size: 64
         mini_batch_size: 1
         gradient_accumulation_steps: None
-        ppo_epochs: 1
+        ppo_epochs: 2
         vf_coef: 0
         gradient_checkpointing: False
         log_with: "tensorboard"
@@ -56,7 +56,7 @@ models:
         target_kl: 0.1
         cliprange: 0.2
         init_kl_coef: 0.2
-        learning_rate: 10e-4
+        learning_rate: 10e-5
       save_lora_weights: True
       lora_pretrained_path: null
       generation_args:
@@ -75,7 +75,7 @@ players:
       chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond/new_round.txt"
-      max_retries: 5
+      max_retries: 3
 
   player_b:
     id: 1
@@ -85,7 +85,7 @@ players:
       chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond//new_round.txt"
-      max_retries: 5
+      max_retries: 3
 
 
 

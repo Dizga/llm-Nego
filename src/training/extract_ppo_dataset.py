@@ -102,7 +102,8 @@ def process_conversation(conversation, last_k_responses=None):
         if message.get('role') == "assistant":
             # Use deepcopy to avoid modifying the context elsewhere
             conversation_queries.append(copy.deepcopy(context[:-1]))
-            conversation_responses.append([message])
+            # TODO: perhaps put back to normal
+            conversation_responses.append(message['content'])
             conversation_scores.append(message.get('self_score', 0))
 
     # Limit to the last k assistant messages if specified

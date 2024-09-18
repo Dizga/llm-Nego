@@ -27,10 +27,15 @@ class ReinforceTrainer(PPOTrainer):
         rewards: torch.FloatTensor,
         mask: torch.FloatTensor,
     ):
-        values = values * mask
+        """
+        Compute advantages without using value function approximation.
+        Advantages are set equal to the rewards.
+        """
+        # Ignore values, just use rewards
+        values = torch.zeros_like(rewards)
         rewards = rewards * mask
         advantages = rewards
-        returns = advantages + values
+        returns = rewards
         return values, advantages, returns
     
 
@@ -133,4 +138,4 @@ class ReinforceTrainer(PPOTrainer):
         vf_loss = 0.5 * masked_mean((vpreds - returns) ** 2, mask)
 
 
-        return pg_loss, self.config.vf_coef * vf_loss, flatten_dict(stats)
+        return pg_loss, 0.0, flatten_dict(stats)
