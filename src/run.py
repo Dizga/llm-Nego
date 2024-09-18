@@ -15,8 +15,8 @@ from experiments.simple_test import simple_test
 
 @hydra.main(config_path="../conf", config_name="config")
 def main(cfg):
-    #dond_ppo_run_train_cycle(cfg)
-    simple_test()
+    dond_ppo_run_train_cycle(cfg)
+    #simple_test()
 
 if __name__ == "__main__": main()
 

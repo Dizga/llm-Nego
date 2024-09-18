@@ -74,9 +74,9 @@ def simple_test():
 
     # Define LoRA arguments
     lora_args = {
-        'r': 64,  # LoRA rank
-        'lora_alpha': 64,
-        'lora_dropout': 0.1,
+        'r': 256,  # LoRA rank
+        'lora_alpha': 256,
+        'lora_dropout': 0.0,
         'bias': 'none',
         'task_type': 'CAUSAL_LM',
         'target_modules': "all-linear"
@@ -86,15 +86,15 @@ def simple_test():
     ppo_trainer_args = {
         'batch_size': 2,
         'ppo_epochs': 1,  # Reduced for quick testing
-        'learning_rate': 1e-2,
+        'learning_rate': 1e-4,
         'log_with': None,
         'mini_batch_size': 1,
     }
 
     # Define generation arguments
     generation_args = {
-        'temperature': 0.7,
-        'max_tokens': 5,
+        'temperature': 0.0,
+        'max_tokens': 10,
     }
 
     # Define the output path for LoRA weights
@@ -114,7 +114,7 @@ def simple_test():
         lora_pretrained_path=None,  # Start without LoRA weights
     )
 
-    agent.switch_to_hf()
+    agent.switch_to_training_mode()
 
     # Create a simple dataset with correct and incorrect responses
     queries = [
@@ -124,11 +124,11 @@ def simple_test():
     scores = []
 
     # Correct response
-    responses.append([{"role": "assistant", "content": "world"}])
+    responses.append([{"role": "assistant", "content": "world. Cool world."}])
     scores.append(1.0)  # Positive reward
 
     # Incorrect response
-    responses.append([{"role": "assistant", "content": "Hello! It's nice"}])
+    responses.append([{"role": "assistant", "content": "Hello! It's nice."}])
     scores.append(-1.0)  # Negative reward
 
     # Shuffle the dataset
@@ -140,7 +140,7 @@ def simple_test():
     os.makedirs(output_path, exist_ok=True)
 
     # Train the agent for multiple PPO epochs and log probabilities
-    for i in range(300):
+    for i in range(100000):
 
         # Train the agent using PPO (with LoRA)
         agent.train_ppo(

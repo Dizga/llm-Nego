@@ -32,7 +32,7 @@ def dond_ppo_run_train_cycle(cfg):
     for model_name in cfg['models'].keys():
         if cfg['models'][model_name]['class'] == "hf":
             models[model_name] = HfAgent(**cfg['models'][model_name]['init_args'])
-            models[model_name].switch_to_vllm()
+            models[model_name].switch_to_generation_mode()
         elif cfg['models'][model_name]['class'] == "dummy_hf":
             models[model_name] = DummyHfAgent(**cfg['models'][model_name]['init_args'])
         elif cfg['models'][model_name]['class'] == "oai":
@@ -73,7 +73,8 @@ def dond_ppo_run_train_cycle(cfg):
         # Train every model on the last iteration's data
         for model_name in models.keys():
             model = models[model_name]
-            model.switch_to_hf()
+            
+            model.switch_to_training_mode()
 
             queries, responses, scores = [], [], []
 
@@ -89,7 +90,7 @@ def dond_ppo_run_train_cycle(cfg):
             model.train_ppo(output_directory, queries, responses, scores)
 
             # Go back to generation
-            model.switch_to_vllm()
+            model.switch_to_generation_mode()
 
     # Calculate and log total duration
     total_end_time = time.time()

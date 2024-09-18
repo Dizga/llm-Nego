@@ -94,18 +94,20 @@ class HfAgent:
         self.hf_sampling_params = copy.deepcopy(generation_args)
         self.hf_sampling_params['max_new_tokens'] = self.hf_sampling_params.pop('max_tokens')
 
-
         self.inference_library = None
         self.ppo_trainer = None
         self.lora_pretrained_path = lora_pretrained_path
 
 
-    def encode_jsons(self, data: List[dict], format=True) -> ...:
-        if format:
-            formatted = self.tokenizer.apply_chat_template(data, tokenize=False, add_generation_prompt=False)
+    def encode_jsons(self, data: List[dict], is_response=False) -> ...:
+
+        if is_response:
+            #formatted = self.tokenizer.apply_chat_template(data, tokenize=False, add_generation_prompt=False)
+            formatted = [d[0]['content'] + self.tokenizer.eos_token for d in data]
+            self.tokenizer.padding_side = "right"
         else:
-            # Extract the assistant's content directly for responses
-            formatted = [message[0]['content'] for message in data]
+            formatted = self.tokenizer.apply_chat_template(data, tokenize=False, add_generation_prompt=True)
+            self.tokenizer.padding_side = "left"
 
         # Ensure a pad_token is set for the tokenizer
         if self.tokenizer.pad_token is None:
@@ -116,8 +118,10 @@ class HfAgent:
             formatted,
             return_tensors="pt",
             padding=True,
-            truncation=True,
+            #truncation=True,
         ).to(self.device)
+        self.tokenizer.padding_side = "left"
+
 
         return tokenized
     
@@ -145,9 +149,9 @@ class HfAgent:
         self.ppo_training_args['project_kwargs'] = {'logging_dir': os.path.join(path, self.name + '_ppo_tensorboard')}
 
 
-        self.ppo_trainer = ReinforceTrainer(
+        self.ppo_trainer = PPOTrainer(
             model=self.model,
-            ref_model=self.model,
+            ref_model=None,
             config=PPOConfig(**self.ppo_training_args),
             tokenizer=self.tokenizer,
         )
@@ -173,11 +177,16 @@ class HfAgent:
             # Encode the queries into input_ids and convert the batch tensor into a list of 1D tensors
             queries_ = list(self.encode_jsons(batch_queries)['input_ids'])
 
-            # Encode the responses into input_ids and attention masks
-            responses_ = list(self.encode_jsons(batch_responses, format=False)['input_ids'])
+            # Decode the queries back to text to debug tokenization
+            decoded_queries = [self.tokenizer.decode(q, skip_special_tokens=True) for q in queries_]
+            logging.debug(f"Decoded Queries: {decoded_queries}")
 
-            # Use the attention masks for the responses
-            #response_masks = list(responses['attention_mask'])
+            # Encode the responses into input_ids and attention masks
+            responses_ = list(self.encode_jsons(batch_responses, is_response=True)['input_ids'])
+
+            # Decode the responses back to text to debug tokenization
+            decoded_responses = [self.tokenizer.decode(r, skip_special_tokens=True) for r in responses_]
+            logging.debug(f"Decoded Responses: {decoded_responses}")
 
             # Convert batch scores to tensors
             scores_ = [torch.tensor(s, dtype=torch.float).to(self.device) for s in batch_scores]
@@ -186,12 +195,10 @@ class HfAgent:
             logging.info(f"Starting PPO step for batch {b+1}/{nb_batches}...")
 
             # Step through PPO training 
-            self.ppo_trainer.optimizer.zero_grad = partial(self.ppo_trainer.optimizer.zero_grad, set_to_none=False)
             stats = self.ppo_trainer.step(
                 queries=queries_,
                 responses=responses_,
                 scores=scores_
-                #response_masks=response_masks_list  # Fill in the TODO here
             )
 
             # Log statistics and rewards
@@ -201,15 +208,15 @@ class HfAgent:
             self.ppo_trainer.log_stats(
                 stats=stats,
                 batch={"query": queries_, 
-                       "response": responses_,
-                       "ref_rewards": scores_
-                       },
+                    "response": responses_,
+                    "ref_rewards": scores_
+                    },
                 columns_to_log=["query", "response", "ref_rewards"],
                 rewards=scores_,
             )
 
-            #del queries_ids_tensor_list, responses_ids_tensor_list, response_masks_list, batch_tensor_scores
-            #torch.cuda.empty_cache()
+            del queries_, responses_, scores_
+            torch.cuda.empty_cache()
 
             # Calculate and log the time taken for this batch
             batch_duration = time.time() - start_time
@@ -218,13 +225,12 @@ class HfAgent:
         logging.info("PPO training completed for all batches.")
 
         # Ensure garbage collection is performed
-        #self.delete_tensor_list(queries)
-        #self.delete_tensor_list(responses)
-        #self.delete_tensor_list(scores)
-        #torch.cuda.empty_cache()
+        self.delete_tensor_list(queries)
+        self.delete_tensor_list(responses)
+        self.delete_tensor_list(scores)
+        torch.cuda.empty_cache()
 
         self.save_lora_weights(os.path.join(path, self.name + '_lora_weights'))
-
 
     def delete_tensor_list(self, tensor_list: List[Any]) -> None:
         """
@@ -274,7 +280,7 @@ class HfAgent:
         return responses
     
 
-    def switch_to_hf(self):
+    def switch_to_training_mode(self):
 
         # Free GPU memory taken by VLLM
         if self.inference_library == "vllm":
@@ -297,7 +303,7 @@ class HfAgent:
                                                           )
 
 
-    def switch_to_vllm(self):
+    def switch_to_generation_mode(self):
 
         # Free GPU memory taken by Hugging Face
         if self.inference_library == "hf":

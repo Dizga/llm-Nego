@@ -33,7 +33,7 @@ def training_tester(cfg):
     for model_name in cfg['models'].keys():
         if cfg['models'][model_name]['class'] == "hf":
             models[model_name] = HfAgent(**cfg['models'][model_name]['init_args'])
-            # models[model_name].switch_to_vllm()
+            # models[model_name].switch_to_generation_mode()
 
         elif cfg['models'][model_name]['class'] == "dummy_hf":
             models[model_name] = DummyHfAgent(**cfg['models'][model_name]['init_args'])
@@ -75,7 +75,7 @@ def training_tester(cfg):
         # Train every model on the last iteration's data
         for model_name in models.keys():
             model = models[model_name]
-            model.switch_to_hf()
+            model.switch_to_training_mode()
 
             # Extract data once before training loop
             queries, responses, scores = extract_ppo_dataset(
@@ -103,7 +103,7 @@ def training_tester(cfg):
                 # Filled TODO:
                 output = model.prompt(good_query)
                 logging.info(f"Model output after iteration {i}: {output}")
-                model.switch_to_hf()
+                model.switch_to_training_mode()
 
 
     # Calculate and log total duration
