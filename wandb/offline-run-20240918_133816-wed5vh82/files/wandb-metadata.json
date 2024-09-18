@@ -1,0 +1,368 @@
+{
+    "os": "Linux-5.15.0-101-generic-x86_64-with-glibc2.35",
+    "python": "3.10.11",
+    "heartbeatAt": "2024-09-18T17:38:17.130522",
+    "startedAt": "2024-09-18T17:38:16.961574",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/home/mila/d/dereck.piche/llm-Nego/src/run.py",
+    "codePathLocal": "src/run.py",
+    "codePath": "src/run.py",
+    "git": {
+        "remote": "https://github.com/Dizga/llm-Nego.git",
+        "commit": "83f820f132106fbbf3af2fa6df5824f619b1f5d3"
+    },
+    "email": "pichedereck@gmail.com",
+    "root": "/home/mila/d/dereck.piche/llm-Nego",
+    "host": "cn-g018.server.mila.quebec",
+    "username": "dereck.piche",
+    "executable": "/home/mila/d/dereck.piche/negenv/bin/python3.10",
+    "cpu_count": 64,
+    "cpu_count_logical": 64,
+    "cpu_freq": {
+        "current": 2843.4984687499955,
+        "min": 0.0,
+        "max": 0.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2504.404,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3715.952,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3715.966,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3701.945,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3716.866,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2795.055,
+            "min": 0.0,
+            "max": 0.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 436.02171325683594,
+            "used": 14.0029296875
+        }
+    },
+    "gpu": "NVIDIA A100-SXM4-80GB",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA A100-SXM4-80GB",
+            "memory_total": 85899345920
+        }
+    ],
+    "memory": {
+        "total": 1002.2349433898926
+    }
+}

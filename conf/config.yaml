@@ -8,8 +8,8 @@ iterations:
 
   nb_iterations: 256
   iteration_runner_args:
-    nb_parallel_games: 32
-    games_per_iteration: 32
+    nb_parallel_games: 16
+    games_per_iteration: 16
 
   dond_game_args:
     rounds_per_game: 1
@@ -44,18 +44,18 @@ models:
         lora_dropout: 0
         target_modules: "all-linear"
       ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
-        batch_size: 9999
+        batch_size: 32
         mini_batch_size: 1
         gradient_accumulation_steps: None
-        ppo_epochs: 4
-        vf_coef: 0
+        ppo_epochs: 1
+        vf_coef: 0.0
         gradient_checkpointing: False
         log_with: "tensorboard"
         project_kwargs: None
         tracker_project_name: "tensorboard"
-        target_kl: 0.1
-        cliprange: 0.2
-        init_kl_coef: 0.2
+        #target_kl: 0.1
+        #cliprange: 0.2
+        #init_kl_coef: 0.2
         learning_rate: 10e-5
         is_peft_model: True
       save_lora_weights: True
@@ -63,8 +63,8 @@ models:
       generation_args:
         max_tokens: 500
         temperature: 0.7
-        top_k: 10
-        top_p: 0.1
+        top_k: 0.0
+        top_p: 1.0
 
 
 players: 

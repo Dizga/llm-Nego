@@ -103,7 +103,7 @@ def process_conversation(conversation, last_k_responses=None):
             # Use deepcopy to avoid modifying the context elsewhere
             conversation_queries.append(copy.deepcopy(context[:-1]))
             # TODO: perhaps put back to normal
-            conversation_responses.append(message['content'])
+            conversation_responses.append([message])
             conversation_scores.append(message.get('self_score', 0))
 
     # Limit to the last k assistant messages if specified
