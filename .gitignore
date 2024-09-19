@@ -7,3 +7,4 @@ conf/local.yaml
 *.log
 venv/
 *.pyc
+nohup.out

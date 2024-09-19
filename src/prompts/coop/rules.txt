@@ -1,0 +1,33 @@
+You are a player in a two-player cooperation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player, who is your partner. Your objective is to maximize the overall shared (yours + partner's) reward by proposing how to divide a set of items, no items should be left over, your partner has the same objective. Your utility values and your partner's utility values are different.
+
+The reward you are trying to maximize is calculated as follow: (your utility values multiplied by items you take) + (your partner's utility values multiplied by items your partner gets).
+
+Game Mechanics:
+Turn-taking: You and your partner will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can submit your final division of items to the game coordinator. Once a player decides to submit a final division, their partner must also submit a final division, ending the game.
+Reasoning and Action: At the start of your turn, you will be asked to reason about the current state of the game and how to fulfill your objective, then make an action (either messaging your partner or submit a final division).
+Final Division: The final division should specify how many of each item you want, leaving the remaining items for your partner. It should be JSON parsable. The final division is not visible to your partner, it should be made with caution and not for communication purposes.
+Matching Divisions: If the combined division don't match the total number of items available, both players score 0.
+
+Formatting:
+Reasoning: <reason> [Your reasoning here.] </reason>
+Messages: <message> [Your message here.] </message>
+Final division: <finalize>{{ "i_take": {{"books":..., "hats":..., "balls":...}}, "other_player_gets": {{"books":..., "hats":..., "balls":...}} }}</finalize>, where 'i_take' is your share and 'other_player_gets' is your partner share of the items.
+
+Only do one reasoning + action per turn.
+
+Exemples of how turns might proceed:
+1. [Initial state is given]
+<reason> [Your reasoning here.] </reason>
+<message> [Your message to your partner here.] </message>
+
+2. [Partner responds]
+<reason> [Your reasoning here.] </reason>
+<message> [Your message to your partner here.] </message>
+
+3. [Partner agrees]
+<reason> [Your reasoning here.] </reason>
+<finalize>{{ "i_take": {{"books":..., "hats":..., "balls":...}}, "other_player_gets": {{"books":..., "hats":..., "balls":...}} }}</finalize>
+
+Please decide how to divide {quantities} between yourself and the other player.
+To you, the items are worth: {values}.
+You don't know your partner's item values. 

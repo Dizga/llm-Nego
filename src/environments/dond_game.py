@@ -14,6 +14,7 @@ class DondGame:
                  player_0_values = None,
                  player_1_values = None,
                  quantities = None,
+                 state = None
                  ):
         """
         Initializes the DoND game.
@@ -21,6 +22,14 @@ class DondGame:
         Args:
             max_turns (int): The maximum number of turns allowed in the game.
         """
+        # if state:
+        #     with open(state, 'r') as file:
+        #         self.__dict__ = json.load(file)
+        #     self.mode = mode
+        #     self.max_turns = max_turns
+        #     self.player_order = player_order
+        #     return
+
         self.mode = mode
         self.max_turns = max_turns
         self.player_order = player_order
@@ -28,6 +37,11 @@ class DondGame:
         self.setups_file = setups_file
         self.rounds_per_game = rounds_per_game
         self.quantities = quantities
+
+        self.initial_state = None
+        if state:
+            with open(state, 'r') as file:
+                self.initial_state = json.load(file)
 
 
         if self.setup == "random_read":
@@ -137,14 +151,17 @@ class DondGame:
             "is_new_game": True if (self.turn <= 2 and self.round_nb == 1) else False,
             "items": self.items,
             "turn": self.turn,
-            "current_turn": self.current_turn(),
             "round_number": self.round_nb,
             "nb_rounds": self.rounds_per_game,
             "quantities": self.quantities,
             "agreement_reached": self.agreement_reached,
             "has_finalized": self.has_finalized,
             "last_message": self.last_message,
-            "last_scores": last_scores
+            "last_scores": last_scores,
+            "player_0_prop": self.player_0_prop,
+            "player_1_prop": self.player_1_prop,
+            "values_player_0": self.values_player_0,
+            "values_player_1": self.values_player_1,
         }
 
         player = self.current_turn()
@@ -214,6 +231,7 @@ class DondGame:
             # If the order is stochastic, randomly shuffle the player order
             return random.sample([0, 1], 2)  # Randomly shuffle between [0, 1]
         else:
+            return self.player_order
             # Handle invalid player_order values
             raise ValueError(f"Invalid player_order: {self.player_order}. Must be 'deterministic' or 'stochastic'.")
         
@@ -265,7 +283,10 @@ class DondGame:
         self.values_player_1_history = []
         self.quantities_history = []
         self.agreement_reached_history = []
-        self.set_new_game_settings()
+        if self.initial_state:
+            self.__dict__ = self.__dict__ | self.initial_state
+        else:
+            self.set_new_game_settings()
 
     def end_round(self):
         self.archive_player_states()

@@ -10,7 +10,8 @@ from statistics import mean
 
 def extract_ppo_dataset(folder_path: str, 
                            player_name, 
-                           export_for_debugging=True):
+                           export_for_debugging=True,
+                           training_mode = 'finalization'):
     """
     Extracts data for HF PPO training from game logs.
 
@@ -39,22 +40,34 @@ def extract_ppo_dataset(folder_path: str,
             #if conversation[-1]['self_score'] == 0:
             #    continue
 
-            # extract queries, responses and scores
-            for message in conversation:
+            if training_mode == "finalization":
 
-                # Don't add mistakes to training data
-                if message['is_error']: continue
+                # if any message in conversation is an error, skip the conversation
+                if any([message['is_error'] for message in conversation]): continue
 
-                context.append(message)
+                queries.append(conversation[:-1])
 
-                # An action has been made
-                if message['role'] == "assistant":
+                responses.append([conversation[-1]])
 
-                    queries.append(context[:-1])
+                scores.append(conversation[-1]['self_score'])
 
-                    responses.append([message])
+            else:
+                # extract queries, responses and scores
+                for message in conversation:
 
-                    scores.append(message['self_score'])
+                    # Don't add mistakes to training data
+                    if message['is_error']: continue
+
+                    context.append(message)
+
+                    # An action has been made
+                    if message['role'] == "assistant":
+
+                        queries.append(context[:-1])
+
+                        responses.append([message])
+
+                        scores.append(message['self_score'])
 
 
     # TODO: determine customize!

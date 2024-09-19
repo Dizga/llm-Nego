@@ -10,8 +10,7 @@ import os
 from experiments.dond_ppo_run_train_cycle import dond_ppo_run_train_cycle
 #from experiments.ultimatum_run import ultimatum
 
-@hydra.main(config_path="../conf", config_name="config")
+@hydra.main(config_path="../conf", config_name="bandit")
 def main(cfg):
     dond_ppo_run_train_cycle(cfg)
 if __name__ == "__main__": main()
-

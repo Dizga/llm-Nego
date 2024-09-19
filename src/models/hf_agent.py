@@ -86,7 +86,7 @@ class HfAgent:
 
         self.sampling_params = SamplingParams(
             max_tokens=max_new_tokens,      
-            temperature=0,    
+            temperature=1,    
             top_k=10,          
             top_p=0.9           
         )
@@ -153,7 +153,13 @@ class HfAgent:
 
         self.ppo_training_args['project_kwargs'] = {'logging_dir': os.path.join(path, self.name + '_ppo_tensorboard')}
 
-        self.ppo_trainer = CustomPPOTrainer(
+        # self.ppo_trainer = CustomPPOTrainer(
+        #     model=self.model,
+        #     config=PPOConfig(**self.ppo_training_args),
+        #     tokenizer=self.tokenizer,
+        # )
+
+        self.ppo_trainer = PPOTrainer(
             model=self.model,
             config=PPOConfig(**self.ppo_training_args),
             tokenizer=self.tokenizer,

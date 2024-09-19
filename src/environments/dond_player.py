@@ -1,6 +1,5 @@
 import json
 import regex as re
-import copy
 # local imports
 from environments.dond_game import DondGame
 
@@ -14,7 +13,9 @@ class DondPlayer():
                  max_retries,
                  finalization_file,
                  game_state,
-                 model_name):
+                 model_name,
+                 keep_game_state=False,
+                 context=None):
         """
         The Player acts as a middle-man between the game and a LLM player.
         Initializes the DoNDPlayer.
@@ -41,11 +42,20 @@ class DondPlayer():
             with open(chain_of_thought_file, 'r') as file:
                 self.chain_of_thought = file.read()
 
+        self.initial_context = None
+
+        if context:
+            with open(context, 'r') as file:
+                self.initial_context = json.load(file)
+
         self.player_name = player_name
         self.max_retries = max_retries
         self.model_name = model_name
+        self.keep_game_state = keep_game_state
         self.game_id = None # ID of player in game
         self.reset_game()
+
+
 
 
     def get_context(self):
@@ -94,6 +104,9 @@ class DondPlayer():
                           'round_nb': state['round_number']
                           }
         
+        if self.keep_game_state:
+            model_response['game_state'] = state
+        
         self.add_to_context(model_response)
 
         return send_to_game, is_finalization, processed_response
@@ -137,12 +150,13 @@ class DondPlayer():
         if state["has_finalized"]:
             self.other_has_finalized = True
             user_message += self.finalization_prompt.format(**state)
-
-        if state['last_message'] == None:
-            user_message += "You are the first to play, there are no messages yet.\n"
-
         else:
-            user_message += f"The other player said: '{state['last_message']}'\n"
+
+            if state['last_message'] == None:
+                user_message += "You are the first to play, there are no messages yet.\n"
+
+            else:
+                user_message += f"The other player said: '{state['last_message']}'\n"
 
         if self.chain_of_thought is not None:
                 user_message += self.chain_of_thought.format(**state)
@@ -257,4 +271,6 @@ class DondPlayer():
         self.retries = 0
         self.error_message = None
         self.context = []
+        if self.initial_context:
+           self.context = self.initial_context.copy()
 

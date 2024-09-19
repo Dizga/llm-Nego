@@ -4,22 +4,23 @@ hydra:
 
 iterations:
 
-  nb_iterations: 1
+  nb_iterations: 5
   iteration_runner_args:
-    nb_parallel_games: 30
-    games_per_iteration: 30
+    nb_parallel_games: 60
+    games_per_iteration: 60
 
   dond_game_args:
     rounds_per_game: 1
     max_turns: 10
-    player_order: deterministic # deterministic or random player who start beginning of each round
+    player_order: [0] # deterministic or random player who start beginning of each round
     mode: coop # basic, coop
-    # setup: manual # manual or random_read
-    # player_0_values: [30]
-    # player_1_values: [10]
-    # items: ['gold']
-    # quantities: [10]
+    setup: manual # manual or random_read
+    player_0_values: [30]
+    player_1_values: [10]
+    items: ['gold']
+    quantities: [10]
     setups_file: src/environments/dond_setups.txt
+    state: outputs/1/state1.json
 
 models: 
 
@@ -54,7 +55,7 @@ models:
       gradient_accumulation_steps: None # This is set automatically. Default: 64. Number of minibatch gradient accumulation before step. Should be equal to batch size.
       ppo_epochs: 4 # Default: 4. Number of optimisation epochs per batch of samples
       #learning_rate: 10e-4
-      vf_coef: 0
+      # vf_coef: 0
       gradient_checkpointing: False # Whether to keep all activations in memory at once.
       log_with: "tensorboard"
       project_kwargs: None # don't touch, will be set later
@@ -74,17 +75,14 @@ players:
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond/new_round.txt"
       max_retries: 5
-      keep_game_state: True
-      context: null
+      keep_game_state: False
+      context: outputs/1/context1.json
 
-  player_b:
-    id: 1
-    dond_player_args:
-      model_name: 'llama'
-      game_intro_file: "src/prompts/dond/rules.txt"
-      chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
-      finalization_file: "src/prompts/dond/finalization.txt"
-      new_round_file: "src/prompts/dond//new_round.txt"
-      max_retries: 5
-      keep_game_state: True
-      context: null
+
+
+    
+
+
+
+
+
