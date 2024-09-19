@@ -8,3 +8,5 @@ conf/local.yaml
 venv/
 *.pyc
 nohup.out
+src/experiments/data
+*.safetensors

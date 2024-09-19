@@ -112,7 +112,7 @@ class DondPlayer():
         return send_to_game, is_finalization, processed_response
 
 
-    def set_usr_message(self, state, is_error=False):
+    def set_usr_message(self, state):
         """
         Constructs a user message based on the current game state.
 
@@ -134,7 +134,7 @@ class DondPlayer():
             user_message = self.error_message
             usr_prompt = {'role': 'user', 
                           'content': user_message, 
-                          'is_error': False, 
+                          'is_error': True, 
                           'round_nb': state['round_number']}
             self.add_to_context(usr_prompt) 
             self.error_message = None
@@ -148,7 +148,11 @@ class DondPlayer():
             user_message += self.new_round_prompt.format(**state)
 
         if state["has_finalized"]:
-            self.other_has_finalized = True
+            other_fin = state["current_finalizations"][1-self.game_id]
+            if state['finalization_visibility']:
+                state["finalization_reveal"] = f"In their finalization, the other player gave themselves {other_fin}"
+            else:
+                state["finalization_reveal"] = ""
             user_message += self.finalization_prompt.format(**state)
         else:
 
@@ -163,7 +167,7 @@ class DondPlayer():
 
         usr_prompt = {'role': 'user', 
                       'content': user_message, 
-                      'is_error': is_error, 
+                      'is_error': False, 
                       'round_nb': state['round_number']
                       }
         self.add_to_context(usr_prompt) 

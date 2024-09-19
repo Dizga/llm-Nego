@@ -16,6 +16,8 @@ from trl import (
 )
 from peft import LoraConfig, LoraModel
 import os
+from functools import partial
+
 
 from utils.log_gpu_usage import log_gpu_usage
 from utils.model_to_cpu import move_model_to_cpu
@@ -36,8 +38,9 @@ from vllm.lora.request import LoRARequest
 from omegaconf import OmegaConf
 
 from training.custom_ppo_trainer import CustomPPOTrainer
+from training.reinforce_trainer import ReinforceTrainer
 torch.set_default_device('cuda')
-
+import copy
 
 class HfAgent:
     """
@@ -56,8 +59,7 @@ class HfAgent:
         ppo_trainer_args = None,
         save_lora_weights= None,
         lora_pretrained_path=None,
-        max_new_tokens =500,
-        do_sample = False
+        generation_args=None
     ) -> None:
         """
         Initializes the HfAgent.
@@ -84,49 +86,41 @@ class HfAgent:
         self.lora_config = LoraConfig(**lora_args) 
         self.ppo_training_args = ppo_trainer_args
 
-        self.sampling_params = SamplingParams(
-            max_tokens=max_new_tokens,      
-            temperature=1,    
-            top_k=10,          
-            top_p=0.9           
+
+        self.vllm_sampling_params = SamplingParams(
+            **generation_args         
         )
+
+        self.hf_sampling_params = copy.deepcopy(generation_args)
+        self.hf_sampling_params['max_new_tokens'] = self.hf_sampling_params.pop('max_tokens')
 
         self.inference_library = None
         self.ppo_trainer = None
         self.lora_pretrained_path = lora_pretrained_path
 
-        self.do_sample = do_sample
-        self.max_new_tokens = max_new_tokens
 
-        
-        
+    def batch_encode(self, data: List[dict], pad=False, is_response=False) -> ...:
 
-    def encode_jsons(self, data: List[dict]) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
-        """
-        Encodes JSON conversation data into tensors, ensuring proper padding and attention masks.
-
-        Args:
-            data (List[Dict]): A list of JSON objects representing conversations.
-
-        Returns:
-        """
-
-        formatted = self.tokenizer.apply_chat_template(data, tokenize=False, add_generation_prompt=False)
-        
-        # Ensure a pad_token is set for the tokenizer
-        if self.tokenizer.pad_token is None:
-            self.tokenizer.pad_token = self.tokenizer.eos_token
+        if is_response:
+            formatted = [d[0]['content'] + self.tokenizer.eos_token for d in data]
+            self.tokenizer.padding_side = "right"
+        else:
+            formatted = self.tokenizer.apply_chat_template(data, tokenize=False, add_generation_prompt=True)
+            self.tokenizer.padding_side = "left"
 
         # Tokenize with padding and truncation
-        tokenized = self.tokenizer(
-            formatted,
-            return_tensors="pt",
-            padding=True,
-            truncation=True,
-        ).to(self.device)
+        if pad:
+            tokenized = self.tokenizer(
+                formatted,
+                return_tensors="pt",
+                padding=True
+            ).to(self.device)
+            self.tokenizer.padding_side = "left"
 
-
-        return tokenized
+            return list(tokenized['input_ids'])
+    
+        else:
+            return [self.tokenizer(d, return_tensors="pt").to(self.device)['input_ids'].squeeze() for d in formatted]
     
 
     def train_ppo(
@@ -138,8 +132,6 @@ class HfAgent:
         Returns:
             dict: A dictionary containing training statistics.
         """
-
-        self.switch_to_hf()
 
         ds = len(queries)  # get datasize
         if ds == 0:
@@ -153,14 +145,10 @@ class HfAgent:
 
         self.ppo_training_args['project_kwargs'] = {'logging_dir': os.path.join(path, self.name + '_ppo_tensorboard')}
 
-        # self.ppo_trainer = CustomPPOTrainer(
-        #     model=self.model,
-        #     config=PPOConfig(**self.ppo_training_args),
-        #     tokenizer=self.tokenizer,
-        # )
 
         self.ppo_trainer = PPOTrainer(
             model=self.model,
+            ref_model=None,
             config=PPOConfig(**self.ppo_training_args),
             tokenizer=self.tokenizer,
         )
@@ -180,50 +168,42 @@ class HfAgent:
             batch_responses = responses[beg:end]
             batch_scores = scores[beg:end]
 
-            # Log the size of the current batch
             logging.info(f"Batch size: {len(batch_queries)} queries, {len(batch_responses)} responses.")
 
-            # Encode the queries into input_ids and convert the batch tensor into a list of 1D tensors
-            queries_ids_tensor = self.encode_jsons(batch_queries)['input_ids']
-            queries_ids_tensor_list = [queries_ids_tensor[i] for i in range(queries_ids_tensor.size(0))]
+            encoded_batch_queries = self.batch_encode(batch_queries)
+            encoded_batch_responses = self.batch_encode(batch_responses, is_response=True)
+            encoded_batch_scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in batch_scores]
+            assert len(encoded_batch_queries) == len(encoded_batch_responses)
 
-            # Encode the responses into input_ids and attention masks
-            tokenized_responses = self.encode_jsons(batch_responses)
-            responses_ids_tensor = tokenized_responses['input_ids']
-            responses_ids_tensor_list = [responses_ids_tensor[i] for i in range(responses_ids_tensor.size(0))]
+            decoded_queries = [self.tokenizer.decode(q, skip_special_tokens=True) for q in encoded_batch_queries]
+            logging.debug(f"Decoded Queries: {decoded_queries}")
+            decoded_responses = [self.tokenizer.decode(r, skip_special_tokens=True) for r in encoded_batch_responses]
+            logging.debug(f"Decoded Responses: {decoded_responses}")
+            
 
-            # Use the attention masks for the responses
-            response_masks = tokenized_responses['attention_mask']
-            response_masks_list = [response_masks[i] for i in range(response_masks.size(0))]
-
-            # Convert batch scores to tensors
-            batch_tensor_scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in batch_scores]
-
-            # Log the start of PPO trainer step
             logging.info(f"Starting PPO step for batch {b+1}/{nb_batches}...")
-
-            # Step through PPO training 
+            self.tokenizer.pad_token = self.tokenizer.eos_token
             stats = self.ppo_trainer.step(
-                queries=queries_ids_tensor_list,
-                responses=responses_ids_tensor_list,
-                scores=batch_tensor_scores,
-                response_masks=response_masks_list  # Fill in the TODO here
+                queries=encoded_batch_queries,
+                responses=encoded_batch_responses,
+                scores=encoded_batch_scores
             )
 
-            # Log statistics and rewards
             logging.info(f"PPO step for batch {b+1}/{nb_batches} completed. Logging stats...")
 
-            # Log the training stats for the current batch
             self.ppo_trainer.log_stats(
                 stats=stats,
-                batch={"query": queries_ids_tensor_list, "response": responses_ids_tensor_list},
-                rewards=batch_tensor_scores,
+                batch={"query": encoded_batch_queries, 
+                    "response": encoded_batch_responses,
+                    "ref_rewards": encoded_batch_scores
+                    },
+                columns_to_log=["query", "response", "ref_rewards"],
+                rewards=encoded_batch_scores,
             )
 
-            del queries_ids_tensor_list, responses_ids_tensor_list, response_masks_list, batch_tensor_scores
+            del encoded_batch_queries, encoded_batch_responses, encoded_batch_scores
             torch.cuda.empty_cache()
 
-            # Calculate and log the time taken for this batch
             batch_duration = time.time() - start_time
             logging.info(f"Batch {b+1}/{nb_batches} training completed in {batch_duration:.2f} seconds.")
 
@@ -236,7 +216,6 @@ class HfAgent:
         torch.cuda.empty_cache()
 
         self.save_lora_weights(os.path.join(path, self.name + '_lora_weights'))
-
 
     def delete_tensor_list(self, tensor_list: List[Any]) -> None:
         """
@@ -264,28 +243,29 @@ class HfAgent:
         if self.inference_library == "hf":
             model_inputs = self.tokenizer(texts, return_tensors="pt").to(self.device)
             with torch.no_grad():
-                generated_ids = self.model.generate(**model_inputs, max_new_tokens=1000, do_sample=True) 
+                generated_ids = self.model.generate(**model_inputs, 
+                                                    **self.hf_sampling_params) 
             generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
             responses = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
         # Generate with VLLM
         elif self.inference_library == "vllm":
             if self.lora_pretrained_path:
+                logging.info('Generating using LoRA weights.')
                 responses = self.model.generate(texts, 
-                                    sampling_params=self.sampling_params, 
-                                    lora_request=LoRARequest("dond_lora", 1, self.lora_pretrained_path)
+                                    sampling_params=self.vllm_sampling_params, 
+                                    lora_request=LoRARequest("dond_lora", 1.0, self.lora_pretrained_path)
                                     )
             else:
                 responses = self.model.generate(texts, 
-                    sampling_params=self.sampling_params
+                    sampling_params=self.vllm_sampling_params
                     )
             responses = [response.outputs[0].text for response in responses]
-
 
         return responses
     
 
-    def switch_to_hf(self):
+    def switch_to_training_mode(self):
 
         # Free GPU memory taken by VLLM
         if self.inference_library == "vllm":
@@ -308,7 +288,7 @@ class HfAgent:
                                                           )
 
 
-    def switch_to_vllm(self):
+    def switch_to_generation_mode(self):
 
         # Free GPU memory taken by Hugging Face
         if self.inference_library == "hf":
@@ -325,9 +305,10 @@ class HfAgent:
         # Get VLLM model
         self.inference_library = "vllm"
         if self.lora_pretrained_path:
-            self.model = LLM(self.model_name, enable_lora=True)
+            # TODO: get max lora from args
+            self.model = LLM(self.model_name, enable_lora=True, max_lora_rank=256)
         else:
-            self.model = LLM(self.model_name, enable_lora=False)
+            self.model = LLM(self.model_name, enable_lora=False, max_lora_rank=256)
             
         
     def save_lora_weights(self, lora_weights_path: str) -> None:

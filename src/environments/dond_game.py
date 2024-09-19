@@ -14,7 +14,8 @@ class DondGame:
                  player_0_values = None,
                  player_1_values = None,
                  quantities = None,
-                 state = None
+                 state = None,
+                 finalization_visibility = False
                  ):
         """
         Initializes the DoND game.
@@ -37,6 +38,7 @@ class DondGame:
         self.setups_file = setups_file
         self.rounds_per_game = rounds_per_game
         self.quantities = quantities
+        self.finalization_visibility = finalization_visibility
 
         self.initial_state = None
         if state:
@@ -127,52 +129,54 @@ class DondGame:
         """
         Retrieves the current state of the game.
 
-        Args:
-            player (str): The player whose state is to be retrieved ('player_0', 'player_1', or 'current_turn').
-
         Returns:
             dict: The current state of the game.
         """
 
-        last_scores = []
-        if len(self.points_player_0_history) != 0:
-            last_scores.append(self.points_player_0_history[-1])
-        else: last_scores.append(None)
-        if len(self.points_player_1_history) != 0:
-            last_scores.append(self.points_player_1_history[-1])
-        else: last_scores.append(None)
+        last_scores = [
+            self.points_player_0_history[-1] if self.points_player_0_history else None,
+            self.points_player_1_history[-1] if self.points_player_1_history else None
+        ]
 
+        last_finalizations = [
+            self.player_0_prop_history[-1] if self.player_0_prop_history else None,
+            self.player_1_prop_history[-1] if self.player_1_prop_history else None
+        ]
+
+        # Include current finalizations if a player has made one
+        current_finalizations = [
+            self.player_0_prop if self.player_0_prop else None,
+            self.player_1_prop if self.player_1_prop else None
+        ]
 
         out = {
             'mode': self.mode,
             'game_ended': self.game_ended,
-            "round_ended": self.round_ended,
-            "is_new_round": True if self.turn <= 2 else False,
-            "is_new_game": True if (self.turn <= 2 and self.round_nb == 1) else False,
-            "items": self.items,
-            "turn": self.turn,
-            "round_number": self.round_nb,
-            "nb_rounds": self.rounds_per_game,
-            "quantities": self.quantities,
-            "agreement_reached": self.agreement_reached,
-            "has_finalized": self.has_finalized,
-            "last_message": self.last_message,
-            "last_scores": last_scores,
-            "player_0_prop": self.player_0_prop,
-            "player_1_prop": self.player_1_prop,
-            "values_player_0": self.values_player_0,
-            "values_player_1": self.values_player_1,
+            'round_ended': self.round_ended,
+            'is_new_round': True if self.turn <= 2 else False,
+            'is_new_game': True if (self.turn <= 2 and self.round_nb == 1) else False,
+            'items': self.items,
+            'turn': self.turn,
+            'current_turn': self.current_turn(),
+            'round_number': self.round_nb,
+            'nb_rounds': self.rounds_per_game,
+            'quantities': self.quantities,
+            'agreement_reached': self.agreement_reached,
+            'has_finalized': self.has_finalized,
+            'last_message': self.last_message,
+            'player_0_prop': self.player_0_prop,
+            'player_1_prop': self.player_1_prop,
+            'values_player_0': self.values_player_0,
+            'values_player_1': self.values_player_1,
+            'last_scores': last_scores,
+            'last_finalizations': last_finalizations,
+            'finalization_visibility': self.finalization_visibility,
+            'current_finalizations': current_finalizations,
+            'values': [
+                self.values_player_0,
+                self.values_player_1
+            ]
         }
-
-        player = self.current_turn()
-        
-        if player == "player_0":
-            out["values"] = self.values_player_0
-            out["last_score"] = self.points_player_0_history[-1] if len(self.points_player_0_history) != 0 else None
-        
-        elif player == "player_1":
-            out["values"] = self.values_player_1
-            out["last_score"] = self.points_player_1_history[-1] if len(self.points_player_1_history) != 0 else None
 
         return out
 
