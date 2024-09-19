@@ -89,7 +89,7 @@ class HfAgent:
         self.lora_config = LoraConfig(**lora_args) 
         self.ppo_training_args = ppo_trainer_args
 
-        self.sft_config = SFTConfig(output_dir=os.path.join(out_dir, 'sft_lora_model'), packing=True)
+        #self.sft_config = SFTConfig(output_dir=os.path.join(out_dir, 'sft_lora_model'), packing=True)
         self.vllm_sampling_params = SamplingParams(
             **generation_args         
         )
@@ -260,9 +260,10 @@ class HfAgent:
             model_inputs = self.tokenizer(texts, return_tensors="pt").to(self.device)
             with torch.no_grad():
                 generated_ids = self.model.generate(**model_inputs, 
+                                                    do_sample=True,
                                                     **self.hf_sampling_params) 
-            generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
-            responses = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+            generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs["input_ids"], generated_ids)]
+            responses = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)
 
         # Generate with VLLM
         elif self.inference_library == "vllm":
