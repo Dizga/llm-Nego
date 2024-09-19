@@ -18,7 +18,8 @@ from peft import LoraConfig, LoraModel
 import os
 from functools import partial
 
-
+from datasets import load_dataset
+from trl import SFTConfig, SFTTrainer
 from utils.log_gpu_usage import log_gpu_usage
 from utils.model_to_cpu import move_model_to_cpu
 import logging
@@ -59,7 +60,9 @@ class HfAgent:
         ppo_trainer_args = None,
         save_lora_weights= None,
         lora_pretrained_path=None,
-        generation_args=None
+        generation_args=None,
+        default_training_mode='ppo',
+        out_dir=None,
     ) -> None:
         """
         Initializes the HfAgent.
@@ -86,14 +89,14 @@ class HfAgent:
         self.lora_config = LoraConfig(**lora_args) 
         self.ppo_training_args = ppo_trainer_args
 
-
+        self.sft_config = SFTConfig(output_dir=os.path.join(out_dir, 'sft_lora_model'), packing=True)
         self.vllm_sampling_params = SamplingParams(
             **generation_args         
         )
 
         self.hf_sampling_params = copy.deepcopy(generation_args)
         self.hf_sampling_params['max_new_tokens'] = self.hf_sampling_params.pop('max_tokens')
-
+        self.default_training_mode = default_training_mode
         self.inference_library = None
         self.ppo_trainer = None
         self.lora_pretrained_path = lora_pretrained_path
@@ -217,6 +220,18 @@ class HfAgent:
 
         self.save_lora_weights(os.path.join(path, self.name + '_lora_weights'))
 
+    def train_sft(self, dataset_path):
+        """
+        Dataset should have "conversational" form (see # https://huggingface.co/docs/trl/en/sft_trainer#dataset-format-support)
+        """
+        self.switch_to_training_mode()
+        dataset = load_dataset("json", data_files=dataset_path, split="train")
+        sft_trainer = SFTTrainer(
+            self.model,
+            args=self.sft_config,
+            train_dataset=dataset,
+        )
+        sft_trainer.train()
 
     def delete_tensor_list(self, tensor_list: List[Any]) -> None:
         """
@@ -282,11 +297,19 @@ class HfAgent:
         if self.lora_pretrained_path:
             self.pretrained_args['pretrained_model_name_or_path'] = self.lora_pretrained_path
 
-        self.model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                                                          **self.pretrained_args,
-                                                            quantization_config=self.bits_and_bytes_configs,
-                                                            peft_config=self.lora_config
-                                                          )
+        if self.default_training_mode == 'ppo':
+            self.model = AutoModelForCausalLMWithValueHead.from_pretrained(
+                                                            **self.pretrained_args,
+                                                                quantization_config=self.bits_and_bytes_configs,
+                                                                peft_config=self.lora_config
+                                                            )
+        elif self.default_training_mode == 'sft':
+            self.model = AutoModelForCausalLM.from_pretrained(
+                                                **self.pretrained_args,
+                                                    quantization_config=self.bits_and_bytes_configs,
+                                                    peft_config=self.lora_config
+                                                )
+
 
 
     def switch_to_generation_mode(self):
