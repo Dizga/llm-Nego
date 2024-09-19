@@ -99,31 +99,28 @@ class HfAgent:
         self.lora_pretrained_path = lora_pretrained_path
 
 
-    def encode_jsons(self, data: List[dict], is_response=False) -> ...:
+    def batch_encode(self, data: List[dict], pad=False, is_response=False) -> ...:
 
         if is_response:
-            #formatted = self.tokenizer.apply_chat_template(data, tokenize=False, add_generation_prompt=False)
             formatted = [d[0]['content'] + self.tokenizer.eos_token for d in data]
             self.tokenizer.padding_side = "right"
         else:
             formatted = self.tokenizer.apply_chat_template(data, tokenize=False, add_generation_prompt=True)
             self.tokenizer.padding_side = "left"
 
-        # Ensure a pad_token is set for the tokenizer
-        if self.tokenizer.pad_token is None:
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-
         # Tokenize with padding and truncation
-        tokenized = self.tokenizer(
-            formatted,
-            return_tensors="pt",
-            padding=True,
-            #truncation=True,
-        ).to(self.device)
-        self.tokenizer.padding_side = "left"
+        if pad:
+            tokenized = self.tokenizer(
+                formatted,
+                return_tensors="pt",
+                padding=True
+            ).to(self.device)
+            self.tokenizer.padding_side = "left"
 
-
-        return tokenized
+            return list(tokenized['input_ids'])
+    
+        else:
+            return [self.tokenizer(d, return_tensors="pt").to(self.device)['input_ids'].squeeze() for d in formatted]
     
 
     def train_ppo(
@@ -171,54 +168,42 @@ class HfAgent:
             batch_responses = responses[beg:end]
             batch_scores = scores[beg:end]
 
-            # Log the size of the current batch
             logging.info(f"Batch size: {len(batch_queries)} queries, {len(batch_responses)} responses.")
 
-            # Encode the queries into input_ids and convert the batch tensor into a list of 1D tensors
-            queries_ = list(self.encode_jsons(batch_queries)['input_ids'])
+            encoded_batch_queries = self.batch_encode(batch_queries)
+            encoded_batch_responses = self.batch_encode(batch_responses, is_response=True)
+            encoded_batch_scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in batch_scores]
+            assert len(encoded_batch_queries) == len(encoded_batch_responses)
 
-            # Decode the queries back to text to debug tokenization
-            decoded_queries = [self.tokenizer.decode(q, skip_special_tokens=True) for q in queries_]
+            decoded_queries = [self.tokenizer.decode(q, skip_special_tokens=True) for q in encoded_batch_queries]
             logging.debug(f"Decoded Queries: {decoded_queries}")
-
-            # Encode the responses into input_ids and attention masks
-            responses_ = list(self.encode_jsons(batch_responses, is_response=True)['input_ids'])
-
-            # Decode the responses back to text to debug tokenization
-            decoded_responses = [self.tokenizer.decode(r, skip_special_tokens=True) for r in responses_]
+            decoded_responses = [self.tokenizer.decode(r, skip_special_tokens=True) for r in encoded_batch_responses]
             logging.debug(f"Decoded Responses: {decoded_responses}")
+            
 
-            # Convert batch scores to tensors
-            scores_ = [torch.tensor(s, dtype=torch.float).to(self.device) for s in batch_scores]
-
-            # Log the start of PPO trainer step
             logging.info(f"Starting PPO step for batch {b+1}/{nb_batches}...")
-
-            # Step through PPO training 
+            self.tokenizer.pad_token = self.tokenizer.eos_token
             stats = self.ppo_trainer.step(
-                queries=queries_,
-                responses=responses_,
-                scores=scores_
+                queries=encoded_batch_queries,
+                responses=encoded_batch_responses,
+                scores=encoded_batch_scores
             )
 
-            # Log statistics and rewards
             logging.info(f"PPO step for batch {b+1}/{nb_batches} completed. Logging stats...")
 
-            # Log the training stats for the current batch
             self.ppo_trainer.log_stats(
                 stats=stats,
-                batch={"query": queries_, 
-                    "response": responses_,
-                    "ref_rewards": scores_
+                batch={"query": encoded_batch_queries, 
+                    "response": encoded_batch_responses,
+                    "ref_rewards": encoded_batch_scores
                     },
                 columns_to_log=["query", "response", "ref_rewards"],
-                rewards=scores_,
+                rewards=encoded_batch_scores,
             )
 
-            del queries_, responses_, scores_
+            del encoded_batch_queries, encoded_batch_responses, encoded_batch_scores
             torch.cuda.empty_cache()
 
-            # Calculate and log the time taken for this batch
             batch_duration = time.time() - start_time
             logging.info(f"Batch {b+1}/{nb_batches} training completed in {batch_duration:.2f} seconds.")
 

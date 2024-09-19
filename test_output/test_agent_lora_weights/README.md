@@ -1,6 +1,4 @@
 ---
-base_model: meta-llama/Meta-Llama-3.1-8B-Instruct
-library_name: peft
 license: apache-2.0
 tags:
 - trl
@@ -43,6 +41,3 @@ model = AutoModelForCausalLMWithValueHead.from_pretrained("dereckpichemila/test_
 inputs = tokenizer("Hello, my llama is cute", return_tensors="pt")
 outputs = model(**inputs, labels=inputs["input_ids"])
 ```
-### Framework versions
-
-- PEFT 0.12.0

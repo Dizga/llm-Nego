@@ -18,8 +18,6 @@ def compute_log_probabilities(agent, query, target_response):
             text=query["content"],
             text_pair=target_response["content"],  # Adjusted for proper context handling in models
             return_tensors="pt",
-            padding=True,
-            truncation=True
         )
 
         # Move tokenized tensors to the correct device
