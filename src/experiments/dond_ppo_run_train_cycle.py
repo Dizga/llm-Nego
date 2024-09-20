@@ -83,7 +83,7 @@ def dond_ppo_run_train_cycle(cfg):
                         responses += new_responses
                         scores += new_scores
 
-                model.train_ppo(output_directory, queries, responses, scores)
+                model.train_ppo(queries, responses, scores)
 
             # Train with supervised fine-tuning
             elif model.default_training_mode == 'sft':

@@ -42,6 +42,8 @@ from training.custom_ppo_trainer import CustomPPOTrainer
 from training.reinforce_trainer import ReinforceTrainer
 torch.set_default_device('cuda')
 import copy
+import numpy as np
+import hydra
 
 class HfAgent:
     """
@@ -61,8 +63,7 @@ class HfAgent:
         save_lora_weights= None,
         lora_pretrained_path=None,
         generation_args=None,
-        default_training_mode='ppo',
-        out_dir=None,
+        default_training_mode='ppo'
     ) -> None:
         """
         Initializes the HfAgent.
@@ -90,25 +91,35 @@ class HfAgent:
         self.ppo_training_args = ppo_trainer_args
 
         #self.sft_config = SFTConfig(output_dir=os.path.join(out_dir, 'sft_lora_model'), packing=True)
+
+        self.hf_sampling_params = generation_args
+
         self.vllm_sampling_params = SamplingParams(
-            **generation_args         
+            temperature=generation_args['temperature'],
+            top_k=generation_args['top_k'],
+            top_p=generation_args['top_p'],
+            max_tokens=generation_args['max_new_tokens']
         )
 
-        self.hf_sampling_params = copy.deepcopy(generation_args)
-        self.hf_sampling_params['max_new_tokens'] = self.hf_sampling_params.pop('max_tokens')
         self.default_training_mode = default_training_mode
         self.inference_library = None
         self.ppo_trainer = None
         self.lora_pretrained_path = lora_pretrained_path
 
+        hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
+        self.output_directory = hydra_cfg['runtime']['output_dir']
+        
 
-    def batch_encode(self, data: List[dict], pad=False, is_response=False) -> ...:
+
+    def batch_encode(self, data: List[List[dict]], pad=False, is_response=False) -> ...:
 
         if is_response:
             formatted = [d[0]['content'] + self.tokenizer.eos_token for d in data]
             self.tokenizer.padding_side = "right"
         else:
-            formatted = self.tokenizer.apply_chat_template(data, tokenize=False, add_generation_prompt=True)
+            formatted = self.tokenizer.apply_chat_template(data, 
+                                                           tokenize=False, 
+                                                           add_generation_prompt=True)
             self.tokenizer.padding_side = "left"
 
         # Tokenize with padding and truncation
@@ -127,8 +138,8 @@ class HfAgent:
     
 
     def train_ppo(
-            self, path, queries: List, responses: List, scores: List[float]
-        ) -> dict:
+            self, queries: List[List[dict]], responses: List[List[dict]], scores: List[float]
+        ) -> None:
         """
         Trains the agent using PPO on a batch of queries, responses, and corresponding rewards.
 
@@ -146,7 +157,7 @@ class HfAgent:
         self.ppo_training_args['batch_size'] = min(self.ppo_training_args['batch_size'], ds)
         self.ppo_training_args['gradient_accumulation_steps'] = self.ppo_training_args['batch_size']
 
-        self.ppo_training_args['project_kwargs'] = {'logging_dir': os.path.join(path, self.name + '_ppo_tensorboard')}
+        self.ppo_training_args['project_kwargs'] = {'logging_dir': os.path.join(self.output_directory, self.name + '_ppo_tensorboard')}
 
 
         self.ppo_trainer = PPOTrainer(
@@ -218,7 +229,7 @@ class HfAgent:
         self.delete_tensor_list(scores)
         torch.cuda.empty_cache()
 
-        self.save_lora_weights(os.path.join(path, self.name + '_lora_weights'))
+        self.save_lora_weights()
 
     def train_sft(self, dataset_path):
         """
@@ -284,6 +295,13 @@ class HfAgent:
 
     def switch_to_training_mode(self):
 
+        # Save RNG state
+        self.rng_state = {
+            'torch': torch.get_rng_state(),
+            'cuda': torch.cuda.get_rng_state(),
+            'numpy': np.random.get_state(),
+        }
+
         # Free GPU memory taken by VLLM
         if self.inference_library == "vllm":
             del self.model
@@ -311,9 +329,19 @@ class HfAgent:
                                                     peft_config=self.lora_config
                                                 )
 
-
+        # Restore RNG state
+        torch.set_rng_state(self.rng_state['torch'])
+        torch.cuda.set_rng_state(self.rng_state['cuda'])
+        np.random.set_state(self.rng_state['numpy'])
 
     def switch_to_generation_mode(self):
+
+        # Save RNG state
+        self.rng_state = {
+            'torch': torch.get_rng_state(),
+            'cuda': torch.cuda.get_rng_state(),
+            'numpy': np.random.get_state(),
+        }
 
         # Free GPU memory taken by Hugging Face
         if self.inference_library == "hf":
@@ -334,9 +362,14 @@ class HfAgent:
             self.model = LLM(self.model_name, enable_lora=True, max_lora_rank=256)
         else:
             self.model = LLM(self.model_name, enable_lora=False, max_lora_rank=256)
+
+        # Restore RNG state
+        torch.set_rng_state(self.rng_state['torch'])
+        torch.cuda.set_rng_state(self.rng_state['cuda'])
+        np.random.set_state(self.rng_state['numpy'])
             
         
-    def save_lora_weights(self, lora_weights_path: str) -> None:
+    def save_lora_weights(self) -> None:
         """
         Saves only the LoRA weights to a specified directory.
 
@@ -344,7 +377,7 @@ class HfAgent:
             save_directory (str): The directory where the LoRA weights will be saved.
         """
 
-        os.makedirs(lora_weights_path, exist_ok=True)
+        lora_weights_path = os.path.join(self.output_directory, self.name + '_lora_weights')
         self.ppo_trainer.save_pretrained(lora_weights_path)
         self.lora_pretrained_path = lora_weights_path
         logging.info(f"LoRA weights saved to {lora_weights_path}")
