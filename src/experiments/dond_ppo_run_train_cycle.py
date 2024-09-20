@@ -3,7 +3,6 @@ import os
 import logging
 import time
 from omegaconf import OmegaConf
-
 # local imports
 from experiments.dond_iteration_runner import DondIterationRunner
 from environments.dond_game import DondGame
@@ -29,8 +28,9 @@ def dond_ppo_run_train_cycle(cfg):
     models = {}
     for model_name in cfg['models'].keys():
         if cfg['models'][model_name]['class'] == "hf":
-            models[model_name] = HfAgent(**cfg['models'][model_name]['init_args'], out_dir=output_directory)
-            models[model_name].switch_to_generation_mode()
+            models[model_name] = HfAgent(**cfg['models'][model_name]['init_args'])
+            models[model_name].use_hf_model()
+
         elif cfg['models'][model_name]['class'] == "dummy_hf":
             models[model_name] = DummyHfAgent(**cfg['models'][model_name]['init_args'])
         elif cfg['models'][model_name]['class'] == "oai":
@@ -60,6 +60,9 @@ def dond_ppo_run_train_cycle(cfg):
     for _ in range(cfg['iterations']['nb_iterations']):
         
         # Generate games
+        for model_name in models.keys():
+            model = models[model_name]
+            model.use_vllm_model()
         iteration_runner.run_iteration()
         it_folder = iteration_runner.it_folder
 
@@ -70,7 +73,7 @@ def dond_ppo_run_train_cycle(cfg):
         for model_name in models.keys():
             model = models[model_name]
             
-            model.switch_to_training_mode()
+            model.use_hf_model()
 
             # Train with ppo
             if model.default_training_mode == 'ppo':
@@ -93,7 +96,6 @@ def dond_ppo_run_train_cycle(cfg):
                         file_name = extract_sft_dataset(it_folder, player.player_name, out_file=file_name)
                 model.train_sft(file_name)
 
-            model.switch_to_generation_mode()
             
 
 

@@ -10,8 +10,8 @@ from utils.plot_curves import plot_curves
 logging.basicConfig(level=logging.INFO)
 
 # Constants
-N_SAMPLES = 64
-N_STEPS = 10
+N_SAMPLES = 4
+N_STEPS = 4
 MODEL_NAME = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 CORRECT_ANSWER = 9
 
@@ -43,7 +43,7 @@ def initialize_agent():
         ppo_trainer_args={'batch_size': N_SAMPLES, 'mini_batch_size': 1, 'gradient_accumulation_steps': N_SAMPLES, 'ppo_epochs': 4},
         generation_args={'temperature': 1.0, 'top_p': 0.9, 'top_k': 1000, 'max_new_tokens': 20}
     )
-    agent.switch_to_training_mode()
+
     return agent
 
 def train_agent(agent, num_steps):
@@ -54,15 +54,16 @@ def train_agent(agent, num_steps):
         logging.info(f"Step {step + 1}/{num_steps}: Generating queries and responses...")
         
         x, y = random.randint(1, 10), random.randint(1, 10)
-        agent.switch_to_generation_mode()
         queries, correct_answers = generate_queries(N_SAMPLES, x, y)
         
+        agent.use_vllm_model()
         responses = [[{'role': 'assistant', 'content': r}] for r in agent.prompt(queries)]
+        logging.info(responses)
         rewards = calculate_rewards(responses, correct_answers)
         
         mean_scores.append(mean(rewards))
         plot_curves(y_list=[mean_scores], plot_name='mean_scores')
-        agent.switch_to_training_mode()
+        agent.use_hf_model()
         agent.train_ppo(queries, responses, rewards)
 
 def arithmetic_test():

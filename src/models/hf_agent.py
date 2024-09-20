@@ -8,6 +8,7 @@ from transformers import (
     BitsAndBytesConfig,
     TextIteratorStreamer
 )
+import shutil
 from trl import (
     SFTTrainer,
     AutoModelForCausalLMWithValueHead,
@@ -86,6 +87,8 @@ class HfAgent:
         self.model_name = model_name
         self.pretrained_args = pretrained_args
         self.tokenizer = AutoTokenizer.from_pretrained(pretrained_args['pretrained_model_name_or_path'])
+        self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+        self.tokenizer.pad_token = self.tokenizer.eos_token
         self.bits_and_bytes_configs = BitsAndBytesConfig(**bits_and_bytes_args)
         self.lora_config = LoraConfig(**lora_args) 
         self.ppo_training_args = ppo_trainer_args
@@ -108,6 +111,9 @@ class HfAgent:
 
         hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
         self.output_directory = hydra_cfg['runtime']['output_dir']
+        self.adapter_id = 1
+        self.hf_model = None
+        self.vllm_model = None
         
 
 
@@ -161,7 +167,7 @@ class HfAgent:
 
 
         self.ppo_trainer = PPOTrainer(
-            model=self.model,
+            model=self.hf_model,
             ref_model=None,
             config=PPOConfig(**self.ppo_training_args),
             tokenizer=self.tokenizer,
@@ -196,7 +202,6 @@ class HfAgent:
             
 
             logging.info(f"Starting PPO step for batch {b+1}/{nb_batches}...")
-            self.tokenizer.pad_token = self.tokenizer.eos_token
             stats = self.ppo_trainer.step(
                 queries=encoded_batch_queries,
                 responses=encoded_batch_responses,
@@ -235,10 +240,10 @@ class HfAgent:
         """
         Dataset should have "conversational" form (see # https://huggingface.co/docs/trl/en/sft_trainer#dataset-format-support)
         """
-        self.switch_to_training_mode()
+        self.use_hf_model()
         dataset = load_dataset("json", data_files=dataset_path, split="train")
         sft_trainer = SFTTrainer(
-            self.model,
+            self.hf_model,
             args=self.sft_config,
             train_dataset=dataset,
         )
@@ -266,34 +271,40 @@ class HfAgent:
         if len(contexts) == 0:
             return []
         
+        # Generate with VLLM
+        if self.vllm_model != None:
+            if self.lora_pretrained_path:
+                logging.info('Generating using VLLM (with LoRA)')
+                responses = self.vllm_model.generate(texts, 
+                                    sampling_params=self.vllm_sampling_params, 
+                                    lora_request=LoRARequest("dond_lora", self.adapter_id, self.lora_pretrained_path)
+                                    )
+                self.adapter_id +=1
+            else:
+                logging.info('Generating using VLLM (without LoRA)')
+                responses = self.vllm_model.generate(texts, 
+                    sampling_params=self.vllm_sampling_params
+                    )
+            responses = [response.outputs[0].text for response in responses]
+        
         # Generate with Hugging Face
-        if self.inference_library == "hf":
-            model_inputs = self.tokenizer(texts, return_tensors="pt").to(self.device)
+        elif self.hf_model != None:
+            logging.info('Generating using Hugging Face')
+            model_inputs = self.tokenizer(texts, padding=True, return_tensors="pt").to(self.device)
             with torch.no_grad():
-                generated_ids = self.model.generate(**model_inputs, 
-                                                    do_sample=True,
+                generated_ids = self.hf_model.generate(**model_inputs, 
                                                     **self.hf_sampling_params) 
             generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs["input_ids"], generated_ids)]
             responses = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)
 
-        # Generate with VLLM
-        elif self.inference_library == "vllm":
-            if self.lora_pretrained_path:
-                logging.info('Generating using LoRA weights.')
-                responses = self.model.generate(texts, 
-                                    sampling_params=self.vllm_sampling_params, 
-                                    lora_request=LoRARequest("dond_lora", 1.0, self.lora_pretrained_path)
-                                    )
-            else:
-                responses = self.model.generate(texts, 
-                    sampling_params=self.vllm_sampling_params
-                    )
-            responses = [response.outputs[0].text for response in responses]
+        else:
+            logging.warning('No model in hf agent!')
+
 
         return responses
     
 
-    def switch_to_training_mode(self):
+    def use_hf_model(self):
 
         # Save RNG state
         self.rng_state = {
@@ -302,39 +313,32 @@ class HfAgent:
             'numpy': np.random.get_state(),
         }
 
-        # Free GPU memory taken by VLLM
-        if self.inference_library == "vllm":
-            del self.model
+        # Free memory from inference model
+        if self.vllm_model != None: 
+            del self.vllm_model
             gc.collect()
             torch.cuda.empty_cache()
-
-        elif self.inference_library == "hf":
-            return 
-
-        self.inference_library = "hf"        
-
-        if self.lora_pretrained_path:
-            self.pretrained_args['pretrained_model_name_or_path'] = self.lora_pretrained_path
+            self.vllm_model = None
 
         if self.default_training_mode == 'ppo':
-            self.model = AutoModelForCausalLMWithValueHead.from_pretrained(
+            self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
                                                             **self.pretrained_args,
                                                                 quantization_config=self.bits_and_bytes_configs,
                                                                 peft_config=self.lora_config
                                                             )
         elif self.default_training_mode == 'sft':
-            self.model = AutoModelForCausalLM.from_pretrained(
+            self.hf_model = AutoModelForCausalLM.from_pretrained(
                                                 **self.pretrained_args,
                                                     quantization_config=self.bits_and_bytes_configs,
                                                     peft_config=self.lora_config
                                                 )
 
-        # Restore RNG state
+        # Restore RNG states
         torch.set_rng_state(self.rng_state['torch'])
         torch.cuda.set_rng_state(self.rng_state['cuda'])
         np.random.set_state(self.rng_state['numpy'])
 
-    def switch_to_generation_mode(self):
+    def use_vllm_model(self):
 
         # Save RNG state
         self.rng_state = {
@@ -344,43 +348,47 @@ class HfAgent:
         }
 
         # Free GPU memory taken by Hugging Face
-        if self.inference_library == "hf":
-            move_model_to_cpu(self.model)
-            del self.model
-            del self.ppo_trainer
-            gc.collect()
-            torch.cuda.empty_cache()
-
-        elif self.inference_library == "vllm":
-            return 
-        
+        del self.ppo_trainer
+        gc.collect()
+        torch.cuda.empty_cache()
 
         # Get VLLM model
-        self.inference_library = "vllm"
         if self.lora_pretrained_path:
-            # TODO: get max lora from args
-            self.model = LLM(self.model_name, enable_lora=True, max_lora_rank=256)
+            self.vllm_model = LLM(self.model_name, enable_lora=True, max_lora_rank=256)
         else:
-            self.model = LLM(self.model_name, enable_lora=False, max_lora_rank=256)
+            self.vllm_model = LLM(self.model_name, enable_lora=False, max_lora_rank=256)
 
         # Restore RNG state
         torch.set_rng_state(self.rng_state['torch'])
         torch.cuda.set_rng_state(self.rng_state['cuda'])
         np.random.set_state(self.rng_state['numpy'])
             
-        
+
+
     def save_lora_weights(self) -> None:
         """
-        Saves only the LoRA weights to a specified directory.
+        Saves only the LoRA weights to a specified directory. If the directory
+        already exists, it deletes the existing directory before saving.
 
         Args:
             save_directory (str): The directory where the LoRA weights will be saved.
         """
 
+        # Construct the path for LoRA weights
         lora_weights_path = os.path.join(self.output_directory, self.name + '_lora_weights')
+        
+        # If the folder exists, delete it
+        if os.path.exists(lora_weights_path):
+            shutil.rmtree(lora_weights_path)
+            logging.info(f"Existing directory '{lora_weights_path}' deleted.")
+
+        # Save the LoRA weights
         self.ppo_trainer.save_pretrained(lora_weights_path)
+        
+        # Update the path attribute
         self.lora_pretrained_path = lora_weights_path
         logging.info(f"LoRA weights saved to {lora_weights_path}")
+
 
     
 
