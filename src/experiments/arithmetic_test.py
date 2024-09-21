@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 
 # Constants
 N_SAMPLES = 32
-N_STEPS = 6
+N_STEPS = 20
 MODEL_NAME = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 CORRECT_ANSWER = 9
 
