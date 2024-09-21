@@ -314,18 +314,20 @@ class HfAgent:
             torch.cuda.empty_cache()
             self.vllm_model = None
 
-        if self.default_training_mode == 'ppo':
-            self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                                                            **self.pretrained_args,
-                                                                quantization_config=self.bits_and_bytes_configs,
-                                                                peft_config=self.lora_config
-                                                            )
-        elif self.default_training_mode == 'sft':
-            self.hf_model = AutoModelForCausalLM.from_pretrained(
-                                                **self.pretrained_args,
-                                                    quantization_config=self.bits_and_bytes_configs,
-                                                    peft_config=self.lora_config
-                                                )
+        if self.hf_model == None:
+
+            if self.default_training_mode == 'ppo':
+                self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
+                                                                **self.pretrained_args,
+                                                                    quantization_config=self.bits_and_bytes_configs,
+                                                                    peft_config=self.lora_config
+                                                                )
+            elif self.default_training_mode == 'sft':
+                self.hf_model = AutoModelForCausalLM.from_pretrained(
+                                                    **self.pretrained_args,
+                                                        quantization_config=self.bits_and_bytes_configs,
+                                                        peft_config=self.lora_config
+                                                    )
 
 
     def use_vllm_model(self):
@@ -359,8 +361,11 @@ class HfAgent:
             shutil.rmtree(lora_weights_path)
             logging.info(f"Existing directory '{lora_weights_path}' deleted.")
 
+        os.makedirs(lora_weights_path, exist_ok=True)
+        logging.info(f"Directory '{lora_weights_path}' created.")
+
         # Save the LoRA weights
-        self.ppo_trainer.save_pretrained(lora_weights_path)
+        self.hf_model.save_pretrained(lora_weights_path)
         
         # Update the path attribute
         self.lora_pretrained_path = lora_weights_path

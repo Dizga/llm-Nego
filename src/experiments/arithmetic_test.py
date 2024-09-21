@@ -10,8 +10,8 @@ from utils.plot_curves import plot_curves
 logging.basicConfig(level=logging.INFO)
 
 # Constants
-N_SAMPLES = 64
-N_STEPS = 20
+N_SAMPLES = 32
+N_STEPS = 6
 MODEL_NAME = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 CORRECT_ANSWER = 9
 
