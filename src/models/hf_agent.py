@@ -277,9 +277,10 @@ class HfAgent:
                 logging.info('Generating using VLLM (with LoRA)')
                 responses = self.vllm_model.generate(texts, 
                                     sampling_params=self.vllm_sampling_params, 
-                                    lora_request=LoRARequest("dond_lora", self.adapter_id, self.lora_pretrained_path)
+                                    lora_request=LoRARequest("dond_lora", 
+                                                             1, 
+                                                             self.lora_pretrained_path)
                                     )
-                self.adapter_id +=1
             else:
                 logging.info('Generating using VLLM (without LoRA)')
                 responses = self.vllm_model.generate(texts, 
@@ -306,13 +307,6 @@ class HfAgent:
 
     def use_hf_model(self):
 
-        # Save RNG state
-        self.rng_state = {
-            'torch': torch.get_rng_state(),
-            'cuda': torch.cuda.get_rng_state(),
-            'numpy': np.random.get_state(),
-        }
-
         # Free memory from inference model
         if self.vllm_model != None: 
             del self.vllm_model
@@ -333,19 +327,8 @@ class HfAgent:
                                                     peft_config=self.lora_config
                                                 )
 
-        # Restore RNG states
-        torch.set_rng_state(self.rng_state['torch'])
-        torch.cuda.set_rng_state(self.rng_state['cuda'])
-        np.random.set_state(self.rng_state['numpy'])
 
     def use_vllm_model(self):
-
-        # Save RNG state
-        self.rng_state = {
-            'torch': torch.get_rng_state(),
-            'cuda': torch.cuda.get_rng_state(),
-            'numpy': np.random.get_state(),
-        }
 
         # Free GPU memory taken by Hugging Face
         del self.ppo_trainer
@@ -357,12 +340,6 @@ class HfAgent:
             self.vllm_model = LLM(self.model_name, enable_lora=True, max_lora_rank=256)
         else:
             self.vllm_model = LLM(self.model_name, enable_lora=False, max_lora_rank=256)
-
-        # Restore RNG state
-        torch.set_rng_state(self.rng_state['torch'])
-        torch.cuda.set_rng_state(self.rng_state['cuda'])
-        np.random.set_state(self.rng_state['numpy'])
-            
 
 
     def save_lora_weights(self) -> None:
