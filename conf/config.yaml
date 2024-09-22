@@ -6,7 +6,7 @@ hydra:
 
 iterations:
 
-  nb_iterations: 10
+  nb_iterations: 100
   iteration_runner_args:
     nb_parallel_games: 32
     games_per_iteration: 32
@@ -40,8 +40,8 @@ models:
         load_in_8bit: False
       lora_args:
         task_type: TaskType.CAUSAL_LM
-        r: 16
-        lora_alpha: 16
+        r: 64
+        lora_alpha: 64
         lora_dropout: 0.0
         target_modules: "all-linear"
       ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py

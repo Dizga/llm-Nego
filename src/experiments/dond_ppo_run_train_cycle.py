@@ -29,7 +29,7 @@ def dond_ppo_run_train_cycle(cfg):
     for model_name in cfg['models'].keys():
         if cfg['models'][model_name]['class'] == "hf":
             models[model_name] = HfAgent(**cfg['models'][model_name]['init_args'])
-            models[model_name].use_hf_model()
+            models[model_name].use_vllm_model()
 
         elif cfg['models'][model_name]['class'] == "dummy_hf":
             models[model_name] = DummyHfAgent(**cfg['models'][model_name]['init_args'])
@@ -60,9 +60,6 @@ def dond_ppo_run_train_cycle(cfg):
     for _ in range(cfg['iterations']['nb_iterations']):
         
         # Generate games
-        for model_name in models.keys():
-            model = models[model_name]
-            model.use_vllm_model()
         iteration_runner.run_iteration()
         it_folder = iteration_runner.it_folder
 
@@ -95,6 +92,9 @@ def dond_ppo_run_train_cycle(cfg):
                     if player.model_name == model_name:
                         file_name = extract_sft_dataset(it_folder, player.player_name, out_file=file_name)
                 model.train_sft(file_name)
+
+            model.use_vllm_model()
+            
 
             
 
