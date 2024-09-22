@@ -8,6 +8,7 @@ def extract_ppo_dataset(folder_path: str,
                         player_name="bob", 
                         export_for_debugging=True, 
                         use_pattern_matching=True,
+                        substract_mean=False,
                         last_k_responses=None):
     """
     Extracts data for HF PPO training from game logs.
@@ -52,7 +53,7 @@ def extract_ppo_dataset(folder_path: str,
         scores.extend(conv_scores)
 
     # Adjust scores by subtracting the mean
-    if scores:
+    if substract_mean and scores:
         mean_score = mean(scores)
         scores = [s - mean_score for s in scores]
 

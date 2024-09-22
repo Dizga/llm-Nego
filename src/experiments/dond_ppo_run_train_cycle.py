@@ -3,6 +3,7 @@ import os
 import logging
 import time
 from omegaconf import OmegaConf
+import random
 # local imports
 from experiments.dond_iteration_runner import DondIterationRunner
 from environments.dond_game import DondGame
@@ -69,17 +70,27 @@ def dond_ppo_run_train_cycle(cfg):
         for model_name in models.keys():
             model = models[model_name]
 
-            # Train with ppo
+            # Extract + Train
             if model.default_training_mode == 'ppo':
                 queries, responses, scores = [], [], []
 
+                # Extract Data
                 for player in players:
                     if player.model_name == model_name:
-                        new_queries, new_responses, new_scores = extract_ppo_dataset(it_folder, player.player_name)
+                        new_queries, new_responses, new_scores = extract_ppo_dataset(it_folder, player.player_name, **player['ppo_data_extraction_args'])
                         queries += new_queries
                         responses += new_responses
                         scores += new_scores
 
+                # Shuffle Data
+                data = list(zip(queries, responses, scores))
+                random.shuffle(data)
+                queries, responses, scores = zip(*data)
+                queries = list(queries)
+                responses = list(responses)
+                scores = list(scores)
+
+                # Train on Data
                 model.train_ppo(queries, responses, scores)
 
             # Train with supervised fine-tuning

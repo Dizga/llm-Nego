@@ -64,7 +64,10 @@ class HfAgent:
         save_lora_weights= None,
         lora_pretrained_path=None,
         generation_args=None,
-        default_training_mode='ppo'
+        default_training_mode='ppo',
+        keep_vllm_during_training=False,
+        keep_hf_during_generation=True,
+        generate_with="vllm"
     ) -> None:
         """
         Initializes the HfAgent.
@@ -114,7 +117,10 @@ class HfAgent:
         self.adapter_id = 1
         self.hf_model = None
         self.vllm_model = None
-        self.ppo_trainer = None
+
+        self.keep_vllm_during_training = keep_vllm_during_training
+        self.keep_hf_during_generation = keep_hf_during_generation
+        self.generate_with = generate_with
         
 
 
@@ -154,7 +160,15 @@ class HfAgent:
             dict: A dictionary containing training statistics.
         """
 
+        if not self.keep_vllm_during_training: 
+            if self.vllm_model != None:
+                del self.vllm_model
+                gc.collect()
+                torch.cuda.empty_cache()
+                self.vllm_model = None
+
         self.use_hf_model()
+        
 
         ds = len(queries)  # get datasize
         if ds == 0:
@@ -169,7 +183,7 @@ class HfAgent:
         self.ppo_training_args['project_kwargs'] = {'logging_dir': os.path.join(self.output_directory, self.name + '_ppo_tensorboard')}
 
 
-        self.ppo_trainer = CustomPPOTrainer(
+        self.ppo_trainer = PPOTrainer(
             model=self.hf_model,
             ref_model=None,
             config=PPOConfig(**self.ppo_training_args),
@@ -238,6 +252,7 @@ class HfAgent:
         self.delete_tensor_list(queries)
         self.delete_tensor_list(responses)
         self.delete_tensor_list(scores)
+        del self.ppo_trainer
         gc.collect()
         torch.cuda.empty_cache()
 
@@ -273,32 +288,38 @@ class HfAgent:
             str: The generated response from the model.
         """
 
-        self.use_vllm_model()
-
         texts = self.tokenizer.apply_chat_template(contexts, tokenize=False, add_generation_prompt=True)
 
-        if len(contexts) == 0:
-            return []
+        if len(contexts) == 0: return []
         
         # Generate with VLLM
-        if self.vllm_model != None:
-            if self.lora_pretrained_path:
-                logging.info('Generating using VLLM (with LoRA)')
-                responses = self.vllm_model.generate(texts, 
-                                    sampling_params=self.vllm_sampling_params, 
-                                    lora_request=LoRARequest("dond_lora", 
-                                                             1, 
-                                                             self.lora_pretrained_path)
-                                    )
-            else:
-                logging.info('Generating using VLLM (without LoRA)')
-                responses = self.vllm_model.generate(texts, 
-                    sampling_params=self.vllm_sampling_params
-                    )
+        if self.generate_with == "vllm":
+
+            if not self.keep_hf_during_generation:
+                del self.hf_model
+                gc.collect()
+                torch.cuda.empty_cache()
+
+            self.use_vllm_model()
+            
+            with torch.no_grad():
+                if self.lora_pretrained_path:
+                    logging.info('Generating using VLLM (with LoRA)')
+                    responses = self.vllm_model.generate(texts, 
+                                        sampling_params=self.vllm_sampling_params, 
+                                        lora_request=LoRARequest("dond_lora", 
+                                                                1, 
+                                                                self.lora_pretrained_path)
+                                        )
+                else:
+                    logging.info('Generating using VLLM (without LoRA)')
+                    responses = self.vllm_model.generate(texts, 
+                        sampling_params=self.vllm_sampling_params
+                        )
             responses = [response.outputs[0].text for response in responses]
         
         # Generate with Hugging Face
-        elif self.hf_model != None:
+        elif self.generate_with == "hf":
             logging.info('Generating using Hugging Face')
             model_inputs = self.tokenizer(texts, padding=True, return_tensors="pt").to(self.device)
             with torch.no_grad():
@@ -316,14 +337,12 @@ class HfAgent:
 
     def use_hf_model(self):
 
-        # Free memory from inference model
-        if self.vllm_model != None: 
-            del self.vllm_model
-            gc.collect()
-            torch.cuda.empty_cache()
-            self.vllm_model = None
-
-        if self.hf_model == None:
+        if self.hf_model == None and self.lora_pretrained_path:
+            self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
+                                                                self.lora_pretrained_path,
+                                                                is_trainable=True
+                                                                )
+        elif self.hf_model == None:
 
             if self.default_training_mode == 'ppo':
                 self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
@@ -341,20 +360,12 @@ class HfAgent:
 
     def use_vllm_model(self):
 
-        # Free GPU memory taken by Hugging Face
-        if self.ppo_trainer != None:
-            del self.ppo_trainer
-            gc.collect()
-            torch.cuda.empty_cache()
-            self.ppo_trainer = None
-
-
-        # Get VLLM model
         if self.lora_pretrained_path and self.vllm_model == None:
             del self.vllm_model
             gc.collect()
             torch.cuda.empty_cache()
             self.vllm_model = LLM(self.model_name, enable_lora=True, max_lora_rank=256)
+
         elif self.vllm_model == None:
             self.vllm_model = LLM(self.model_name, enable_lora=False, max_lora_rank=256)
 
@@ -379,9 +390,7 @@ class HfAgent:
         logging.info(f"Directory '{lora_weights_path}' created.")
 
         # Save the LoRA weights
-        # TODO: check if difference!
-        #self.hf_model.save_pretrained(lora_weights_path)
-        self.ppo_trainer.save_pretrained(lora_weights_path)
+        self.hf_model.save_pretrained(lora_weights_path)
         
         # Update the path attribute
         self.lora_pretrained_path = lora_weights_path

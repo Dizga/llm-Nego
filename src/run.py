@@ -13,8 +13,8 @@ from experiments.arithmetic_test import arithmetic_test
 
 @hydra.main(config_path="../conf", config_name="config")
 def main(cfg):
-    dond_ppo_run_train_cycle(cfg)
-    #arithmetic_test()
+    #dond_ppo_run_train_cycle(cfg)
+    arithmetic_test(cfg)
 
 if __name__ == "__main__": main()
 

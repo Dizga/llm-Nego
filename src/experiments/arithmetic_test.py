@@ -5,13 +5,17 @@ import re
 from statistics import mean
 from models.hf_agent import HfAgent  # Assuming the class is in the same folder
 from utils.plot_curves import plot_curves
+from omegaconf import OmegaConf
+torch.set_default_device('cuda')
+
+
 # Setup logging
 
 logging.basicConfig(level=logging.INFO)
 
 # Constants
 N_SAMPLES = 32
-N_STEPS = 7
+N_STEPS = 8
 MODEL_NAME = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 CORRECT_ANSWER = 9
 
@@ -33,19 +37,6 @@ def calculate_rewards(responses, correct_answers):
         rewards.append(-abs(predicted_answer - correct))
     return rewards
 
-def initialize_agent():
-    agent = HfAgent(
-        model_name=MODEL_NAME,
-        device="cuda",
-        pretrained_args={'pretrained_model_name_or_path': MODEL_NAME},
-        bits_and_bytes_args={'load_in_8bit': False},
-        lora_args={'r': 32, 'lora_alpha': 32, 'lora_dropout': 0.1},
-        ppo_trainer_args={'batch_size': N_SAMPLES, 'mini_batch_size': 1, 'gradient_accumulation_steps': N_SAMPLES, 'ppo_epochs': 4},
-        generation_args={'temperature': 1.0, 'top_p': 0.9, 'top_k': 1000, 'max_new_tokens': 20}
-    )
-
-    return agent
-
 def train_agent(agent, num_steps):
 
     mean_scores = []
@@ -64,7 +55,9 @@ def train_agent(agent, num_steps):
         plot_curves(y_list=[mean_scores], plot_name='mean_scores')
         agent.train_ppo(queries, responses, rewards)
 
-def arithmetic_test():
-    agent = initialize_agent()
+
+def arithmetic_test(cfg):
+    cfg = OmegaConf.to_container(cfg, resolve=True, structured_config_mode='dict')
+    agent = HfAgent(**cfg['models']['llama']['init_args'])
     train_agent(agent, N_STEPS)
     logging.info("Training completed.")
