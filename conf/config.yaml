@@ -6,10 +6,10 @@ hydra:
 
 iterations:
 
-  nb_iterations: 100
+  nb_iterations: 150
   iteration_runner_args:
-    nb_parallel_games: 32
-    games_per_iteration: 32
+    nb_parallel_games: 64
+    games_per_iteration: 64
 
   dond_game_args:
     rounds_per_game: 1
@@ -40,16 +40,16 @@ models:
         load_in_8bit: False
       lora_args:
         task_type: TaskType.CAUSAL_LM
-        r: 64
-        lora_alpha: 64
+        r: 32
+        lora_alpha: 32
         lora_dropout: 0.0
         target_modules: "all-linear"
       ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
-        batch_size: 32
+        batch_size: 64
         mini_batch_size: 1
         gradient_accumulation_steps: None
-        ppo_epochs: 4
-        vf_coef: 0.0
+        ppo_epochs: 1
+        #vf_coef: 0.0
         gradient_checkpointing: False
         log_with: "tensorboard"
         project_kwargs: None
@@ -64,7 +64,7 @@ models:
       generation_args:
         max_new_tokens: 500
         do_sample: True
-        temperature: 1.0
+        temperature: 0.5
         top_k: 1000
         top_p: 0.9
         repetition_penalty: 1.0

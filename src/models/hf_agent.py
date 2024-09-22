@@ -114,6 +114,7 @@ class HfAgent:
         self.adapter_id = 1
         self.hf_model = None
         self.vllm_model = None
+        self.ppo_trainer = None
         
 
 
@@ -153,6 +154,8 @@ class HfAgent:
             dict: A dictionary containing training statistics.
         """
 
+        self.use_hf_model()
+
         ds = len(queries)  # get datasize
         if ds == 0:
             logging.warning("train_ppo received empty dataset")
@@ -166,7 +169,7 @@ class HfAgent:
         self.ppo_training_args['project_kwargs'] = {'logging_dir': os.path.join(self.output_directory, self.name + '_ppo_tensorboard')}
 
 
-        self.ppo_trainer = PPOTrainer(
+        self.ppo_trainer = CustomPPOTrainer(
             model=self.hf_model,
             ref_model=None,
             config=PPOConfig(**self.ppo_training_args),
@@ -195,10 +198,10 @@ class HfAgent:
             encoded_batch_scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in batch_scores]
             assert len(encoded_batch_queries) == len(encoded_batch_responses)
 
-            decoded_queries = [self.tokenizer.decode(q, skip_special_tokens=True) for q in encoded_batch_queries]
+            decoded_queries = [self.tokenizer.decode(q, skip_special_tokens=False) for q in encoded_batch_queries]
             logging.debug(f"Decoded Queries: {decoded_queries}")
-            decoded_responses = [self.tokenizer.decode(r, skip_special_tokens=True) for r in encoded_batch_responses]
-            logging.debug(f"Decoded Responses: {decoded_responses}")
+            decoded_responses = [self.tokenizer.decode(r, skip_special_tokens=False) for r in encoded_batch_responses]
+            logging.info(f"Decoded Responses: {decoded_responses}")
             
 
             logging.info(f"Starting PPO step for batch {b+1}/{nb_batches}...")
@@ -220,7 +223,10 @@ class HfAgent:
                 rewards=encoded_batch_scores,
             )
 
-            del encoded_batch_queries, encoded_batch_responses, encoded_batch_scores
+            self.delete_tensor_list(encoded_batch_queries)
+            self.delete_tensor_list(encoded_batch_responses)
+            self.delete_tensor_list(encoded_batch_scores)
+            gc.collect()
             torch.cuda.empty_cache()
 
             batch_duration = time.time() - start_time
@@ -232,6 +238,7 @@ class HfAgent:
         self.delete_tensor_list(queries)
         self.delete_tensor_list(responses)
         self.delete_tensor_list(scores)
+        gc.collect()
         torch.cuda.empty_cache()
 
         self.save_lora_weights()
@@ -265,6 +272,8 @@ class HfAgent:
         Returns:
             str: The generated response from the model.
         """
+
+        self.use_vllm_model()
 
         texts = self.tokenizer.apply_chat_template(contexts, tokenize=False, add_generation_prompt=True)
 
@@ -333,16 +342,21 @@ class HfAgent:
     def use_vllm_model(self):
 
         # Free GPU memory taken by Hugging Face
-        del self.ppo_trainer
-        gc.collect()
-        torch.cuda.empty_cache()
+        if self.ppo_trainer != None:
+            del self.ppo_trainer
+            gc.collect()
+            torch.cuda.empty_cache()
+            self.ppo_trainer = None
+
 
         # Get VLLM model
-        if self.lora_pretrained_path:
+        if self.lora_pretrained_path and self.vllm_model == None:
+            del self.vllm_model
+            gc.collect()
+            torch.cuda.empty_cache()
             self.vllm_model = LLM(self.model_name, enable_lora=True, max_lora_rank=256)
-        else:
+        elif self.vllm_model == None:
             self.vllm_model = LLM(self.model_name, enable_lora=False, max_lora_rank=256)
-
 
     def save_lora_weights(self) -> None:
         """
@@ -365,7 +379,9 @@ class HfAgent:
         logging.info(f"Directory '{lora_weights_path}' created.")
 
         # Save the LoRA weights
-        self.hf_model.save_pretrained(lora_weights_path)
+        # TODO: check if difference!
+        #self.hf_model.save_pretrained(lora_weights_path)
+        self.ppo_trainer.save_pretrained(lora_weights_path)
         
         # Update the path attribute
         self.lora_pretrained_path = lora_weights_path

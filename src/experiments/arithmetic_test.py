@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 
 # Constants
 N_SAMPLES = 32
-N_STEPS = 20
+N_STEPS = 7
 MODEL_NAME = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 CORRECT_ANSWER = 9
 
@@ -56,14 +56,12 @@ def train_agent(agent, num_steps):
         x, y = random.randint(1, 10), random.randint(1, 10)
         queries, correct_answers = generate_queries(N_SAMPLES, x, y)
         
-        agent.use_vllm_model()
         responses = [[{'role': 'assistant', 'content': r}] for r in agent.prompt(queries)]
         logging.info(responses)
         rewards = calculate_rewards(responses, correct_answers)
         
         mean_scores.append(mean(rewards))
         plot_curves(y_list=[mean_scores], plot_name='mean_scores')
-        agent.use_hf_model()
         agent.train_ppo(queries, responses, rewards)
 
 def arithmetic_test():
