@@ -67,7 +67,8 @@ class HfAgent:
         default_training_mode='ppo',
         keep_vllm_during_training=False,
         keep_hf_during_generation=True,
-        generate_with="vllm"
+        generate_with="vllm",
+        ppo_trainer_class=None
     ) -> None:
         """
         Initializes the HfAgent.
@@ -95,6 +96,7 @@ class HfAgent:
         self.bits_and_bytes_configs = BitsAndBytesConfig(**bits_and_bytes_args)
         self.lora_config = LoraConfig(**lora_args) 
         self.ppo_training_args = ppo_trainer_args
+        self.ppo_trainer_class = ppo_trainer_class
 
         #self.sft_config = SFTConfig(output_dir=os.path.join(out_dir, 'sft_lora_model'), packing=True)
 
@@ -183,7 +185,7 @@ class HfAgent:
         self.ppo_training_args['project_kwargs'] = {'logging_dir': os.path.join(self.output_directory, self.name + '_ppo_tensorboard')}
 
 
-        self.ppo_trainer = PPOTrainer(
+        self.ppo_trainer = globals()[self.ppo_trainer_class](
             model=self.hf_model,
             ref_model=None,
             config=PPOConfig(**self.ppo_training_args),
@@ -240,8 +242,6 @@ class HfAgent:
             self.delete_tensor_list(encoded_batch_queries)
             self.delete_tensor_list(encoded_batch_responses)
             self.delete_tensor_list(encoded_batch_scores)
-            gc.collect()
-            torch.cuda.empty_cache()
 
             batch_duration = time.time() - start_time
             logging.info(f"Batch {b+1}/{nb_batches} training completed in {batch_duration:.2f} seconds.")
@@ -253,6 +253,7 @@ class HfAgent:
         self.delete_tensor_list(responses)
         self.delete_tensor_list(scores)
         del self.ppo_trainer
+        del stats
         gc.collect()
         torch.cuda.empty_cache()
 
@@ -305,7 +306,7 @@ class HfAgent:
             with torch.no_grad():
                 if self.lora_pretrained_path:
                     logging.info('Generating using VLLM (with LoRA)')
-                    responses = self.vllm_model.generate(texts, 
+                    decoded = self.vllm_model.generate(texts, 
                                         sampling_params=self.vllm_sampling_params, 
                                         lora_request=LoRARequest("dond_lora", 
                                                                 1, 
@@ -313,10 +314,11 @@ class HfAgent:
                                         )
                 else:
                     logging.info('Generating using VLLM (without LoRA)')
-                    responses = self.vllm_model.generate(texts, 
+                    decoded = self.vllm_model.generate(texts, 
                         sampling_params=self.vllm_sampling_params
                         )
-            responses = [response.outputs[0].text for response in responses]
+            responses = [d.outputs[0].text for d in decoded]
+            del decoded # TODO : verify this does not break everything
         
         # Generate with Hugging Face
         elif self.generate_with == "hf":
@@ -364,10 +366,12 @@ class HfAgent:
             del self.vllm_model
             gc.collect()
             torch.cuda.empty_cache()
-            self.vllm_model = LLM(self.model_name, enable_lora=True, max_lora_rank=256)
+            self.vllm_model = LLM(self.model_name, enable_lora=True, max_lora_rank=128)
 
         elif self.vllm_model == None:
-            self.vllm_model = LLM(self.model_name, enable_lora=False, max_lora_rank=256)
+            gc.collect()
+            torch.cuda.empty_cache()
+            self.vllm_model = LLM(self.model_name, enable_lora=False, max_lora_rank=128)
 
     def save_lora_weights(self) -> None:
         """

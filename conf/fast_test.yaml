@@ -1,12 +1,14 @@
-
-
 hydra:
   job:
     chdir: false
 
+experiment:
+  method: dond_nego_cycle
+  description: "Nothing to say."
+
 iterations:
 
-  nb_iterations: 2
+  nb_iterations: 20
   iteration_runner_args:
     nb_parallel_games: 2
     games_per_iteration: 2
@@ -37,19 +39,20 @@ models:
         torch_dtype: "bfloat16"
         device_map: "auto"
       bits_and_bytes_args:
-        load_in_8bit: False
+        load_in_8bit: True
       lora_args:
         task_type: TaskType.CAUSAL_LM
-        r: 32
-        lora_alpha: 32
-        lora_dropout: 0.0
+        r: 8
+        lora_alpha: 8
+        lora_dropout: 0.1
         target_modules: "all-linear"
+      ppo_trainer_class: PPOTrainer
       ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
-        batch_size: 64
+        batch_size: 32
         mini_batch_size: 1
         gradient_accumulation_steps: None
-        ppo_epochs: 1
-        #vf_coef: 0.0
+        ppo_epochs: 4
+        #vf_coef: 0.1
         gradient_checkpointing: False
         log_with: "tensorboard"
         project_kwargs: None
@@ -57,17 +60,20 @@ models:
         #target_kl: 0.1
         #cliprange: 0.2
         #init_kl_coef: 0.2
-        learning_rate: 10e-5
+        #learning_rate: 10e-5
         is_peft_model: True
       save_lora_weights: True
       lora_pretrained_path: null
       generation_args:
         max_new_tokens: 500
         do_sample: True
-        temperature: 0.5
+        temperature: 1.0
         top_k: 1000
         top_p: 0.9
         repetition_penalty: 1.0
+      keep_vllm_during_training: False
+      keep_hf_during_generation: True
+      generate_with: "vllm"
 
 
 players: 
@@ -79,7 +85,11 @@ players:
       chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond/new_round.txt"
-      max_retries: 3
+      max_retries: 1
+    ppo_data_extraction_args:
+      last_k_responses: 1
+      substract_mean: false
+
 
   player_b:
     id: 1
@@ -89,7 +99,10 @@ players:
       chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond//new_round.txt"
-      max_retries: 3
+      max_retries: 1
+    ppo_data_extraction_args:
+      last_k_responses: 1
+      substract_mean: false
 
 
 

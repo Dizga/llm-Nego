@@ -16,7 +16,7 @@ from environments.dond_player import DondPlayer
 from training.extract_ppo_dataset import extract_ppo_dataset
 from training.extract_sft_dataset import extract_sft_dataset
 
-def dond_ppo_run_train_cycle(cfg): 
+def dond_nego_cycle(cfg): 
     total_start_time = time.time()
 
     hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
@@ -30,7 +30,6 @@ def dond_ppo_run_train_cycle(cfg):
     for model_name in cfg['models'].keys():
         if cfg['models'][model_name]['class'] == "hf":
             models[model_name] = HfAgent(**cfg['models'][model_name]['init_args'])
-
         elif cfg['models'][model_name]['class'] == "dummy_hf":
             models[model_name] = DummyHfAgent(**cfg['models'][model_name]['init_args'])
         elif cfg['models'][model_name]['class'] == "oai":
@@ -77,18 +76,18 @@ def dond_ppo_run_train_cycle(cfg):
                 # Extract Data
                 for player in players:
                     if player.model_name == model_name:
-                        new_queries, new_responses, new_scores = extract_ppo_dataset(it_folder, player.player_name, **player['ppo_data_extraction_args'])
+                        new_queries, new_responses, new_scores = extract_ppo_dataset(it_folder, player.player_name, **cfg['players'][player.player_name]['ppo_data_extraction_args'])
                         queries += new_queries
                         responses += new_responses
                         scores += new_scores
 
                 # Shuffle Data
-                data = list(zip(queries, responses, scores))
-                random.shuffle(data)
-                queries, responses, scores = zip(*data)
-                queries = list(queries)
-                responses = list(responses)
-                scores = list(scores)
+                # data = list(zip(queries, responses, scores))
+                # random.shuffle(data)
+                # queries, responses, scores = zip(*data)
+                # queries = list(queries)
+                # responses = list(responses)
+                # scores = list(scores)
 
                 # Train on Data
                 model.train_ppo(queries, responses, scores)
