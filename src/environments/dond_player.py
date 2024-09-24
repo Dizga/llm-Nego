@@ -13,7 +13,6 @@ class DondPlayer():
                  new_round_file,
                  max_retries,
                  finalization_file,
-                 game_state,
                  model_name):
         """
         The Player acts as a middle-man between the game and a LLM player.

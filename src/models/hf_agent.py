@@ -21,7 +21,6 @@ from functools import partial
 
 from datasets import load_dataset
 from trl import SFTConfig, SFTTrainer
-from utils.log_gpu_usage import log_gpu_usage
 from utils.model_to_cpu import move_model_to_cpu
 import logging
 import time
@@ -37,6 +36,7 @@ import subprocess
 import gc
 from vllm import LLM, SamplingParams
 from vllm.lora.request import LoRARequest
+from vllm.distributed.parallel_state import destroy_model_parallel
 from omegaconf import OmegaConf
 
 from training.custom_ppo_trainer import CustomPPOTrainer
@@ -129,6 +129,7 @@ class HfAgent:
     def batch_encode(self, data: List[List[dict]], pad=False, is_response=False) -> ...:
 
         if is_response:
+            # TODO: pattern match on strict or dict
             formatted = [d[0]['content'] + self.tokenizer.eos_token for d in data]
             self.tokenizer.padding_side = "right"
         else:
@@ -162,15 +163,9 @@ class HfAgent:
             dict: A dictionary containing training statistics.
         """
 
-        if not self.keep_vllm_during_training: 
-            if self.vllm_model != None:
-                del self.vllm_model
-                gc.collect()
-                torch.cuda.empty_cache()
-                self.vllm_model = None
+        if not self.keep_vllm_during_training: self.destroy_vllm()
 
         self.use_hf_model()
-        
 
         ds = len(queries)  # get datasize
         if ds == 0:
@@ -214,11 +209,6 @@ class HfAgent:
             encoded_batch_scores = [torch.tensor(s, dtype=torch.float).to(self.device) for s in batch_scores]
             assert len(encoded_batch_queries) == len(encoded_batch_responses)
 
-            decoded_queries = [self.tokenizer.decode(q, skip_special_tokens=False) for q in encoded_batch_queries]
-            logging.debug(f"Decoded Queries: {decoded_queries}")
-            decoded_responses = [self.tokenizer.decode(r, skip_special_tokens=False) for r in encoded_batch_responses]
-            logging.info(f"Decoded Responses: {decoded_responses}")
-            
 
             logging.info(f"Starting PPO step for batch {b+1}/{nb_batches}...")
             stats = self.ppo_trainer.step(
@@ -242,6 +232,8 @@ class HfAgent:
             self.delete_tensor_list(encoded_batch_queries)
             self.delete_tensor_list(encoded_batch_responses)
             self.delete_tensor_list(encoded_batch_scores)
+            gc.collect()
+            torch.cuda.empty_cache()
 
             batch_duration = time.time() - start_time
             logging.info(f"Batch {b+1}/{nb_batches} training completed in {batch_duration:.2f} seconds.")
@@ -296,32 +288,38 @@ class HfAgent:
         # Generate with VLLM
         if self.generate_with == "vllm":
 
-            if not self.keep_hf_during_generation:
-                del self.hf_model
-                gc.collect()
-                torch.cuda.empty_cache()
-
+            if not self.keep_hf_during_generation: self.destroy_hf()
+            
             self.use_vllm_model()
             
             with torch.no_grad():
                 if self.lora_pretrained_path:
                     logging.info('Generating using VLLM (with LoRA)')
+                    request = LoRARequest("dond_lora", 1, self.lora_pretrained_path)
                     decoded = self.vllm_model.generate(texts, 
                                         sampling_params=self.vllm_sampling_params, 
-                                        lora_request=LoRARequest("dond_lora", 
-                                                                1, 
-                                                                self.lora_pretrained_path)
+                                        lora_request=request
                                         )
+                    del request 
+                    gc.collect()
+                    torch.cuda.empty_cache()
                 else:
                     logging.info('Generating using VLLM (without LoRA)')
                     decoded = self.vllm_model.generate(texts, 
                         sampling_params=self.vllm_sampling_params
                         )
+
             responses = [d.outputs[0].text for d in decoded]
-            del decoded # TODO : verify this does not break everything
+
+            del decoded 
+            gc.collect()
+            torch.cuda.empty_cache()
         
         # Generate with Hugging Face
         elif self.generate_with == "hf":
+
+            self.use_hf_model()
+
             logging.info('Generating using Hugging Face')
             model_inputs = self.tokenizer(texts, padding=True, return_tensors="pt").to(self.device)
             with torch.no_grad():
@@ -358,20 +356,55 @@ class HfAgent:
                                                         quantization_config=self.bits_and_bytes_configs,
                                                         peft_config=self.lora_config
                                                     )
+                
+    def log_gpu_usage(self, context):
+        allocated_memory = torch.cuda.memory_allocated() / (1024 ** 3)
+        reserved_memory = torch.cuda.memory_reserved() / (1024 ** 3)
+        logging.info(context)
+        logging.info(f"GPU Memory Allocated: {allocated_memory:.4f} GB")
+        logging.info(f"GPU Memory Reserved: {reserved_memory:.4f} GB")
+                
+    def move_model_to_cpu(model):
+        for param in model.parameters():
+            param.data = param.data.to('cpu')
+            if param.grad is not None:
+                param.grad.data = param.grad.data.to('cpu')
+        model.to('cpu')
+    
+
+    def destroy_hf(self):
+        self.log_gpu_usage("Before destroying HF.")
+        #if self.hf_model is not None:
+            #move_model_to_cpu(self.hf_model)
+        del self.hf_model
+        gc.collect()
+        torch.cuda.empty_cache()
+        self.hf_model = None
+        self.log_gpu_usage("After destroying HF.")
 
 
     def use_vllm_model(self):
 
         if self.lora_pretrained_path and self.vllm_model == None:
-            del self.vllm_model
             gc.collect()
             torch.cuda.empty_cache()
-            self.vllm_model = LLM(self.model_name, enable_lora=True, max_lora_rank=128)
+            self.vllm_model = LLM(self.model_name, enable_lora=True, max_lora_rank=64)
 
         elif self.vllm_model == None:
             gc.collect()
             torch.cuda.empty_cache()
-            self.vllm_model = LLM(self.model_name, enable_lora=False, max_lora_rank=128)
+            self.vllm_model = LLM(self.model_name, enable_lora=False, max_lora_rank=64)
+
+    def destroy_vllm(self):
+        #destroy_model_parallel()
+        #del self.vllm_model.llm_engine.model_executor.driver_worker
+        self.log_gpu_usage("Before destroying VLLM")
+        del self.vllm_model
+        gc.collect()
+        torch.cuda.empty_cache()
+        self.vllm_model = None
+        self.log_gpu_usage("After destroying VLLM.")
+
 
     def save_lora_weights(self) -> None:
         """

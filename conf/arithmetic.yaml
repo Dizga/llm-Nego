@@ -3,28 +3,9 @@ hydra:
     chdir: false
 
 experiment:
-  method: dond_nego_cycle
+  method: arithmetic_test
   description: "Nothing to say."
 
-iterations:
-
-  nb_iterations: 20
-  iteration_runner_args:
-    nb_parallel_games: 3
-    games_per_iteration: 3
-
-  dond_game_args:
-    rounds_per_game: 1
-    max_turns: 3
-    player_order: deterministic # deterministic or random player who start beginning of each round
-    mode: coop # basic, coop
-    setup: manual # manual or random_read
-    player_0_values: [20, 10]
-    player_1_values: [10, 20]
-    items: ['gold', 'silver']
-    quantities: [10, 5]
-    setups_file: src/environments/dond_setups.txt
-    finalization_visibility: True
 
 
 models: 
@@ -37,18 +18,18 @@ models:
       pretrained_args: 
         pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
         torch_dtype: "bfloat16"
-        device_map: "auto"
+        device_map: "cuda"
       bits_and_bytes_args:
         load_in_8bit: True
       lora_args:
         task_type: TaskType.CAUSAL_LM
-        r: 8
-        lora_alpha: 8
+        r: 32
+        lora_alpha: 32
         lora_dropout: 0.1
         target_modules: "all-linear"
       ppo_trainer_class: PPOTrainer
       ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
-        batch_size: 32
+        batch_size: 64
         mini_batch_size: 1
         gradient_accumulation_steps: None
         ppo_epochs: 4
@@ -72,7 +53,7 @@ models:
         top_p: 0.9
         repetition_penalty: 1.0
       keep_vllm_during_training: False
-      keep_hf_during_generation: True
+      keep_hf_during_generation: False
       generate_with: "vllm"
 
 
@@ -85,7 +66,7 @@ players:
       chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond/new_round.txt"
-      max_retries: 1
+      max_retries: 4
     ppo_data_extraction_args:
       last_k_responses: 1
       substract_mean: false
@@ -99,7 +80,7 @@ players:
       chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond//new_round.txt"
-      max_retries: 1
+      max_retries: 4
     ppo_data_extraction_args:
       last_k_responses: 1
       substract_mean: false

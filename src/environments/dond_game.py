@@ -147,7 +147,7 @@ class DondGame:
             'round_number': self.round_nb,
             'nb_rounds': self.rounds_per_game,
             'quantities': self.quantities,
-            'agreement_reached': self.agreement_reached,
+            'agreement_reached_history': self.agreement_reached_history,
             'has_finalized': self.has_finalized,
             'last_message': self.last_message,
             'last_scores': last_scores,

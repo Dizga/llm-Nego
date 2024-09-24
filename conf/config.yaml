@@ -10,7 +10,7 @@ iterations:
 
   nb_iterations: 100
   iteration_runner_args:
-    nb_parallel_games: 32
+    nb_parallel_games: 10
     games_per_iteration: 64
 
   dond_game_args:
@@ -37,9 +37,9 @@ models:
       pretrained_args: 
         pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
         torch_dtype: "bfloat16"
-        device_map: "auto"
+        device_map: "cuda"
       bits_and_bytes_args:
-        load_in_8bit: True
+        load_in_8bit: False
       lora_args:
         task_type: TaskType.CAUSAL_LM
         r: 32
@@ -48,7 +48,7 @@ models:
         target_modules: "all-linear"
       ppo_trainer_class: PPOTrainer
       ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
-        batch_size: 64
+        batch_size: 32
         mini_batch_size: 1
         gradient_accumulation_steps: None
         ppo_epochs: 4
@@ -65,7 +65,7 @@ models:
       save_lora_weights: True
       lora_pretrained_path: null
       generation_args:
-        max_new_tokens: 500
+        max_new_tokens: 400
         do_sample: True
         temperature: 1.0
         top_k: 1000

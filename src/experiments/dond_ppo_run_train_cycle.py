@@ -44,8 +44,7 @@ def dond_nego_cycle(cfg):
         player_id = cfg['players'][player_name]['id']
         players[player_id] = DondPlayer(
             **cfg['players'][player_name]['dond_player_args'], 
-            player_name=player_name,
-            game_state=dond_game.get_state()
+            player_name=player_name
         )
 
     iteration_runner = DondIterationRunner(
@@ -101,10 +100,6 @@ def dond_nego_cycle(cfg):
                 model.train_sft(file_name)
 
             
-
-            
-
-
     # Calculate and log total duration
     total_end_time = time.time()
     total_duration = total_end_time - total_start_time

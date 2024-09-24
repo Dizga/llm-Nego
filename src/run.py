@@ -9,7 +9,7 @@ import os
 
 from experiments.dond_ppo_run_train_cycle import *
 from experiments.arithmetic_test import *
-# from experiments.last_completion import *
+from experiments.last_completion import last_completion
 
 @hydra.main(config_path="../conf", config_name="config")
 def main(cfg):
