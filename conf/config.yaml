@@ -24,7 +24,7 @@ iterations:
     items: ['gold', 'silver']
     quantities: [10, 10]
     setups_file: src/environments/dond_setups.txt
-    finalization_visibility: False
+    finalization_visibility: True
 
 
 models: 
@@ -48,7 +48,7 @@ models:
         target_modules: "all-linear"
       ppo_trainer_class: PPOTrainer
       ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
-        batch_size: 32
+        batch_size: 64
         mini_batch_size: 1
         gradient_accumulation_steps: None
         ppo_epochs: 4
@@ -72,7 +72,7 @@ models:
         top_p: 0.9
         repetition_penalty: 1.0
       keep_vllm_during_training: False
-      keep_hf_during_generation: True
+      keep_hf_during_generation: False
       generate_with: "vllm"
 
 

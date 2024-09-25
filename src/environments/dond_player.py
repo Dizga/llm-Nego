@@ -134,12 +134,9 @@ class DondPlayer():
             user_message += self.new_round_prompt.format(**state)
 
         if state["has_finalized"]:
-            other_fin = state["current_finalizations"][1-self.game_id]
-            if state['finalization_visibility']:
-                state["finalization_reveal"] = f"In their finalization, the other player gave themselves {other_fin}"
-            else:
-                state["finalization_reveal"] = ""
             user_message += self.finalization_prompt.format(**state)
+            if state['finalization_visibility']:
+                user_message += f"As a clue, the other player's proposal was: '{state['last_message']}'\n"
 
         if state['last_message'] == None:
             user_message += "You are the first to play, there are no messages yet.\n"
