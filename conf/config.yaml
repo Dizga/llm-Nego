@@ -24,7 +24,7 @@ iterations:
     items: ['gold', 'silver']
     quantities: [10, 10]
     setups_file: src/environments/dond_setups.txt
-    finalization_visibility: True
+    finalization_visibility: False
 
 
 models: 

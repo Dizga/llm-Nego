@@ -106,5 +106,6 @@ def compute_dond_statistics(folder_path):
     mean_game_stats_df = pd.DataFrame(list(mean_game_stats.items()), columns=['stat_name', 'mean_value'])
     mean_game_stats_file = os.path.join(folder_path, '1_mean_game_stats.csv')
     mean_game_stats_df.to_csv(mean_game_stats_file, index=False)
+    return mean_game_stats
 
 

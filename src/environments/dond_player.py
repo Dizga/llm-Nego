@@ -144,7 +144,7 @@ class DondPlayer():
         if state['last_message'] == None:
             user_message += "You are the first to play, there are no messages yet.\n"
 
-        else:
+        elif not state["has_finalized"]:
             user_message += f"The other player said: '{state['last_message']}'\n"
 
         if self.chain_of_thought is not None:

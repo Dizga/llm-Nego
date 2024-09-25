@@ -16,6 +16,7 @@ from environments.dond_player import DondPlayer
 from training.extract_ppo_dataset import extract_ppo_dataset
 from training.extract_sft_dataset import extract_sft_dataset
 from utils.export_ppo_training_set import export_ppo_training_set
+from utils.plot_curves import plot_curves
 
 def dond_nego_cycle(cfg): 
     total_start_time = time.time()
@@ -56,6 +57,8 @@ def dond_nego_cycle(cfg):
         models=models
     )
 
+    agreement_rates = []
+
     for _ in range(cfg['iterations']['nb_iterations']):
         
         # Generate games
@@ -63,7 +66,8 @@ def dond_nego_cycle(cfg):
         it_folder = iteration_runner.it_folder
 
         # Compute iteration statistics
-        compute_dond_statistics(it_folder)
+        agreement_rates.append(compute_dond_statistics(it_folder)['agreement_rate'])
+        plot_curves(agreement_rates, plot_name="Agreement Rates Over Iterations")
 
         # Training
         for model_name in models.keys():
@@ -82,14 +86,9 @@ def dond_nego_cycle(cfg):
                         scores += new_scores
 
                 # Shuffle Data
-                # data = list(zip(queries, responses, scores))
-                # random.shuffle(data)
-                # queries, responses, scores = zip(*data)
-                # queries = list(queries)
-                # responses = list(responses)
-                # scores = list(scores)
+                # TODO
 
-                export_ppo_training_set(it_folder+f".{model_name}_ppo_train_set.jsonl", queries, responses, scores)
+                export_ppo_training_set(it_folder+f"/{model_name}_ppo_train_set.jsonl", queries, responses, scores)
 
                 # Train on Data
                 model.train_ppo(queries, responses, scores)

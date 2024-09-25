@@ -1,0 +1,11 @@
+,0
+mode,coop
+player_0_points,0
+player_1_points,0
+quantities,"{'gold': 10, 'silver': 10}"
+player_0_values,"{'gold': 20, 'silver': 10}"
+player_1_values,"{'gold': 10, 'silver': 20}"
+player_0_finalization,"{'gold': 5, 'silver': 6}"
+player_1_finalization,"{'gold': 6, 'silver': 5}"
+agreement_reached,False
+total_points_over_maximum,0
