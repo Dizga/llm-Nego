@@ -11,7 +11,7 @@
         "is_error": false,
         "is_finalization": true,
         "round_nb": 1,
-        "self_score": 340,
-        "other_score": 340
+        "self_points": 340,
+        "other_points": 340
     }
 ]

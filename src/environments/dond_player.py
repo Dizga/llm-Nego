@@ -239,8 +239,8 @@ class DondPlayer():
     def set_round_scores(self, state):
         for item in self.context:
             if item['role'] == 'assistant' and item['round_nb'] == state['round_number']-1:
-                item['self_score'] = state['last_scores'][self.game_id]
-                item['other_score'] = state['last_scores'][1-self.game_id]
+                item['self_points'] = state['last_points'][self.game_id]
+                item['other_points'] = state['last_points'][1-self.game_id]
 
     def reset_round(self):
         """

@@ -50,8 +50,8 @@
         "is_error": false,
         "is_finalization": false,
         "round_nb": 1,
-        "self_score": 0,
-        "other_score": 0
+        "self_points": 0,
+        "other_points": 0
     },
     {
         "role": "user",
@@ -65,8 +65,8 @@
         "is_error": false,
         "is_finalization": false,
         "round_nb": 1,
-        "self_score": 0,
-        "other_score": 0
+        "self_points": 0,
+        "other_points": 0
     },
     {
         "role": "user",
@@ -80,8 +80,8 @@
         "is_error": true,
         "is_finalization": false,
         "round_nb": 1,
-        "self_score": 0,
-        "other_score": 0
+        "self_points": 0,
+        "other_points": 0
     },
     {
         "role": "user",
@@ -95,8 +95,8 @@
         "is_error": true,
         "is_finalization": false,
         "round_nb": 1,
-        "self_score": 0,
-        "other_score": 0
+        "self_points": 0,
+        "other_points": 0
     },
     {
         "role": "user",
@@ -110,7 +110,7 @@
         "is_error": false,
         "is_finalization": true,
         "round_nb": 1,
-        "self_score": 0,
-        "other_score": 0
+        "self_points": 0,
+        "other_points": 0
     }
 ]

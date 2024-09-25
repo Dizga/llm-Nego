@@ -67,7 +67,7 @@ def dond_nego_cycle(cfg):
 
         # Compute iteration statistics
         agreement_rates.append(compute_dond_statistics(it_folder)['agreement_rate'])
-        plot_curves(agreement_rates, plot_name="Agreement Rates Over Iterations")
+        plot_curves(y_list=[agreement_rates], plot_name="Agreement Rates Over Iterations")
 
         # Training
         for model_name in models.keys():

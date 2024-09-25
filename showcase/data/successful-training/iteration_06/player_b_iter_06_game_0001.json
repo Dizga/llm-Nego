@@ -11,8 +11,8 @@
         "is_error": false,
         "is_finalization": false,
         "round_nb": 1,
-        "self_score": 250,
-        "other_score": 250
+        "self_points": 250,
+        "other_points": 250
     },
     {
         "role": "user",
@@ -26,7 +26,7 @@
         "is_error": false,
         "is_finalization": true,
         "round_nb": 1,
-        "self_score": 250,
-        "other_score": 250
+        "self_points": 250,
+        "other_points": 250
     }
 ]

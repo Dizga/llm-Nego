@@ -119,7 +119,7 @@ class DondGame:
             dict: The current state of the game.
         """
 
-        last_scores = [
+        last_points = [
             self.points_player_0_history[-1] if self.points_player_0_history else None,
             self.points_player_1_history[-1] if self.points_player_1_history else None
         ]
@@ -150,7 +150,7 @@ class DondGame:
             'agreement_reached_history': self.agreement_reached_history,
             'has_finalized': self.has_finalized,
             'last_message': self.last_message,
-            'last_scores': last_scores,
+            'last_points': last_points,
             'last_finalizations': last_finalizations,
             'finalization_visibility': self.finalization_visibility,
             'current_finalizations': current_finalizations,

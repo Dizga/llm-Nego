@@ -83,7 +83,7 @@ def process_conversation(conversation, last_k_responses=None, remove_errors=Fals
     conversation_scores = []
 
     # Optionally skip conversations with no agreements
-    # if conversation[-1].get('self_score', 0) == 0:
+    # if conversation[-1].get('self_points', 0) == 0:
     #     return [], [], []
 
     for message in conversation:
@@ -100,7 +100,7 @@ def process_conversation(conversation, last_k_responses=None, remove_errors=Fals
             # TODO: perhaps put back to normal
             conversation_responses.append([message])
             score = 0
-            if message['self_score'] > 0: score = 10
+            if message['self_points'] > 0: score = 10
             conversation_scores.append(score)
 
     # Limit to the last k assistant messages if specified
