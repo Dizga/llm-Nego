@@ -10,8 +10,8 @@ iterations:
 
   nb_iterations: 100
   iteration_runner_args:
-    nb_parallel_games: 10
-    games_per_iteration: 64
+    nb_parallel_games: 32
+    games_per_iteration: 32
 
   dond_game_args:
     rounds_per_game: 1
@@ -22,7 +22,7 @@ iterations:
     player_0_values: [20, 10]
     player_1_values: [10, 20]
     items: ['gold', 'silver']
-    quantities: [10, 5]
+    quantities: [10, 10]
     setups_file: src/environments/dond_setups.txt
     finalization_visibility: True
 
@@ -85,10 +85,11 @@ players:
       chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond/new_round.txt"
-      max_retries: 1
+      max_retries: 2
     ppo_data_extraction_args:
       last_k_responses: 1
       substract_mean: false
+      remove_errors: false
 
 
   player_b:
@@ -99,10 +100,11 @@ players:
       chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond//new_round.txt"
-      max_retries: 1
+      max_retries: 2
     ppo_data_extraction_args:
       last_k_responses: 1
       substract_mean: false
+      remove_errors: false
 
 
 

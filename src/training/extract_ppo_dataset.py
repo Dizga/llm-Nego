@@ -4,12 +4,16 @@ import copy
 from statistics import mean
 import regex as re
 
+
+
 def extract_ppo_dataset(folder_path: str, 
                         player_name="bob", 
                         export_for_debugging=True, 
                         use_pattern_matching=True,
                         substract_mean=False,
-                        last_k_responses=None):
+                        last_k_responses=None,
+                        remove_errors=False
+                        ):
     """
     Extracts data for HF PPO training from game logs.
 
@@ -45,7 +49,7 @@ def extract_ppo_dataset(folder_path: str,
 
         # Process conversation
         conv_queries, conv_responses, conv_scores = process_conversation(
-            conversation, last_k_responses=last_k_responses
+            conversation, last_k_responses=last_k_responses, remove_errors=remove_errors
         )
 
         queries.extend(conv_queries)
@@ -57,19 +61,9 @@ def extract_ppo_dataset(folder_path: str,
         mean_score = mean(scores)
         scores = [s - mean_score for s in scores]
 
-    # Export to facilitate debugging
-    if export_for_debugging:
-        debug_data = [{"query": q, "response": r, "score": s} 
-                      for q, r, s in zip(queries, responses, scores)]
-        
-        debug_file_name = f"{player_prefix}extracted_training_dataset.json"
-        debug_file_path = os.path.join(folder_path, debug_file_name)
-        with open(debug_file_path, 'w') as debug_file:
-            json.dump(debug_data, debug_file, indent=4)
-
     return queries, responses, scores
 
-def process_conversation(conversation, last_k_responses=None):
+def process_conversation(conversation, last_k_responses=None, remove_errors=False):
     """
     Processes a single conversation and extracts queries, responses, and scores.
 
@@ -94,7 +88,7 @@ def process_conversation(conversation, last_k_responses=None):
 
     for message in conversation:
         # Skip messages with errors
-        if message.get('is_error'):
+        if message.get('is_error') and remove_errors:
             continue
 
         context.append(message)
@@ -105,7 +99,9 @@ def process_conversation(conversation, last_k_responses=None):
             conversation_queries.append(copy.deepcopy(context[:-1]))
             # TODO: perhaps put back to normal
             conversation_responses.append([message])
-            conversation_scores.append(message.get('self_score', 0))
+            score = 0
+            if message['self_score'] > 0: score = 10
+            conversation_scores.append(score)
 
     # Limit to the last k assistant messages if specified
     if last_k_responses is not None:

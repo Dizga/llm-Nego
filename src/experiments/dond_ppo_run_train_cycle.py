@@ -15,6 +15,7 @@ from models.oai_agent import OaiAgent
 from environments.dond_player import DondPlayer
 from training.extract_ppo_dataset import extract_ppo_dataset
 from training.extract_sft_dataset import extract_sft_dataset
+from utils.export_ppo_training_set import export_ppo_training_set
 
 def dond_nego_cycle(cfg): 
     total_start_time = time.time()
@@ -87,6 +88,8 @@ def dond_nego_cycle(cfg):
                 # queries = list(queries)
                 # responses = list(responses)
                 # scores = list(scores)
+
+                export_ppo_training_set(it_folder+f".{model_name}_ppo_train_set.jsonl", queries, responses, scores)
 
                 # Train on Data
                 model.train_ppo(queries, responses, scores)

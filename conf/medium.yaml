@@ -8,14 +8,14 @@ experiment:
 
 iterations:
 
-  nb_iterations: 20
+  nb_iterations: 3
   iteration_runner_args:
-    nb_parallel_games: 3
-    games_per_iteration: 3
+    nb_parallel_games: 5
+    games_per_iteration: 5
 
   dond_game_args:
     rounds_per_game: 1
-    max_turns: 3
+    max_turns: 10
     player_order: deterministic # deterministic or random player who start beginning of each round
     mode: coop # basic, coop
     setup: manual # manual or random_read
@@ -65,7 +65,7 @@ models:
       save_lora_weights: True
       lora_pretrained_path: null
       generation_args:
-        max_new_tokens: 20
+        max_new_tokens: 400
         do_sample: True
         temperature: 1.0
         top_k: 1000

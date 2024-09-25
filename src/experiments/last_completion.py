@@ -69,7 +69,6 @@ def run_partial_game(game, player_0, player_1, agent):
         # Swap players for the next turn
         current_player, other_player = other_player, current_player
 
-            
 
 def last_completion(cfg):
     cfg = OmegaConf.to_container(cfg, resolve=True, structured_config_mode='dict')
