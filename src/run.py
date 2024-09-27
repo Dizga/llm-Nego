@@ -11,7 +11,7 @@ from src.experiments.dond_run_train import *
 from experiments.arithmetic_test import *
 from experiments.last_completion import last_completion
 
-@hydra.main(config_path="../conf", config_name="config")
+@hydra.main(config_path="../conf", config_name="dummy")
 def main(cfg):
     globals()[cfg.experiment.method](cfg)
 
