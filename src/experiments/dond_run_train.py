@@ -8,7 +8,6 @@ import random
 # Local imports
 from src.experiments.dond_run_games import run_games
 from environments.dond_game import DondGame
-from utils.dond_statistics import compute_dond_statistics
 from models.hf_agent import HfAgent
 from models.dummy_hf_agent import DummyHfAgent
 from models.oai_agent import OaiAgent
@@ -17,9 +16,10 @@ from training.extract_ppo_dataset import extract_ppo_dataset
 from training.extract_sft_dataset import extract_sft_dataset
 from utils.export_ppo_training_set import export_ppo_training_set
 from utils.plot_curves import plot_curves
+from utils.dond_statistics import export_dond_player_stats, export_global_dond_player_stats
 
 
-def dond_nego_cycle(cfg):
+def dond_run_train(cfg):
     """
     Executes a negotiation cycle for the Deal or No Deal (DoND) game.
 
@@ -59,23 +59,30 @@ def dond_nego_cycle(cfg):
             **cfg["players"][player_name]["dond_player_args"], player_name=player_name
         )
 
-    for iteration in range(cfg["iterations"]["nb_iterations"]):
-        it_folder = os.path.join(output_directory, f"iteration_{iteration:04d}")
-        os.makedirs(it_folder, exist_ok=True)
+    player_paths, iteration_folders = initialize_output_paths(cfg, output_directory)
+
+    for iteration in range(cfg["experiment"]["nb_iterations"]):
+
+        # Create / set iteration folders and paths
+        it_folder = iteration_folders[iteration]
 
         # Generate games
         player_paths, games_path = run_games(
-            it_folder,
-            cfg["iterations"]["nb_parallel_games"],
-            cfg["iterations"]["games_per_iteration"],
-            dond_game,
-            players,
-            models,
+            dond_game=dond_game,
+            players=players,
+            out_paths=player_paths,
+            models=models,
+            **cfg['run_games_args']
         )
 
         # Compute iteration statistics
-        export_dond_statistics(games_path)
-        export_dond_global_statistics(it_folder)
+        for player in players:
+            player_games_path = player_paths[player.player_name]["game_export_folders"][iteration]
+            player_stats_path = player_paths[player.player_name]["local_stat_paths"][iteration]
+            player_stats_paths = [path["global_stat_path"] for path in player_paths.values()]
+            export_dond_player_stats(player_games_path, player_stats_path)
+            export_global_dond_player_stats(player_stats_paths[:iteration+1], 
+                                            player_paths[player.player_name]["global_stat_path"])
 
         # Training models
         for model_name in models.keys():
@@ -88,31 +95,23 @@ def dond_nego_cycle(cfg):
                 # Extract data
                 for player in players:
                     if player.model_name == model_name:
-                        epd_config = cfg["players"][player.player_name][
-                            "ppo_data_extraction_args"
-                        ]
-                        player_path = player_paths[player.player_name]
-                        (
-                            new_queries,
-                            new_responses,
-                            new_scores,
-                        ) = extract_ppo_dataset(
-                            player_path, player.player_name, **epd_config
+                        epd_config = cfg["players"][player.player_name]["ppo_data_extraction_args"]
+                        player_games_path = player_paths[player.player_name]["game_export_folders"][iteration]
+                        new_queries, new_responses, new_scores = extract_ppo_dataset(
+                            player_games_path, player.player_name, **epd_config
                         )
                         queries += new_queries
                         responses += new_responses
                         scores += new_scores
-
+                        
                 # Shuffle data
-                # TODO
+                combined = list(zip(queries, responses, scores))
+                random.shuffle(combined)
+                queries, responses, scores = zip(*combined)
 
                 # Train on data
-                export_ppo_training_set(
-                    it_folder + f"/{model_name}_ppo_train_set.jsonl",  # for debugging
-                    queries,
-                    responses,
-                    scores,
-                )
+                it_folder_ppo = os.path.join(it_folder, f"{model_name}_ppo_training")
+                export_ppo_training_set(it_folder_ppo, queries, responses, scores)
                 model.train_ppo(queries, responses, scores)
 
             # SFT training
@@ -120,12 +119,49 @@ def dond_nego_cycle(cfg):
                 for player in players:
                     file_name = None
                     if player.model_name == model_name:
-                        file_name = extract_sft_dataset(
-                            it_folder, player.player_name, out_file=file_name
-                        )
+                        file_name = extract_sft_dataset(it_folder, player.player_name, out_file=file_name)
                 model.train_sft(file_name)
 
     # Calculate and log total duration
     total_end_time = time.time()
     total_duration = total_end_time - total_start_time
     logging.info(f"Total time taken for the entire run: {total_duration:.2f} seconds")
+
+
+def initialize_output_paths(cfg, output_directory):
+    """
+    Initializes all output path names in advance and sets them in a dictionary.
+
+    Args:
+        cfg (omegaconf.DictConfig): Configuration object containing all necessary parameters.
+        output_directory (str): The base directory for output files.
+
+    Returns:
+        tuple: A dictionary containing paths for each player and a list of iteration folders.
+    """
+    player_paths = {}
+    iteration_folders = []
+
+    for iteration in range(cfg["experiment"]["nb_iterations"]):
+        it_folder = os.path.join(output_directory, f"iteration_{iteration:04d}")
+        iteration_folders.append(it_folder)
+
+    for player_name in cfg["players"].keys():
+        player_id = cfg["players"][player_name]["id"]
+        global_stat_path = os.path.join(output_directory, f"player_{player_name}_global_stats.json")
+
+        game_export_folders = []
+        local_stat_paths = []
+        for it_folder in iteration_folders:
+            game_export_folder = os.path.join(it_folder, f"player_{player_name}_games")
+            local_stat_path = os.path.join(it_folder, f"{player_name}_stats.json")
+            game_export_folders.append(game_export_folder)
+            local_stat_paths.append(local_stat_path)
+
+        player_paths[player_name] = {
+            "global_stat_path": global_stat_path,
+            "local_stat_paths": local_stat_paths,
+            "game_export_folders": game_export_folders
+        }
+
+    return player_paths, iteration_folders

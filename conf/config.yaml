@@ -3,7 +3,7 @@ hydra:
     chdir: false
 
 experiment:
-  method: dond_nego_cycle
+  method: dond_run_train
   description: "Nothing to say."
 
 iterations:

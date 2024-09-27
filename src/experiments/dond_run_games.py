@@ -13,42 +13,14 @@ from environments.dond_game import DondGame
 from utils.log_gpu_usage import log_gpu_usage
 
 
-def log_game(game_nb, game, players, player_paths, game_json_path):
-    """
-    Logs the completion of a game and exports player contexts and game metrics.
 
-    Args:
-        game_nb (int): The game number.
-        game (DondGame): The game instance.
-        players (list): List of player instances.
-        player_paths (list): List of paths to save player contexts.
-        game_json_path (str): Path to save game metrics.
-    """
-    logging.info(f"Game {game_nb} completed.")
-
-    # Create path
-    game_name = f"game_{game_nb:04d}"
-
-    # Export the player contexts
-    for i, player in enumerate(players):
-        player_context_path = os.path.join(
-            player_paths[i], f"{player.player_name}_{game_name}.json"
-        )
-        os.makedirs(os.path.dirname(player_context_path), exist_ok=True)
-        with open(player_context_path, "w") as f:
-            json.dump(player.get_context(), f, indent=4)
-
-    # Export game metrics
-    rounds_data = game.export()
-    df = pd.DataFrame(rounds_data)
-    df.set_index("round_id", inplace=True)
-    df_transposed = df.transpose()
-    game_metrics_path = os.path.join(game_json_path, f"{game_name}.csv")
-    os.makedirs(os.path.dirname(game_metrics_path), exist_ok=True)
-    df_transposed.to_csv(game_metrics_path)
-
-
-def run_games(out_dir, nb_parallel_games, games_per_iteration, game, players, models):
+def run_games(nb_parallel_games, 
+              games_per_iteration, 
+              game, 
+              players, 
+              models, 
+              player_paths, 
+              game_json_path):
     """
     Runs multiple games in parallel and logs the results.
 
@@ -59,6 +31,8 @@ def run_games(out_dir, nb_parallel_games, games_per_iteration, game, players, mo
         game (DondGame): The game instance.
         players (list): List of player instances.
         models (dict): Dictionary of models to use for generating player moves.
+        player_paths (dict): Dictionary of paths to save player contexts.
+        game_json_path (str): Path to save game metrics.
 
     Returns:
         tuple: Paths to player contexts and game JSONs.
@@ -69,11 +43,7 @@ def run_games(out_dir, nb_parallel_games, games_per_iteration, game, players, mo
     response_batches = {model_name: [] for model_name in models.keys()}
 
     # Create directories for player contexts and game JSONs
-    player_paths = [
-        os.path.join(out_dir, f"player_{i}_contexts") for i in range(len(players))
-    ]
-    game_json_path = os.path.join(out_dir, "game_jsons")
-    for path in player_paths + [game_json_path]:
+    for path in player_paths.values() + [game_json_path]:
         os.makedirs(path, exist_ok=True)
 
     nb_matches = min(nb_parallel_games, games_per_iteration)
@@ -147,7 +117,6 @@ def run_games(out_dir, nb_parallel_games, games_per_iteration, game, players, mo
                 if match["game_state"]["game_ended"]:
                     game_nb += 1
                     log_game(
-                        out_dir,
                         game_nb,
                         match["game"],
                         match["player_deque"],
@@ -165,3 +134,37 @@ def run_games(out_dir, nb_parallel_games, games_per_iteration, game, players, mo
     )
 
     return player_paths, game_json_path
+
+def log_game(game_nb, game, players, player_paths, game_json_path):
+    """
+    Logs the completion of a game and exports player contexts and game metrics.
+
+    Args:
+        game_nb (int): The game number.
+        game (DondGame): The game instance.
+        players (list): List of player instances.
+        player_paths (dict): Dictionary of paths to save player contexts.
+        game_json_path (str): Path to save game metrics.
+    """
+    logging.info(f"Game {game_nb} completed.")
+
+    # Create path
+    game_name = f"game_{game_nb:04d}"
+
+    # Export the player contexts
+    for player in players:
+        player_context_path = os.path.join(
+            player_paths[player.player_name], f"{player.player_name}_{game_name}.json"
+        )
+        os.makedirs(os.path.dirname(player_context_path), exist_ok=True)
+        with open(player_context_path, "w") as f:
+            json.dump(player.get_context(), f, indent=4)
+
+    # Export game metrics
+    rounds_data = game.export()
+    df = pd.DataFrame(rounds_data)
+    df.set_index("round_id", inplace=True)
+    df_transposed = df.transpose()
+    game_metrics_path = os.path.join(game_json_path, f"{game_name}.csv")
+    os.makedirs(os.path.dirname(game_metrics_path), exist_ok=True)
+    df_transposed.to_csv(game_metrics_path)

@@ -1,5 +1,5 @@
 experiment:
-  method: dond_nego_cycle
+  method: dond_run_train
   description: Here, rewards given are 10 if agreement reached else 0. This is to see if the big scores given by the game cause the PPO gradient steps to be too big.
 iterations:
   nb_iterations: 100

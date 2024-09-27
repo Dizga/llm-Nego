@@ -58,8 +58,9 @@ models:
 
 
 players: 
-  player_a:
-    id: 0 # Will be used by game to determine which player starts
+
+  alice:
+    id: 0
     dond_player_args:
       model_name: 'llama'
       game_intro_file: "src/prompts/dond/rules.txt"
@@ -72,7 +73,7 @@ players:
       substract_mean_score: false
 
 
-  player_b:
+  bob:
     id: 1
     dond_player_args:
       model_name: 'llama'
