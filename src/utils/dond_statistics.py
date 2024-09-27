@@ -1,41 +1,44 @@
-import pandas as pd
-import os
+import json
+import os 
 import re
 from statistics import mean
 
 def process_game_file(file_path):
     """
-    Processes a single game CSV file and returns a dictionary of game statistics.
+    Processes a single game JSON file and returns a dictionary of game statistics.
     """
-    # Read the CSV into a DataFrame
-    df = pd.read_csv(file_path, index_col=0).transpose()
+    # Read the JSON file
+    with open(file_path, 'r') as f:
+        round_history = json.load(f)
 
-    # Convert string representations of dictionaries to actual dictionaries
-    dict_columns = [
-        'quantities', 'player_0_values', 'player_1_values',
-        'player_0_finalization', 'player_1_finalization', 'agreement_reached'
-    ]
-    for col in dict_columns:
-        df[col] = df[col].apply(eval)
+    # Extract necessary data
+    quantities = round_history['round_quantities']
+    player_0_values = round_history['round_values_player_0']
+    player_1_values = round_history['round_values_player_1']
+    player_0_finalization = round_history['round_player_0_prop']
+    player_1_finalization = round_history['round_player_1_prop']
+    agreement_reached = round_history['round_agreement_reached']
+    player_0_points = round_history['round_points_player_0']
+    player_1_points = round_history['round_points_player_1']
 
     # Calculate total points for each player
-    player_0_total_points = df['player_0_points'].sum()
-    player_1_total_points = df['player_1_points'].sum()
+    player_0_total_points = sum(player_0_points)
+    player_1_total_points = sum(player_1_points)
 
     # Calculate total_points_over_maximum for each round
     total_points_over_maximum_list = []
-    for _, row in df.iterrows():
+    for i in range(len(quantities)):
         maximum = 0
         p0_points = 0
         p1_points = 0
 
-        if row['agreement_reached']:
-            for key in row['quantities']:
-                quantity = row['quantities'][key]
-                max_value = max(row['player_0_values'][key], row['player_1_values'][key])
+        if agreement_reached[i]:
+            for key in quantities[i]:
+                quantity = quantities[i][key]
+                max_value = max(player_0_values[i][key], player_1_values[i][key])
                 maximum += max_value * quantity
-                p0_points += row['player_0_finalization'].get(key, 0) * row['player_0_values'][key]
-                p1_points += row['player_1_finalization'].get(key, 0) * row['player_1_values'][key]
+                p0_points += player_0_finalization[i].get(key, 0) * player_0_values[i][key]
+                p1_points += player_1_finalization[i].get(key, 0) * player_1_values[i][key]
             total_points = p0_points + p1_points
             total_points_over_maximum = total_points / maximum if maximum > 0 else 0
         else:
@@ -43,13 +46,10 @@ def process_game_file(file_path):
 
         total_points_over_maximum_list.append(total_points_over_maximum)
 
-    # Add the new column to the DataFrame
-    df['total_points_over_maximum'] = total_points_over_maximum_list
-
     # Calculate agreement rate and round agreements
-    num_rounds = len(df)
-    agreement_rate = df['agreement_reached'].sum() / num_rounds
-    round_agreements = df['agreement_reached'].astype(int).tolist()
+    num_rounds = len(quantities)
+    agreement_rate = sum(agreement_reached) / num_rounds
+    round_agreements = agreement_reached
 
     # Prepare game statistics
     game_stat = {
@@ -60,43 +60,46 @@ def process_game_file(file_path):
         'round_agreements': round_agreements
     }
 
-    # Save the updated DataFrame back to the CSV file
-    df.transpose().to_csv(file_path, index=True)
     return game_stat
 
 def compute_mean_game_stats(game_stats_list):
     """
-    Computes the mean of the game statistics across all games.
+    Computes the mean statistics from a list of game statistics.
     """
-    mean_game_stats = {}
-    scalar_stats = ['player_0_total_points', 'player_1_total_points', 'agreement_rate', 'total_points_over_maximum']
+    if not game_stats_list:
+        return {}
 
-    # Convert the list of game stats dictionaries into a DataFrame
-    game_stats_df = pd.DataFrame(game_stats_list)
+    # Initialize accumulators
+    total_player_0_points = 0
+    total_player_1_points = 0
+    total_agreement_rate = 0
+    total_points_over_maximum = 0
+    num_games = len(game_stats_list)
 
-    # Calculate mean for scalar statistics
-    for stat in scalar_stats:
-        mean_game_stats[stat] = game_stats_df[stat].mean()
+    # Sum up all the statistics
+    for game_stat in game_stats_list:
+        total_player_0_points += game_stat['player_0_total_points']
+        total_player_1_points += game_stat['player_1_total_points']
+        total_agreement_rate += game_stat['agreement_rate']
+        total_points_over_maximum += game_stat['total_points_over_maximum']
 
-    # Calculate mean for list statistics (e.g., round_agreements)
-    round_agreements_lists = game_stats_df['round_agreements']
-    max_length = max(len(lst) for lst in round_agreements_lists)
-    mean_round_agreements = []
+    # Compute mean statistics
+    mean_game_stats = {
+        'mean_player_0_total_points': total_player_0_points / num_games,
+        'mean_player_1_total_points': total_player_1_points / num_games,
+        'mean_agreement_rate': total_agreement_rate / num_games,
+        'mean_total_points_over_maximum': total_points_over_maximum / num_games
+    }
 
-    for i in range(max_length):
-        ith_elements = [lst[i] for lst in round_agreements_lists if len(lst) > i]
-        mean_round_agreements.append(mean(ith_elements))
-
-    mean_game_stats['round_agreements'] = mean_round_agreements
     return mean_game_stats
 
-def compute_dond_statistics(folder_path):
+def export_dond_statistics(folder_path):
     """
-    Computes statistics for all game CSV files in the specified folder.
+    Computes statistics for all game JSON files in the specified folder.
     Returns a dictionary of mean game statistics.
     """
     game_stats_list = []
-    pattern = re.compile(r'^iter_\d{2}_game_\d{4}\.csv$')
+    pattern = re.compile(r'^game_\d+\.json$')
 
     # Process each game file in the folder
     for file_name in os.listdir(folder_path):
@@ -106,22 +109,15 @@ def compute_dond_statistics(folder_path):
             game_stat['file_name'] = file_name  # Optional: include the file name
             game_stats_list.append(game_stat)
 
-    # Save per-game statistics to a CSV file
-    game_stats_df = pd.DataFrame(game_stats_list)
-    game_stats_file = os.path.join(folder_path, '2_game_stats.csv')
-    game_stats_df.to_csv(game_stats_file, index=False)
+    # Save per-game statistics to a JSON file
+    game_stats_file = os.path.join(folder_path, 'game_stats.json')
+    with open(game_stats_file, 'w') as f:
+        json.dump(game_stats_list, f, indent=4)
 
     # Compute and save mean game statistics
     mean_game_stats = compute_mean_game_stats(game_stats_list)
-    mean_game_stats_df = pd.DataFrame([
-        {'stat_name': key, 'mean_value': value} for key, value in mean_game_stats.items()
-    ])
+    mean_game_stats_file = os.path.join(folder_path, 'mean_game_stats.json')
+    with open(mean_game_stats_file, 'w') as f:
+        json.dump(mean_game_stats, f, indent=4)
 
-    # Convert lists to strings for CSV output
-    mean_game_stats_df['mean_value'] = mean_game_stats_df['mean_value'].apply(
-        lambda x: x if not isinstance(x, list) else str(x)
-    )
-
-    mean_game_stats_file = os.path.join(folder_path, '1_mean_game_stats.csv')
-    mean_game_stats_df.to_csv(mean_game_stats_file, index=False)
     return mean_game_stats

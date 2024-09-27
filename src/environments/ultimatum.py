@@ -29,7 +29,7 @@ class Ultimatum:
         self.round_nb = 1
         self.game_ended = False
         self.points_player_0_history = []
-        self.points_player_1_history = []
+        self.round_points_player_1 = []
         self.agreement_reached_history = []
         # self.round_history = []
 
@@ -103,10 +103,10 @@ class Ultimatum:
         if self.agreement_reached:
             if self.current_turn() == "player_0":
                 self.points_player_0_history.append(self.current_offer['i_take'])
-                self.points_player_1_history.append(self.current_offer['other_player_gets'])
+                self.round_points_player_1.append(self.current_offer['other_player_gets'])
             else:
                 self.points_player_0_history.append(self.current_offer['other_player_gets'])
-                self.points_player_1_history.append(self.current_offer['i_take'])
+                self.round_points_player_1.append(self.current_offer['i_take'])
 
 
     def end_round(self):
@@ -123,7 +123,7 @@ class Ultimatum:
 
         if not self.agreement_reached:
             self.points_player_0_history.append(0)
-            self.points_player_1_history.append(0)
+            self.round_points_player_1.append(0)
         self.agreement_reached_history.append(self.agreement_reached)
 
         self.round_nb += 1
@@ -211,9 +211,9 @@ class Ultimatum:
         return {
             'round_id': id,
             'player_0_score': self.points_player_0_history[id],
-            'player_1_score': self.points_player_1_history[id],
+            'player_1_score': self.round_points_player_1[id],
             'player_0_return': sum(self.points_player_0_history[id:]),
-            'player_1_return': sum(self.points_player_1_history[id:]),
+            'player_1_return': sum(self.round_points_player_1[id:]),
             'agreement_reached': self.agreement_reached_history[id],
         }
     

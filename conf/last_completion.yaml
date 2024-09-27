@@ -85,7 +85,7 @@ players:
       max_retries: 4
     ppo_data_extraction_args:
       last_k_responses: 1
-      substract_mean: false
+      substract_mean_score: false
 
 
   player_b:
@@ -99,7 +99,7 @@ players:
       max_retries: 4
     ppo_data_extraction_args:
       last_k_responses: 1
-      substract_mean: false
+      substract_mean_score: false
 
 
 

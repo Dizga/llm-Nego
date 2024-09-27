@@ -7,7 +7,7 @@ from omegaconf import OmegaConf
 import sys
 import os
 
-from experiments.dond_ppo_run_train_cycle import *
+from src.experiments.dond_run_train import *
 from experiments.arithmetic_test import *
 from experiments.last_completion import last_completion
 
