@@ -6,7 +6,7 @@ from omegaconf import OmegaConf
 import random
 
 # Local imports
-from src.experiments.dond_run_games import run_games
+from experiments.dond_run_games import run_games
 from environments.dond_game import DondGame
 from models.hf_agent import HfAgent
 from models.dummy_hf_agent import DummyHfAgent
@@ -49,7 +49,7 @@ def dond_run_train(cfg):
             models[model_name] = OaiAgent(**cfg["models"][model_name]["init_args"])
 
     # Initialize game
-    dond_game = DondGame(**cfg["iterations"]["dond_game_args"])
+    dond_game = DondGame(**cfg["dond_game_args"])
 
     # Initialize players
     players = [None] * len(cfg["players"].keys())
@@ -68,9 +68,9 @@ def dond_run_train(cfg):
 
         # Generate games
         player_paths, games_path = run_games(
-            dond_game=dond_game,
+            game=dond_game,
             players=players,
-            out_paths=player_paths,
+            player_paths=player_paths,
             models=models,
             **cfg['run_games_args']
         )

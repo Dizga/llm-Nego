@@ -7,9 +7,9 @@ from omegaconf import OmegaConf
 import sys
 import os
 
-from src.experiments.dond_run_train import *
-from experiments.arithmetic_test import *
-from experiments.last_completion import last_completion
+from experiments.dond_run_train import dond_run_train
+#from experiments.arithmetic_test import arithmetic_test
+#from experiments.last_completion import last_completion
 
 @hydra.main(config_path="../conf", config_name="dummy")
 def main(cfg):

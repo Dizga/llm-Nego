@@ -290,6 +290,7 @@ class DondPlayer:
             with open("src/prompts/coop.txt", "r") as file:
                 return file.read()
             
+            
     def set_game_info(self, state):
         """
         Gathers information from all rounds played and 

@@ -20,7 +20,7 @@ def run_games(nb_parallel_games,
               players, 
               models, 
               player_paths, 
-              game_json_path):
+              game_json_path=None):
     """
     Runs multiple games in parallel and logs the results.
 
@@ -42,11 +42,9 @@ def run_games(nb_parallel_games,
     prompt_batches = {model_name: [] for model_name in models.keys()}
     response_batches = {model_name: [] for model_name in models.keys()}
 
-    # Create directories for player contexts and game JSONs
-    for path in player_paths.values() + [game_json_path]:
-        os.makedirs(path, exist_ok=True)
 
     nb_matches = min(nb_parallel_games, games_per_iteration)
+
     for _ in range(nb_matches):
         match = {
             "players": {player.player_name: copy.deepcopy(player) for player in players},
@@ -134,23 +132,13 @@ def log_game(game_nb, game, players, player_paths, game_json_path):
     """
     logging.info(f"Game {game_nb} completed.")
 
-    # Create path
-    game_name = f"game_{game_nb:04d}"
-
     # Export the player contexts
     for player in players:
-        player_context_path = os.path.join(
-            player_paths[player.player_name], f"{player.player_name}_{game_name}.json"
-        )
-        os.makedirs(os.path.dirname(player_context_path), exist_ok=True)
-        with open(player_context_path, "w") as f:
+        player_save_path = player_paths[player.name]
+        os.makedirs(os.path.dirname(player_save_path), exist_ok=True)
+        with open(player_save_path, "w") as f:
             json.dump(player.get_context(), f, indent=4)
 
     # Export game metrics
-    rounds_data = game.export()
-    df = pd.DataFrame(rounds_data)
-    df.set_index("round_id", inplace=True)
-    df_transposed = df.transpose()
-    game_metrics_path = os.path.join(game_json_path, f"{game_name}.csv")
-    os.makedirs(os.path.dirname(game_metrics_path), exist_ok=True)
-    df_transposed.to_csv(game_metrics_path)
+    if game_json_path is not None:
+        pass

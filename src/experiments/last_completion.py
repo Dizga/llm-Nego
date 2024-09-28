@@ -5,9 +5,8 @@ import time
 from omegaconf import OmegaConf
 import random
 # local imports
-from src.experiments.dond_run_games import DondIterationRunner
+from experiments.dond_run_games import run_games
 from environments.dond_game import DondGame
-from utils.dond_statistics import compute_dond_statistics
 from models.hf_agent import HfAgent
 from models.dummy_hf_agent import DummyHfAgent
 from models.oai_agent import OaiAgent

@@ -39,8 +39,6 @@ from vllm.lora.request import LoRARequest
 from vllm.distributed.parallel_state import destroy_model_parallel
 from omegaconf import OmegaConf
 
-from src.training.custom_ppo_trainers import CustomPPOTrainer
-from training.reinforce_trainer import ReinforceTrainer
 
 torch.set_default_device("cuda")
 import copy
@@ -213,7 +211,7 @@ class HfAgent:
         bs = self.ppo_training_args["batch_size"]
         nb_batches = ds // bs
         logging.info(
-            f"Starting PPO training with {ds} samples, 
+            f"Starting PPO training with {ds} samples, \
             batch size {bs}, total batches {nb_batches}"
         )
 
@@ -268,7 +266,7 @@ class HfAgent:
 
             batch_duration = time.time() - start_time
             logging.info(
-                f"Batch {b+1}/{nb_batches} training 
+                f"Batch {b+1}/{nb_batches} training \
                 completed in {batch_duration:.2f} seconds."
             )
 
