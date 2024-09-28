@@ -48,41 +48,53 @@ def dond_run_train(cfg):
         elif cfg["models"][model_name]["class"] == "oai":
             models[model_name] = OaiAgent(**cfg["models"][model_name]["init_args"])
 
-    # Initialize game
-    dond_game = DondGame(**cfg["dond_game_args"])
-
     # Initialize players
-    players = [None] * len(cfg["players"].keys())
+    players = {}
     for player_name in cfg["players"].keys():
-        player_id = cfg["players"][player_name]["id"]
-        players[player_id] = DondPlayer(
-            **cfg["players"][player_name]["dond_player_args"], player_name=player_name
-        )
+        players[player_name] = DondPlayer(player_name, 
+        **cfg["players"][player_name]["dond_player_args"])
 
-    player_paths, iteration_folders = initialize_output_paths(cfg, output_directory)
+    # Initialize game
+    dond_game = DondGame(players=list(players.keys()), **cfg["dond_game_args"])
+
+    # Initialize output paths
+    player_paths = {'player_export_paths': {}, 'local_stat_paths': {}, 'global_stat_paths': {}}
+    iteration_folders = {}
+    for i in range(cfg["experiment"]["nb_iterations"]):
+        it_folder = os.path.join(output_directory, f"ITERATION-{i}")
+        iteration_folders[i] = it_folder
+
+        player_paths['player_export_paths'][i] = {player_name: 
+                                                it_folder + f"/{player_name}_games"
+                                                for player_name in players.keys()}
+        player_paths['local_stat_paths'][i] = {player_name: 
+                                                it_folder + f"/{player_name}_stats"
+                                                for player_name in players.keys()}
+        player_paths['global_stat_paths'] = {player_name: 
+                                                output_directory + f"/{player_name}_global_stats"
+                                                for player_name in players.keys()}
 
     for iteration in range(cfg["experiment"]["nb_iterations"]):
 
         # Create / set iteration folders and paths
         it_folder = iteration_folders[iteration]
+        os.makedirs(it_folder, exist_ok=True)
 
         # Generate games
-        player_paths, games_path = run_games(
+        run_games(
             game=dond_game,
             players=players,
-            player_paths=player_paths,
+            player_export_paths=player_paths['player_export_paths'][iteration],
             models=models,
             **cfg['run_games_args']
         )
 
         # Compute iteration statistics
-        for player in players:
-            player_games_path = player_paths[player.player_name]["game_export_folders"][iteration]
-            player_stats_path = player_paths[player.player_name]["local_stat_paths"][iteration]
-            player_stats_paths = [path["global_stat_path"] for path in player_paths.values()]
-            export_dond_player_stats(player_games_path, player_stats_path)
-            export_global_dond_player_stats(player_stats_paths[:iteration+1], 
-                                            player_paths[player.player_name]["global_stat_path"])
+        for player in players.values():
+            export_dond_player_stats(player_paths['player_export_paths'][iteration][player.player_name], 
+                                     player_paths["local_stat_paths"][iteration][player.player_name])
+            export_global_dond_player_stats(player_paths["global_stat_paths"][:iteration+1][player.player_name], 
+                                            player_paths["global_stat_paths"][player.player_name])
 
         # Training models
         for model_name in models.keys():
@@ -128,40 +140,3 @@ def dond_run_train(cfg):
     logging.info(f"Total time taken for the entire run: {total_duration:.2f} seconds")
 
 
-def initialize_output_paths(cfg, output_directory):
-    """
-    Initializes all output path names in advance and sets them in a dictionary.
-
-    Args:
-        cfg (omegaconf.DictConfig): Configuration object containing all necessary parameters.
-        output_directory (str): The base directory for output files.
-
-    Returns:
-        tuple: A dictionary containing paths for each player and a list of iteration folders.
-    """
-    player_paths = {}
-    iteration_folders = []
-
-    for iteration in range(cfg["experiment"]["nb_iterations"]):
-        it_folder = os.path.join(output_directory, f"iteration_{iteration:04d}")
-        iteration_folders.append(it_folder)
-
-    for player_name in cfg["players"].keys():
-        player_id = cfg["players"][player_name]["id"]
-        global_stat_path = os.path.join(output_directory, f"player_{player_name}_global_stats.json")
-
-        game_export_folders = []
-        local_stat_paths = []
-        for it_folder in iteration_folders:
-            game_export_folder = os.path.join(it_folder, f"player_{player_name}_games")
-            local_stat_path = os.path.join(it_folder, f"{player_name}_stats.json")
-            game_export_folders.append(game_export_folder)
-            local_stat_paths.append(local_stat_path)
-
-        player_paths[player_name] = {
-            "global_stat_path": global_stat_path,
-            "local_stat_paths": local_stat_paths,
-            "game_export_folders": game_export_folders
-        }
-
-    return player_paths, iteration_folders

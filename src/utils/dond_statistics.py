@@ -14,9 +14,8 @@ def process_player_folder(folder_path):
     for file_name in os.listdir(folder_path):
         file_path = os.path.join(folder_path, file_name)
         with open(file_path, 'r') as f: player_data = json.load(f)
-        augmented_context = player_data['augmented_context']
-        game_info = augmented_context[0]['content']
-        player_stats_list.append(game_info['game_self_points'])
+        game_info = player_data[0]['content']
+        player_stats_list.append(game_info)
     return player_stats_list
 
 def compute_mean_game_stats(game_stats_list):
@@ -27,7 +26,11 @@ def compute_mean_game_stats(game_stats_list):
         return {}
     mean_game_stats = {}
     for stat in game_stats_list[0].keys():
-        mean_game_stats[stat] = augmented_mean(game_stats_list)
+        if isinstance(game_stats_list[0][stat], dict): continue
+        accumulated_stat = []
+        for game_info in game_stats_list:
+            accumulated_stat.append(game_info[stat])
+        mean_game_stats[stat] = augmented_mean(accumulated_stat)
     return mean_game_stats
 
 def export_dond_player_stats(input_path, output_path):

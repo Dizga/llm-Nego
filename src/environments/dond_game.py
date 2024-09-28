@@ -69,11 +69,11 @@ class DondGame:
             self.items = items
             self.quantities = {key: value for key, value in zip(self.items, quantities)}
             self.role_values = {
-                self.roles[0]: {key: value for key, value in zip(self.items, player_0_values)},
-                self.roles[1]: {key: value for key, value in zip(self.items, player_1_values)}
+                self.roles[0]: {key: value for key, value in zip(self.items, role_values[0])},
+                self.roles[1]: {key: value for key, value in zip(self.items, role_values[1])}
             }
 
-        self.reset()
+        self.new_game()
 
     def step(self, output, is_finalization=False) -> bool:
         """
@@ -89,6 +89,7 @@ class DondGame:
         self.turn += 1
         self.last_message = output
         round_over = False
+        game_over = False
 
         if self.has_finalized:
             if not is_finalization:
@@ -111,11 +112,13 @@ class DondGame:
 
             if self.turn > self.max_turns:
                 round_over = True
-                return self.get_state()
 
-        self.turn_order.rotate(-1)
-        if round_over: self.end_round()
-        return self.get_state()
+        self.role_deque.rotate(-1)
+        if round_over: self.new_round()
+        if self.round_nb > self.rounds_per_game:
+            game_over = True
+        state = self.get_state()
+        return round_over, game_over, state
 
 
     def verify_finalizations_match(self):
@@ -167,8 +170,9 @@ class DondGame:
         """
         out = {
             "mode": self.mode,
-            "game_ended": self.game_ended,
-            "round_ended": self.round_ended,
+            "role_values": self.role_values,
+            "role_props": self.role_props,
+            "player_to_role": self.player_to_role,
             "is_new_round": True if self.turn <= 2 else False,
             "is_new_game": True if (self.turn <= 2 and self.round_nb == 1) else False,
             "items": self.items,
@@ -185,14 +189,6 @@ class DondGame:
         }
         return out
 
-    def current_player(self):
-        """
-        Get the order of roles.
-
-        Returns:
-            deque: The order of roles.
-        """
-        return self.role_to_player[self.turn_deque[0]]
 
     def set_new_game_settings(self):
         """
@@ -218,9 +214,9 @@ class DondGame:
         self.round_agreement_reached.append(self.agreement_reached)
         self.round_role_to_player.append(self.role_to_player.copy())
 
-    def reset(self):
+    def new_game(self):
         """
-        Resets the game to its initial state.
+        new_games the game to its initial state.
 
         Returns:
             tuple: The quantities of items and the values for player 0 and player 1.
@@ -241,11 +237,11 @@ class DondGame:
         self.round_quantities = []
         self.round_agreement_reached = []
         self.round_role_to_player = []
+        self.role_deque = self.get_new_role_deque()
         self.set_new_game_settings()
-        self.turn_order = self.get_play_order()
         self.assign_roles()
 
-    def end_round(self):
+    def new_round(self):
         """
         Ends the current round and prepares for the next round.
         """
@@ -263,8 +259,23 @@ class DondGame:
         if self.round_nb > self.rounds_per_game:
             self.game_ended = True
         self.set_new_game_settings()
-        self.turn_order = self.get_play_order()
+        self.role_deque = self.get_new_role_deque()
         self.assign_roles()
+    
+    def get_new_role_deque(self):
+        """
+        Set the order of roles.
+        """
+        if self.player_order == "deterministic":
+            return deque(self.roles)
+        elif self.player_order == "stochastic":
+            return deque(random.sample(self.roles, len(self.roles)))
+    
+    def get_current_player(self):
+        """
+        Get the current player (the one who has to play next)
+        """
+        return self.role_to_player[self.role_deque[0]]
 
     def current_turn(self):
         """
@@ -273,7 +284,7 @@ class DondGame:
         Returns:
             str: The name of the current role.
         """
-        return self.turn_order[0]
+        return self.role_deque[0]
 
     def assign_roles(self):
         """
@@ -284,6 +295,9 @@ class DondGame:
         elif self.player_order == "stochastic":
             shuffled_players = random.sample(self.players, len(self.players))
             self.role_to_player = {role: player for role, player in zip(self.roles, shuffled_players)}
+        
+        # Create player_to_role mapping
+        self.player_to_role = {player: role for role, player in self.role_to_player.items()}
 
     def export_game(self, file_path):
         """

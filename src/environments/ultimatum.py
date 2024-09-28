@@ -50,7 +50,7 @@ class Ultimatum:
 
         if self.is_aggreement_reached(proposition):
             self.agreement_reached = True
-            self.end_round()
+            self.new_round()
         else:
             self.current_message = message
             self.current_offer = proposition
@@ -59,7 +59,7 @@ class Ultimatum:
         self.turn += 1
 
         if self.turn > self.max_turns or self.agreement_reached:
-            self.end_round()
+            self.new_round()
 
         return self.get_state()
 
@@ -109,7 +109,7 @@ class Ultimatum:
                 self.round_points_player_1.append(self.current_offer['i_take'])
 
 
-    def end_round(self):
+    def new_round(self):
         """
         Ends the current round, and prepares the game for the next round.
         """

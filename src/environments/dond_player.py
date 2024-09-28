@@ -46,7 +46,7 @@ class DondPlayer:
         self.max_retries = max_retries
         self.model_name = model_name
         self.game_id = None  # ID of player in game
-        self.reset_game()
+        self.new_game()
 
     def get_context(self):
         return self.context
@@ -121,6 +121,7 @@ class DondPlayer:
         Returns:
             str: The constructed user message.
         """
+
         # Add game info at the beginning of a new game or new round
         if state["is_new_game"] or state["is_new_round"]:
             self.set_game_info(state)
@@ -129,6 +130,7 @@ class DondPlayer:
         dummy_finalization = {key: "..." for key in state["quantities"]}
         state["dummy_finalization"] = json.dumps(dummy_finalization)
         state["game_mode_specificities"] = self.game_state_specificities(state["mode"])
+        state['values'] = state['role_values'][state['player_to_role'][self.player_name]]
 
         user_message = ""
 
@@ -302,9 +304,9 @@ class DondPlayer:
         game_info = {
             "role": "game_info",
             "content": {
-                "game_agreement_rate": sum(state["round_agreements"]) / len(state["round_agreements"]),
-                "game_self_points": sum(state["player_0_points"]),
-                "game_other_points": sum(state["player_1_points"]),
+                "game_agreement_rate": sum(state["round_agreements"]) / (len(state["round_agreements"]) + 10e-10),
+                "game_self_points": sum(state["round_points"][self.player_name]),
+                #"game_other_points": sum(state["round_points"][state["current_turn"]]),
                 "round_points": state["round_points"],
                 "round_agreements": state["round_agreements"],
                 "total_rounds": state["nb_rounds"],
@@ -324,12 +326,13 @@ class DondPlayer:
             post_round (bool): If True, updates the round info with end-of-round details.
         """
         if not post_round:
+            self_role = state['player_to_role'][self.player_name]
             round_info = {
                 "role": "round_info",
                 "content": {
                     "quantities": state["quantities"],
-                    "values_player_0": state["values_player_0"],
-                    "values_player_1": state["values_player_1"],
+                    "values_self": state["role_values"][self_role],
+                    #"values_other": state["role_values"][other_role],
                     "round_number": state["round_number"],
                 },
             }
@@ -344,20 +347,19 @@ class DondPlayer:
                     info["content"].update(
                         {
                             "agreement_reached": state["agreement_reached"],
-                            "player_0_proposal": state["player_0_proposal"],
-                            "player_1_proposal": state["player_1_proposal"],
+                            "player_proposals": state["role_props"],
                         }
                     )
                     break
 
-    def reset_round(self):
+    def new_round(self):
         """
         Resets round attributes.
         """
         self.retries = 0
         self.error_message = None
 
-    def reset_game(self):
+    def new_game(self):
         """
         Resets the message history of the LLM player.
         """

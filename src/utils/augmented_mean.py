@@ -1,5 +1,5 @@
 def augmented_mean(data: list):
-    if all(isinstance(i, int) for i in data):
+    if all(isinstance(i, (int, float)) for i in data):
         return sum(data) / len(data)
     
     if all(isinstance(i, list) for i in data):
@@ -10,4 +10,4 @@ def augmented_mean(data: list):
             means.append(sum(elements) / len(elements))
         return means
     
-    raise ValueError("Input must be a list of integers or a list of lists of integers")
+    raise ValueError("Input must be a list of numbers or a list of lists of numbers.")
