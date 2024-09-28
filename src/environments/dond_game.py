@@ -2,11 +2,13 @@ import regex as re
 import json
 import random
 import os
+from collections import deque
 
 
 class DondGame:
     def __init__(
         self,
+        players,
         mode="coop",
         max_turns=None,
         player_order="deterministic",
@@ -14,15 +16,15 @@ class DondGame:
         setups_file=None,
         rounds_per_game=10,
         items=None,
-        player_0_values=None,
-        player_1_values=None,
         quantities=None,
+        role_values=None,
         finalization_visibility=False,
     ):
         """
         Initializes the DoND game.
 
         Args:
+            players (list): List of player names.
             mode (str): The mode of the game, either 'coop' or 'basic'.
             max_turns (int): The maximum number of turns allowed in the game.
             player_order (str): The order of players, either 'deterministic' or 'stochastic'.
@@ -30,11 +32,11 @@ class DondGame:
             setups_file (str): The file containing game setups.
             rounds_per_game (int): The number of rounds per game.
             items (list): The list of items in the game.
-            player_0_values (list): The values for player 0.
-            player_1_values (list): The values for player 1.
             quantities (list): The quantities of items.
             finalization_visibility (bool): Visibility of finalization.
         """
+        self.players = players
+        self.roles = ["starting_negotiator", "responding_negotiator"]
         self.mode = mode
         self.max_turns = max_turns
         self.player_order = player_order
@@ -47,34 +49,28 @@ class DondGame:
         if self.setup == "random_read":
             self.items = ["books", "hats", "balls"]
             self.settings = []
-            # Get dataset of game setups from file
             with open(self.setups_file) as f:
                 lines = f.readlines()
                 self.nb_settings = len(lines)
                 for i in range(0, self.nb_settings, 2):
-                    # TODO: ensure that quantities match!
                     l = [int(item) for item in lines[i].split()]
                     l2 = [int(item) for item in lines[i + 1].split()]
                     quantities = {
                         key: value for key, value in zip(self.items, [l[0], l[2], l[4]])
                     }
-                    player_0_values = {
-                        key: value for key, value in zip(self.items, [l[1], l[3], l[5]])
+                    role_values = {
+                        self.roles[0]: {key: value for key, value in zip(self.items, [l[1], l[3], l[5]])},
+                        self.roles[1]: {key: value for key, value in zip(self.items, [l2[1], l2[3], l2[5]])}
                     }
-                    player_1_values = {
-                        key: value for key, value in zip(self.items, [l2[1], l2[3], l2[5]])
-                    }
-                    self.settings.append((quantities, player_0_values, player_1_values))
+                    self.settings.append((quantities, role_values))
             self.nb_settings = len(self.settings)
 
         elif self.setup == "manual":
             self.items = items
             self.quantities = {key: value for key, value in zip(self.items, quantities)}
-            self.values_player_0 = {
-                key: value for key, value in zip(self.items, player_0_values)
-            }
-            self.values_player_1 = {
-                key: value for key, value in zip(self.items, player_1_values)
+            self.role_values = {
+                self.roles[0]: {key: value for key, value in zip(self.items, player_0_values)},
+                self.roles[1]: {key: value for key, value in zip(self.items, player_1_values)}
             }
 
         self.reset()
@@ -91,42 +87,36 @@ class DondGame:
             bool: False if game ended else True.
         """
         self.turn += 1
-
         self.last_message = output
+        round_over = False
 
-        if self.has_finalized:  # Other player made finalization last turn
-
-            if not is_finalization:  # player has not made a finalization after other player, automatic loss
-                self.points_player_0 = 0
-                self.points_player_1 = 0
+        if self.has_finalized:
+            if not is_finalization:
+                self.points = {player: 0 for player in self.players}
                 self.agreement_reached = False
-
-            else:  # Player has made a finalization
-
+            else:
                 self.finalize(output)
-
-                if self.verify_finalizations_match():  # If finalizations are complementary
+                if self.verify_finalizations_match():
                     self.set_points()
                     self.agreement_reached = True
                 else:
-                    self.points_player_0 = 0
-                    self.points_player_1 = 0
+                    self.points = {player: 0 for player in self.players}
                     self.agreement_reached = False
+            round_over = True
 
-            self.end_round()
-            return self.get_state()
+        else:
+            if is_finalization:
+                self.has_finalized = True
+                self.finalize(output)
 
-        self.has_finalized = is_finalization
+            if self.turn > self.max_turns:
+                round_over = True
+                return self.get_state()
 
-        if is_finalization:
-            self.has_finalized = True
-            self.finalize(output)
+        self.turn_order.rotate(-1)
+        if round_over: self.end_round()
+        return self.get_state()
 
-        if self.turn > self.max_turns:
-            self.end_round()
-            return self.get_state()  # round ended due to exceeding max turns
-
-        return self.get_state()  # round not ended
 
     def verify_finalizations_match(self):
         """
@@ -136,7 +126,8 @@ class DondGame:
             bool: True if the finalizations match, False otherwise.
         """
         for item in self.items:
-            if self.player_0_prop[item] + self.player_1_prop[item] != self.quantities[item]:
+            total = sum(self.role_props[role][item] for role in self.roles)
+            if total != self.quantities[item]:
                 return False
         return True
 
@@ -144,21 +135,18 @@ class DondGame:
         """
         Sets the points for both players based on their finalizations.
         """
-        points_player_0 = sum(
-            self.values_player_0[item] * self.player_0_prop[item] for item in self.items
-        )
-        points_player_1 = sum(
-            self.values_player_1[item] * self.player_1_prop[item] for item in self.items
-        )
+        utilities = {
+            role: sum(self.role_values[role][item] * self.role_props[role][item] for item in self.items)
+            for role in self.roles
+        }
 
         if self.mode == "coop":
-            total = points_player_0 + points_player_1
-            self.points_player_0 = total
-            self.points_player_1 = total
+            total = sum(utilities.values())
+            self.points = {player: total for player in self.players}
+
 
         elif self.mode == "basic":
-            self.points_player_0 = points_player_0
-            self.points_player_1 = points_player_1
+            self.points = {self.role_to_player[role]: utilities[role] for role in self.roles}
 
     def finalize(self, finalization: list):
         """
@@ -167,10 +155,8 @@ class DondGame:
         Args:
             finalization (list): The list of finalized quantities for each item.
         """
-        if self.current_turn() == "player_0":
-            self.player_0_prop = finalization["i_take"]
-        else:
-            self.player_1_prop = finalization["i_take"]
+        current_role = self.current_turn()
+        self.role_props[current_role] = finalization["i_take"]
 
     def get_state(self):
         """
@@ -195,28 +181,18 @@ class DondGame:
             "last_message": self.last_message,
             "finalization_visibility": self.finalization_visibility,
             "round_agreements": self.round_agreement_reached,
-            "round_points": [self.round_points_player_0, self.round_points_player_1],
+            "round_points": {player: self.round_points[player] for player in self.players},
         }
         return out
 
-    def get_play_order(self):
+    def current_player(self):
         """
-        Get the order of players.
+        Get the order of roles.
 
         Returns:
-            list: The order of player indices.
+            deque: The order of roles.
         """
-        if self.player_order == "deterministic":
-            # If the order is deterministic, the players will always be [0, 1]
-            return [0, 1]
-        elif self.player_order == "stochastic":
-            # If the order is stochastic, randomly shuffle the player order
-            return random.sample([0, 1], 2)  # Randomly shuffle between [0, 1]
-        else:
-            # Handle invalid player_order values
-            raise ValueError(
-                f"Invalid player_order: {self.player_order}. Must be 'deterministic' or 'stochastic'."
-            )
+        return self.role_to_player[self.turn_deque[0]]
 
     def set_new_game_settings(self):
         """
@@ -225,25 +201,22 @@ class DondGame:
         if self.setup == "manual":
             return
 
-        # Pick random trio of quantities & values from dataset
         elif self.setup == "random_read":
             setting_id = random.randint(0, self.nb_settings - 1)
-            self.quantities, self.values_player_0, self.values_player_1 = self.settings[
-                setting_id
-            ]
+            self.quantities, self.role_values = self.settings[setting_id]
 
     def archive_player_states(self):
         """
         Archives the states of the players for the current round.
         """
-        self.round_player_0_prop.append(self.player_0_prop)
-        self.round_player_1_prop.append(self.player_1_prop)
-        self.round_points_player_0.append(self.points_player_0)
-        self.round_points_player_1.append(self.points_player_1)
-        self.round_values_player_0.append(self.values_player_0)
-        self.round_values_player_1.append(self.values_player_1)
+        for role in self.roles:
+            player = self.role_to_player[role]
+            self.round_role_props[role].append(self.role_props[role])
+            self.round_points[player].append(self.points[player])
+            self.round_values[role].append(self.role_values[role])
         self.round_quantities.append(self.quantities)
         self.round_agreement_reached.append(self.agreement_reached)
+        self.round_role_to_player.append(self.role_to_player.copy())
 
     def reset(self):
         """
@@ -253,10 +226,8 @@ class DondGame:
             tuple: The quantities of items and the values for player 0 and player 1.
         """
         self.has_finalized = False
-        self.player_0_prop = {}
-        self.player_1_prop = {}
-        self.points_player_0 = 0
-        self.points_player_1 = 0
+        self.role_props = {role: {} for role in self.roles}
+        self.points = {player: 0 for player in self.players}
         self.agreement_reached = False
         self.last_message = None
         self.round_nb = 1
@@ -264,15 +235,15 @@ class DondGame:
         self.round_ended = False
         self.game_ended = False
         self.last_message = None
-        self.round_player_0_prop = []
-        self.round_player_1_prop = []
-        self.round_points_player_0 = []
-        self.round_points_player_1 = []
-        self.round_values_player_0 = []
-        self.round_values_player_1 = []
+        self.round_role_props = {role: [] for role in self.roles}
+        self.round_points = {player: [] for player in self.players}
+        self.round_values = {role: [] for role in self.roles}
         self.round_quantities = []
         self.round_agreement_reached = []
+        self.round_role_to_player = []
         self.set_new_game_settings()
+        self.turn_order = self.get_play_order()
+        self.assign_roles()
 
     def end_round(self):
         """
@@ -281,10 +252,8 @@ class DondGame:
         self.archive_player_states()
         self.round_nb += 1
         self.has_finalized = False
-        self.player_0_prop = {}
-        self.player_1_prop = {}
-        self.points_player_0 = 0
-        self.points_player_1 = 0
+        self.role_props = {role: {} for role in self.roles}
+        self.points = {player: 0 for player in self.players}
         self.agreement_reached = False
         self.last_message = None
         self.turn = 1
@@ -294,15 +263,27 @@ class DondGame:
         if self.round_nb > self.rounds_per_game:
             self.game_ended = True
         self.set_new_game_settings()
+        self.turn_order = self.get_play_order()
+        self.assign_roles()
 
     def current_turn(self):
         """
-        Determines the current player's turn.
+        Determines the current role's turn.
 
         Returns:
-            str: 'player_0' if it's player 0's turn, 'player_1' if it's player 1's turn.
+            str: The name of the current role.
         """
-        return "player_0" if self.turn % 2 == 0 else "player_1"
+        return self.turn_order[0]
+
+    def assign_roles(self):
+        """
+        Assigns roles to players for the current round.
+        """
+        if self.player_order == "deterministic":
+            self.role_to_player = {role: player for role, player in zip(self.roles, self.players)}
+        elif self.player_order == "stochastic":
+            shuffled_players = random.sample(self.players, len(self.players))
+            self.role_to_player = {role: player for role, player in zip(self.roles, shuffled_players)}
 
     def export_game(self, file_path):
         """
@@ -316,14 +297,12 @@ class DondGame:
             os.makedirs(folder_path)
 
         round_history = {
-            "round_player_0_prop": self.round_player_0_prop,
-            "round_player_1_prop": self.round_player_1_prop,
-            "round_points_player_0": self.round_points_player_0,
-            "round_points_player_1": self.round_points_player_1,
-            "round_values_player_0": self.round_values_player_0,
-            "round_values_player_1": self.round_values_player_1,
+            "round_role_props": self.round_role_props,
+            "round_points": self.round_points,
+            "round_values": self.round_values,
             "round_quantities": self.round_quantities,
             "round_agreement_reached": self.round_agreement_reached,
+            "round_role_to_player": self.round_role_to_player,
         }
 
         with open(file_path, "w") as f:

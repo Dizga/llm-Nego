@@ -49,17 +49,11 @@ def run_games(nb_parallel_games,
     nb_matches = min(nb_parallel_games, games_per_iteration)
     for _ in range(nb_matches):
         match = {
-            "player_list": [copy.deepcopy(player) for player in players],
+            "players": {player.player_name: copy.deepcopy(player) for player in players},
             "game": copy.deepcopy(game),
         }
         match["game"].reset()
         match["game_state"] = match["game"].get_state()
-        match["play_order"] = match["game"].get_play_order()
-        match["player_deque"] = deque(
-            [match["player_list"][id] for id in match["play_order"]]
-        )
-        for i, player in enumerate(match["player_deque"]):
-            player.game_id = i
         matches.append(match)
 
     start_time = time.time()  # Start time for iteration
@@ -70,49 +64,40 @@ def run_games(nb_parallel_games,
         # Get prompt batch for each model
         for match in matches:
             # Add user message to context
-            player = match["player_deque"][0]
             match["game_state"] = match["game"].get_state()
-            player.set_usr_message(match["game_state"])
-
-            # Send player context to right model
-            prompt_batches[player.model_name].append(
-                copy.deepcopy(player.get_context())
+            current_player = match["game"].get_current_player()
+            current_player.set_usr_message(match["game_state"])
+            prompt_batches[current_player.model_name].append(
+                copy.deepcopy(current_player.get_context())
             )
 
         # Process prompt batch of each model
         for model_name in models.keys():
             model = models[model_name]
             response_batches[model_name] = model.prompt(prompt_batches[model_name])
-            assert len(response_batches[model_name]) == len(prompt_batches[model_name])
             prompt_batches[model_name] = []
 
         # Play moves for each player by using the model outputs
         for match in matches:
             match["game_state"] = match["game"].get_state()
-            player = match["player_deque"][0]
-            response = response_batches[player.model_name].pop(0)
+            current_player = match["players"][match["game"].get_current_player()]
+            response = response_batches[current_player.model_name].pop(0)
             (
                 send_to_game,
                 is_finalization,
                 processed_response,
-            ) = player.process_model_response(response, match["game_state"])
+            ) = current_player.process_model_response(response, match["game_state"])
 
             # Player has made an official move (will be other player's turn next)
             if send_to_game:
-                match["player_deque"].rotate(1)
                 match["game_state"] = match["game"].step(
                     processed_response, is_finalization
                 )
 
                 if match["game_state"]["round_ended"]:
-                    for player in match["player_list"]:
+                    for player in match["players"].values():
                         player.set_round_info(match["game_state"])
-                    match["play_order"] = match["game"].get_play_order()
-                    match["player_deque"] = deque(
-                        [match["player_list"][id] for id in match["play_order"]]
-                    )
-                    for i, player in enumerate(match["player_deque"]):
-                        player.game_id = i
+
 
                 if match["game_state"]["game_ended"]:
                     game_nb += 1
@@ -123,8 +108,9 @@ def run_games(nb_parallel_games,
                         player_paths,
                         game_json_path,
                     )
+                    player.set_game_info(match["game_state"])
                     match["game"].reset()
-                    for player in match["player_deque"]:
+                    for player in match["players"].values():
                         player.reset_game()
 
     end_time = time.time()
