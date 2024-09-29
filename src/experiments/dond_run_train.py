@@ -6,7 +6,7 @@ from omegaconf import OmegaConf
 import random
 
 # Local imports
-from experiments.dond_run_games import run_games
+from environments.dond_run_games import run_games
 from environments.dond_game import DondGame
 from models.hf_agent import HfAgent
 from models.dummy_hf_agent import DummyHfAgent
@@ -68,7 +68,7 @@ def dond_run_train(cfg):
                                                 it_folder + f"/{player_name}_game_data"
                                                 for player_name in players.keys()}
         player_paths['local_stat_paths'][i] = {player_name: 
-                                                it_folder + f"/{player_name}_local_stats"
+                                                it_folder + f"/{player_name}_local_stats.json"
                                                 for player_name in players.keys()}
         player_paths['global_stat_paths'] = {player_name: 
                                                 output_directory + f"/{player_name}_global_stats/"
@@ -119,7 +119,7 @@ def dond_run_train(cfg):
                         
 
                 # Train on data
-                it_folder_ppo = os.path.join(it_folder, f"{model_name}_ppo_training")
+                it_folder_ppo = os.path.join(it_folder, f"{model_name}_ppo_training.jsonl")
                 export_ppo_training_set(it_folder_ppo, queries, responses, scores)
                 model.train_ppo(queries=queries, responses=responses, scores=scores)
 

@@ -5,7 +5,7 @@ import time
 from omegaconf import OmegaConf
 import random
 # local imports
-from experiments.dond_run_games import run_games
+from src.environments.dond_run_games import run_games
 from environments.dond_game import DondGame
 from models.hf_agent import HfAgent
 from models.dummy_hf_agent import DummyHfAgent

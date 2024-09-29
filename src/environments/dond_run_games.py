@@ -99,15 +99,17 @@ def run_games(nb_parallel_games,
 
                 if game_over:
                     game_nb += 1
-                    player.set_game_info(match["game_state"])
+                    match["game"].new_game()
+                    for player in match["players"].values():
+                        player.set_game_info(match["game_state"])
                     log_game(
                         game_nb=game_nb,
                         players=match["players"],
                         player_export_paths=player_export_paths
                     )
-                    match["game"].new_game()
                     for player in match["players"].values():
                         player.new_game()
+
 
     end_time = time.time()
     iteration_duration = end_time - start_time
