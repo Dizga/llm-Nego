@@ -254,10 +254,7 @@ class DondGame:
         self.last_message = None
         self.turn = 1
         self.round_ended = True
-        self.game_ended = False
         self.last_message = None
-        if self.round_nb > self.rounds_per_game:
-            self.game_ended = True
         self.set_new_game_settings()
         self.role_deque = self.get_new_role_deque()
         self.assign_roles()

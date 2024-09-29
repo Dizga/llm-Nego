@@ -122,10 +122,6 @@ class DondPlayer:
             str: The constructed user message.
         """
 
-        # Add game info at the beginning of a new game or new round
-        if state["is_new_game"] or state["is_new_round"]:
-            self.set_game_info(state)
-
         # Create dummy finalization to include in game explanation
         dummy_finalization = {key: "..." for key in state["quantities"]}
         state["dummy_finalization"] = json.dumps(dummy_finalization)

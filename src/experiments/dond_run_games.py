@@ -99,12 +99,12 @@ def run_games(nb_parallel_games,
 
                 if game_over:
                     game_nb += 1
+                    player.set_game_info(match["game_state"])
                     log_game(
                         game_nb=game_nb,
                         players=match["players"],
                         player_export_paths=player_export_paths
                     )
-                    player.set_game_info(match["game_state"])
                     match["game"].new_game()
                     for player in match["players"].values():
                         player.new_game()
@@ -132,7 +132,7 @@ def log_game(game_nb=None, game=None, players=None, player_export_paths=None, ga
     # Export the player contexts
     for player_name in players.keys():
         player_save_path = player_export_paths[player_name]
-        player_save_path = player_save_path + f"/game_{game_nb}.jsonl"
+        player_save_path = player_save_path + f"/game_{game_nb:05}.jsonl"
         os.makedirs(os.path.dirname(player_save_path), exist_ok=True)
         with open(player_save_path, "w") as f:
             json.dump(players[player_name].get_augmented_context(), f, indent=4)

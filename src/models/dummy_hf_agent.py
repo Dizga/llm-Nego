@@ -14,6 +14,6 @@ class DummyHfAgent(HfAgent):
     def use_hf_model(self): return
     def use_vllm_model(self): return
     def train_ppo(
-            self, path, queries: List, responses: List, scores: List[float]
+            self, queries: List, responses: List, scores: List[float]
         ) -> dict: return
     

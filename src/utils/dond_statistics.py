@@ -51,9 +51,8 @@ def export_global_dond_player_stats(input_paths, output_path):
 
     # Gather mean game statistics from each input path
     for input_path in input_paths:
-        game_stats_list = process_player_folder(input_path)
-        mean_game_stats = compute_mean_game_stats(game_stats_list)
-        all_mean_stats.append(mean_game_stats)
+        mean_game_stats_list = json.load(open(input_path, 'r'))
+        all_mean_stats.append(mean_game_stats_list)
 
     # Transpose the list of dictionaries to a dictionary of lists
     transposed_stats = {}
@@ -63,11 +62,15 @@ def export_global_dond_player_stats(input_paths, output_path):
                 transposed_stats[key] = []
             transposed_stats[key].append(value)
 
+    # Ensure the output directory exists
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
     # Generate plots for scalar values
     for stat, values in transposed_stats.items():
         if all(isinstance(v, (int, float)) for v in values):
-            plot_curves(y_list=[values], plot_name=f"{stat}_Through_Iterations")
+            plot_curves(y_list=[values], plot_name=f"{stat}_through_iterations", output_directory=os.path.dirname(output_path))
+
 
     # Save the transposed statistics to the output path
-    with open(output_path, 'w') as f:
+    with open(output_path+"/global_stats.json", 'w') as f:
         json.dump(transposed_stats, f, indent=4)

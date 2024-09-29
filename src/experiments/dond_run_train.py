@@ -61,17 +61,17 @@ def dond_run_train(cfg):
     player_paths = {'player_export_paths': {}, 'local_stat_paths': {}, 'global_stat_paths': {}}
     iteration_folders = {}
     for i in range(cfg["experiment"]["nb_iterations"]):
-        it_folder = os.path.join(output_directory, f"ITERATION-{i}")
+        it_folder = os.path.join(output_directory, f"iteration_{i:03}")
         iteration_folders[i] = it_folder
 
         player_paths['player_export_paths'][i] = {player_name: 
-                                                it_folder + f"/{player_name}_games"
+                                                it_folder + f"/{player_name}_game_data"
                                                 for player_name in players.keys()}
         player_paths['local_stat_paths'][i] = {player_name: 
-                                                it_folder + f"/{player_name}_stats"
+                                                it_folder + f"/{player_name}_local_stats"
                                                 for player_name in players.keys()}
         player_paths['global_stat_paths'] = {player_name: 
-                                                output_directory + f"/{player_name}_global_stats"
+                                                output_directory + f"/{player_name}_global_stats/"
                                                 for player_name in players.keys()}
 
     for iteration in range(cfg["experiment"]["nb_iterations"]):
@@ -93,7 +93,8 @@ def dond_run_train(cfg):
         for player in players.values():
             export_dond_player_stats(player_paths['player_export_paths'][iteration][player.player_name], 
                                      player_paths["local_stat_paths"][iteration][player.player_name])
-            export_global_dond_player_stats(player_paths["global_stat_paths"][:iteration+1][player.player_name], 
+            l = [player_paths["local_stat_paths"][i][player.player_name] for i in range(0,iteration+1)]
+            export_global_dond_player_stats(l,
                                             player_paths["global_stat_paths"][player.player_name])
 
         # Training models
@@ -105,26 +106,22 @@ def dond_run_train(cfg):
                 queries, responses, scores = [], [], []
 
                 # Extract data
-                for player in players:
+                for player in players.values():
                     if player.model_name == model_name:
                         epd_config = cfg["players"][player.player_name]["ppo_data_extraction_args"]
-                        player_games_path = player_paths[player.player_name]["game_export_folders"][iteration]
+                        player_export_path = player_paths['player_export_paths'][iteration][player.player_name]
                         new_queries, new_responses, new_scores = extract_ppo_dataset(
-                            player_games_path, player.player_name, **epd_config
+                            folder_path=player_export_path, **epd_config
                         )
                         queries += new_queries
                         responses += new_responses
                         scores += new_scores
                         
-                # Shuffle data
-                combined = list(zip(queries, responses, scores))
-                random.shuffle(combined)
-                queries, responses, scores = zip(*combined)
 
                 # Train on data
                 it_folder_ppo = os.path.join(it_folder, f"{model_name}_ppo_training")
                 export_ppo_training_set(it_folder_ppo, queries, responses, scores)
-                model.train_ppo(queries, responses, scores)
+                model.train_ppo(queries=queries, responses=responses, scores=scores)
 
             # SFT training
             elif model.default_training_mode == "sft":

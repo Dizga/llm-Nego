@@ -11,7 +11,7 @@ def extract_ppo_dataset(
     last_k_responses=None,
     remove_errors=False,
     score_function=None,
-    score_function_kwargs=None,
+    score_function_kwargs={},
 ):
     """
     Extracts data for HF PPO training from game logs.
@@ -69,7 +69,7 @@ def extract_ppo_dataset(
 def process_conversation(
     conversation,
     score_function=lambda x: 10 if x["self_points"] > 0 else 0,
-    score_function_kwargs=None,
+    score_function_kwargs={},
     last_k_responses=None,
     remove_errors=False,
 ):
@@ -127,7 +127,7 @@ def process_conversation(
         if message.get("role") == "assistant":
             conversation_queries.append(copy.deepcopy(context[:-1]))
             conversation_responses.append([message])
-            score = score_function(score_info, **score_function_kwargs)
+            score = globals()[score_function](score_info, **score_function_kwargs)
             conversation_scores.append(score)
 
         round_msg_nb += 1
