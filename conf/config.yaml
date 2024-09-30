@@ -9,8 +9,8 @@ experiment:
 
 
 run_games_args:
-  nb_parallel_games: 40
-  games_per_iteration: 40
+  nb_parallel_games: 80
+  games_per_iteration: 80
 
 
 dond_game_args:
@@ -41,8 +41,8 @@ models:
         load_in_8bit: False
       lora_args:
         task_type: TaskType.CAUSAL_LM
-        r: 32
-        lora_alpha: 32
+        r: 64
+        lora_alpha: 64
         lora_dropout: 0.1
         target_modules: "all-linear"
       ppo_trainer_class: PPOTrainer
@@ -71,7 +71,7 @@ models:
       generation_args:
         max_new_tokens: 400
         do_sample: True
-        temperature: 0.3
+        temperature: 0.7
         top_k: 1000
         top_p: 0.9
         repetition_penalty: 1.0
