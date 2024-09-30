@@ -191,10 +191,15 @@ class HfAgent:
             logging.warning("train_ppo received empty dataset")
             self.ppo_trainer = None
             return
+        
+        if self.ppo_training_args["batch_size"] == -1:
+            self.ppo_training_args["batch_size"] = ds
 
-        self.ppo_training_args["batch_size"] = min(
+        else: 
+            self.ppo_training_args["batch_size"] = min(
             self.ppo_training_args["batch_size"], ds
         )
+            
         self.ppo_training_args["gradient_accumulation_steps"] = self.ppo_training_args[
             "batch_size"
         ]
@@ -207,7 +212,7 @@ class HfAgent:
 
         self.ppo_trainer = globals()[self.ppo_trainer_class](
             model=self.hf_model,
-            ref_model=None,
+            ref_model=self.hf_model,
             config=PPOConfig(**self.ppo_training_args),
             tokenizer=self.tokenizer,
         )
@@ -408,13 +413,15 @@ class HfAgent:
         if self.hf_model is None:
             if self.lora_pretrained_path:
                 if self.default_training_mode == "ppo":
+                    logging.info(f"Loading LoRA weights for PPO from {self.lora_pretrained_path}")
                     self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                        self.lora_pretrained_path, is_trainable=True
+                        self.lora_pretrained_path, is_trainable=True, device_map="auto"
                     )
                 elif self.default_training_mode == "sft":
                     self.hf_model = AutoModelForCausalLM.from_pretrained(
                         **self.pretrained_args,
                         #quantization_config=self.bits_and_bytes_configs,
+                        device_map="auto"
                     )
                     self.hf_model = PeftModel.from_pretrained(
                         self.hf_model, self.lora_pretrained_path, is_trainable=True
@@ -439,12 +446,13 @@ class HfAgent:
         """
         Destroys the Hugging Face model to free up memory.
         """
-        self.log_gpu_usage("Before destroying HF.")
-        del self.hf_model
-        gc.collect()
-        torch.cuda.empty_cache()
-        self.hf_model = None
-        self.log_gpu_usage("After destroying HF.")
+        if self.hf_model is not None:
+            self.log_gpu_usage("Before destroying HF.")
+            del self.hf_model
+            gc.collect()
+            torch.cuda.empty_cache()
+            self.hf_model = None
+            self.log_gpu_usage("After destroying HF.")
 
     def use_vllm_model(self):
         """
@@ -463,12 +471,13 @@ class HfAgent:
         """
         Destroys the VLLM model to free up memory.
         """
-        self.log_gpu_usage("Before destroying VLLM")
-        del self.vllm_model
-        gc.collect()
-        torch.cuda.empty_cache()
-        self.vllm_model = None
-        self.log_gpu_usage("After destroying VLLM.")
+        if self.vllm_model is not None:
+            self.log_gpu_usage("Before destroying VLLM")
+            del self.vllm_model
+            gc.collect()
+            torch.cuda.empty_cache()
+            self.vllm_model = None
+            self.log_gpu_usage("After destroying VLLM.")
 
     def save_lora_weights(self) -> None:
         """

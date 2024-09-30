@@ -15,7 +15,7 @@ run_games_args:
 
 dond_game_args:
   rounds_per_game: 1
-  max_turns: 6
+  max_turns: 8
   player_order: deterministic # deterministic or random player who start beginning of each round
   mode: coop # basic, coop
   setup: manual # manual or random_read
@@ -47,7 +47,7 @@ models:
         target_modules: "all-linear"
       ppo_trainer_class: PPOTrainer
       ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
-        batch_size: 40
+        batch_size: -1
         mini_batch_size: 1
         gradient_accumulation_steps: None
         ppo_epochs: 1
@@ -63,10 +63,15 @@ models:
         is_peft_model: True
       save_lora_weights: True
       lora_pretrained_path: null
+      sft_args: 
+        packing: False
+        dataset_num_proc: 1
+        per_device_train_batch_size: 1
+        max_seq_length: 1e5
       generation_args:
         max_new_tokens: 400
         do_sample: True
-        temperature: 1.0
+        temperature: 0.3
         top_k: 1000
         top_p: 0.9
         repetition_penalty: 1.0

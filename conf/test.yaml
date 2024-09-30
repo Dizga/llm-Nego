@@ -4,8 +4,8 @@ hydra:
 
 experiment:
   method: dond_run_train
-  description: "Dummy test to test the pipeline."
-  nb_iterations: 3
+  description: "Easy. They should be learning."
+  nb_iterations: 5
 
 
 run_games_args:
@@ -15,7 +15,7 @@ run_games_args:
 
 dond_game_args:
   rounds_per_game: 1
-  max_turns: 5
+  max_turns: 8
   player_order: deterministic # deterministic or random player who start beginning of each round
   mode: coop # basic, coop
   setup: manual # manual or random_read
@@ -36,7 +36,7 @@ models:
       pretrained_args: 
         pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
         torch_dtype: "bfloat16"
-        device_map: "cuda"
+        device_map: "auto"
       bits_and_bytes_args:
         load_in_8bit: False
       lora_args:
@@ -47,10 +47,10 @@ models:
         target_modules: "all-linear"
       ppo_trainer_class: PPOTrainer
       ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
-        batch_size: 64
+        batch_size: -1
         mini_batch_size: 1
         gradient_accumulation_steps: None
-        ppo_epochs: 2
+        ppo_epochs: 1
         #vf_coef: 0.1
         gradient_checkpointing: False
         log_with: "tensorboard"
@@ -63,10 +63,15 @@ models:
         is_peft_model: True
       save_lora_weights: True
       lora_pretrained_path: null
+      sft_args: 
+        packing: False
+        dataset_num_proc: 1
+        per_device_train_batch_size: 1
+        max_seq_length: 1e5
       generation_args:
-        max_new_tokens: 400
+        max_new_tokens: 20
         do_sample: True
-        temperature: 1.0
+        temperature: 0.3
         top_k: 1000
         top_p: 0.9
         repetition_penalty: 1.0

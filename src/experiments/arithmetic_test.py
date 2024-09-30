@@ -6,6 +6,8 @@ from statistics import mean
 from models.hf_agent import HfAgent  # Assuming the class is in the same folder
 from utils.plot_curves import plot_curves
 from omegaconf import OmegaConf
+import json
+import os
 
 
 # Setup logging
@@ -36,8 +38,7 @@ def calculate_rewards(responses, correct_answers):
         rewards.append(-abs(predicted_answer - correct))
     return rewards
 
-def train_agent(agent, num_steps):
-
+def train_agent(agent, num_steps, training_mode="ppo"):
     mean_scores = []
 
     for step in range(num_steps):
@@ -52,11 +53,20 @@ def train_agent(agent, num_steps):
         
         mean_scores.append(mean(rewards))
         plot_curves(y_list=[mean_scores], plot_name='mean_scores')
-        agent.train_ppo(queries, responses, rewards)
 
+        if training_mode == "ppo":
+            agent.train_ppo(queries, responses, rewards)
+        elif training_mode == "sft":
+            sft_data = [{'query': q, 'response': r} for q, r in zip(queries, responses)]
+            sft_data_path = f"sft_training_step_{step}.jsonl"
+            with open(sft_data_path, 'w') as f:
+                json.dump(sft_data, f)
+            agent.train_sft(sft_data_path)
+            os.remove(sft_data_path)
 
 def arithmetic_test(cfg):
     cfg = OmegaConf.to_container(cfg, resolve=True, structured_config_mode='dict')
     agent = HfAgent(**cfg['models']['llama']['init_args'])
-    train_agent(agent, N_STEPS)
+    training_mode = cfg.get('training_mode', 'ppo')
+    train_agent(agent, N_STEPS, training_mode)
     logging.info("Training completed.")
