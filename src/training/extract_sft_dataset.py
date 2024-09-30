@@ -62,3 +62,9 @@ def above_mean_filter(score, scores, **kwargs):
     """
     return score > mean(scores)
 
+def above_zero_filter(score, scores, **kwargs):
+    """
+    Filter function for SFT dataset extraction.
+    """
+    return score > 0
+
