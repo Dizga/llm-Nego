@@ -6,25 +6,28 @@ hydra:
 
 iterations:
 
-  nb_iterations: 500
+  nb_iterations: 1
   iteration_runner_args:
-    nb_parallel_games: 32
-    games_per_iteration: 32
+    nb_parallel_games: 30
+    games_per_iteration: 30
 
-  dond_game_args:
-    rounds_per_game: 1
-    max_turns: 10
-    player_order: deterministic # deterministic or random player who start beginning of each round
-    mode: coop # basic, coop
-    setup: manual # manual or random_read
-    player_0_values: [20, 10]
-    player_1_values: [10, 20]
-    items: ['gold', 'silver']
-    quantities: [10, 5]
-    setups_file: src/environments/dond_setups.txt
-    finalization_visibility: True
+dond_game_args:
+  rounds_per_game: 1
+  max_turns: 10
+  player_order: deterministic # deterministic or random player who start beginning of each round
+  mode: coop # basic, coop
+  setup: random_read # manual or random_read
+  player_0_values: [20, 10]
+  player_1_values: [10, 20]
+  items: ['gold', 'silver']
+  quantities: [10, 5]
+  setups_file: src/environments/dond_setups.txt
+  finalization_visibility: False
 
-
+training:
+  data:
+    last_k_responses: 1
+    error_handling: "skip" # include, skip or skip_all
 
 
 models: 
@@ -74,8 +77,8 @@ players:
     id: 0 # Will be used by game to determine which player starts
     dond_player_args:
       model_name: 'llama'
-      game_intro_file: "src/prompts/dond/rules.txt"
-      chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
+      game_intro_file: "src/prompts/coop/rules.txt"
+      chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond/new_round.txt"
       max_retries: 5
@@ -86,8 +89,8 @@ players:
     id: 1
     dond_player_args:
       model_name: 'llama'
-      game_intro_file: "src/prompts/dond/rules.txt"
-      chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
+      game_intro_file: "src/prompts/coop/rules.txt"
+      chain_of_thought_file: "src/prompts/coop/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond//new_round.txt"
       max_retries: 5

@@ -39,7 +39,7 @@ def dond_ppo_run_train_cycle(cfg):
             models[model_name] = OaiAgent(**cfg['models'][model_name]['init_args'])
 
     # Get game
-    dond_game = DondGame(**cfg['iterations']['dond_game_args'])
+    dond_game = DondGame(**cfg['dond_game_args'])
     
     # Get players
     players = [None] * len(cfg['players'].keys())
@@ -81,7 +81,8 @@ def dond_ppo_run_train_cycle(cfg):
             # Get training data for the model
             for player in players:
                 if player.model_name == model_name:
-                    new_queries, new_responses, new_scores = extract_ppo_dataset(it_folder, player.player_name)
+
+                    new_queries, new_responses, new_scores = extract_ppo_dataset(it_folder, player.player_name, **cfg['training']['data'])
                     queries += new_queries
                     responses += new_responses
                     scores += new_scores

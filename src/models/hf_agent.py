@@ -101,6 +101,7 @@ class HfAgent:
 
     def batch_encode(self, data: List[dict], pad=False, is_response=False) -> ...:
 
+        self.tokenizer.pad_token = self.tokenizer.eos_token
         if is_response:
             formatted = [d[0]['content'] + self.tokenizer.eos_token for d in data]
             self.tokenizer.padding_side = "right"
