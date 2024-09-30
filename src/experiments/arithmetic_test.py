@@ -6,7 +6,6 @@ from statistics import mean
 from models.hf_agent import HfAgent  # Assuming the class is in the same folder
 from utils.plot_curves import plot_curves
 from omegaconf import OmegaConf
-torch.set_default_device('cuda')
 
 
 # Setup logging

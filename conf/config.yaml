@@ -4,27 +4,26 @@ hydra:
 
 experiment:
   method: dond_run_train
-  description: "Nothing to say."
+  description: "Easy. They should be learning."
+  nb_iterations: 30
 
-iterations:
 
-  nb_iterations: 100
-  iteration_runner_args:
-    nb_parallel_games: 32
-    games_per_iteration: 32
+run_games_args:
+  nb_parallel_games: 40
+  games_per_iteration: 40
 
-  dond_game_args:
-    rounds_per_game: 1
-    max_turns: 10
-    player_order: deterministic # deterministic or random player who start beginning of each round
-    mode: coop # basic, coop
-    setup: manual # manual or random_read
-    player_0_values: [20, 10]
-    player_1_values: [10, 20]
-    items: ['gold', 'silver']
-    quantities: [10, 10]
-    setups_file: src/environments/dond_setups.txt
-    finalization_visibility: True
+
+dond_game_args:
+  rounds_per_game: 1
+  max_turns: 6
+  player_order: deterministic # deterministic or random player who start beginning of each round
+  mode: coop # basic, coop
+  setup: manual # manual or random_read
+  role_values: [[20, 10], [10, 20]]
+  items: ['gold', 'silver']
+  quantities: [10, 10]
+  setups_file: src/environments/dond_setups.txt
+  finalization_visibility: True
 
 
 models: 
@@ -37,7 +36,7 @@ models:
       pretrained_args: 
         pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
         torch_dtype: "bfloat16"
-        device_map: "cuda"
+        device_map: "auto"
       bits_and_bytes_args:
         load_in_8bit: False
       lora_args:
@@ -48,10 +47,10 @@ models:
         target_modules: "all-linear"
       ppo_trainer_class: PPOTrainer
       ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
-        batch_size: 64
+        batch_size: 40
         mini_batch_size: 1
         gradient_accumulation_steps: None
-        ppo_epochs: 4
+        ppo_epochs: 1
         #vf_coef: 0.1
         gradient_checkpointing: False
         log_with: "tensorboard"
@@ -77,7 +76,8 @@ models:
 
 
 players: 
-  player_a:
+
+  bob:
     id: 0 # Will be used by game to determine which player starts
     dond_player_args:
       model_name: 'llama'
@@ -85,14 +85,15 @@ players:
       chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond/new_round.txt"
-      max_retries: 2
+      max_retries: 1
     ppo_data_extraction_args:
+      score_function: score_based_on_agreement
       last_k_responses: 1
       substract_mean_score: false
       remove_errors: false
 
 
-  player_b:
+  alice:
     id: 1
     dond_player_args:
       model_name: 'llama'
@@ -100,8 +101,9 @@ players:
       chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond//new_round.txt"
-      max_retries: 2
+      max_retries: 1
     ppo_data_extraction_args:
+      score_function: score_based_on_agreement
       last_k_responses: 1
       substract_mean_score: false
       remove_errors: false

@@ -4,6 +4,7 @@ import logging
 import time
 from omegaconf import OmegaConf
 import random
+import json
 
 # Local imports
 from environments.dond_run_games import run_games
@@ -17,6 +18,8 @@ from training.extract_sft_dataset import extract_sft_dataset
 from utils.export_ppo_training_set import export_ppo_training_set
 from utils.plot_curves import plot_curves
 from utils.dond_statistics import export_dond_player_stats, export_global_dond_player_stats
+from utils.parallel_shuffle import parallel_shuffle
+
 
 
 def dond_run_train(cfg):
@@ -116,7 +119,7 @@ def dond_run_train(cfg):
                         queries += new_queries
                         responses += new_responses
                         scores += new_scores
-                        
+                queries, responses, scores = parallel_shuffle(queries, responses, scores)
 
                 # Train on data
                 it_folder_ppo = os.path.join(it_folder, f"{model_name}_ppo_training.jsonl")
@@ -125,11 +128,29 @@ def dond_run_train(cfg):
 
             # SFT training
             elif model.default_training_mode == "sft":
-                for player in players:
-                    file_name = None
+                sft_data = []
+
+                # Extract data
+                for player in players.values():
                     if player.model_name == model_name:
-                        file_name = extract_sft_dataset(it_folder, player.player_name, out_file=file_name)
-                model.train_sft(file_name)
+                        esd_config = cfg["players"][player.player_name]["sft_data_extraction_args"]
+                        player_export_path = player_paths['player_export_paths'][iteration][player.player_name]
+                        new_data = extract_sft_dataset(
+                            folder_path=player_export_path, **esd_config
+                        )
+                        sft_data.extend(new_data)
+
+                # Save data to a temporary JSON file
+                sft_data_path = os.path.join(it_folder, f"{model_name}_sft_training.jsonl")
+                with open(sft_data_path, 'w') as f:
+                    json.dump(sft_data, f)
+
+                # Train on data
+                model.train_sft(sft_data_path)
+
+                # Remove temporary JSON file
+                os.remove(sft_data_path)
+
 
     # Calculate and log total duration
     total_end_time = time.time()

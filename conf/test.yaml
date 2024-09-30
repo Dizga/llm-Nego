@@ -15,7 +15,7 @@ run_games_args:
 
 dond_game_args:
   rounds_per_game: 1
-  max_turns: 10
+  max_turns: 5
   player_order: deterministic # deterministic or random player who start beginning of each round
   mode: coop # basic, coop
   setup: manual # manual or random_read
@@ -50,7 +50,7 @@ models:
         batch_size: 64
         mini_batch_size: 1
         gradient_accumulation_steps: None
-        ppo_epochs: 4
+        ppo_epochs: 2
         #vf_coef: 0.1
         gradient_checkpointing: False
         log_with: "tensorboard"

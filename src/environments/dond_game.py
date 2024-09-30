@@ -115,7 +115,7 @@ class DondGame:
 
         self.role_deque.rotate(-1)
         if round_over: self.new_round()
-        if self.round_nb > self.rounds_per_game:
+        if self.round_nb > self.rounds_per_game-1:
             game_over = True
         state = self.get_state()
         return round_over, game_over, state
@@ -173,8 +173,8 @@ class DondGame:
             "role_values": self.role_values,
             "role_props": self.role_props,
             "player_to_role": self.player_to_role,
-            "is_new_round": True if self.turn <= 2 else False,
-            "is_new_game": True if (self.turn <= 2 and self.round_nb == 1) else False,
+            "is_new_round": True if self.turn <= 1 else False,
+            "is_new_game": True if (self.turn <= 1 and self.round_nb == 0) else False,
             "items": self.items,
             "turn": self.turn,
             "current_turn": self.current_turn(),
@@ -226,8 +226,8 @@ class DondGame:
         self.points = {player: 0 for player in self.players}
         self.agreement_reached = False
         self.last_message = None
-        self.round_nb = 1
-        self.turn = 1
+        self.round_nb = 0
+        self.turn = 0
         self.round_ended = False
         self.game_ended = False
         self.last_message = None
@@ -252,7 +252,7 @@ class DondGame:
         self.points = {player: 0 for player in self.players}
         self.agreement_reached = False
         self.last_message = None
-        self.turn = 1
+        self.turn = 0
         self.round_ended = True
         self.last_message = None
         self.set_new_game_settings()

@@ -77,6 +77,8 @@ def run_games(nb_parallel_games,
 
         # Play moves for each player by using the model outputs
         for match in matches:
+            if game_nb  > games_per_iteration:
+                break
             match["game_state"] = match["game"].get_state()
             current_player = match["players"][match["game"].get_current_player()]
             response = response_batches[current_player.model_name].pop(0)
@@ -98,7 +100,6 @@ def run_games(nb_parallel_games,
                         player.new_round()
 
                 if game_over:
-                    game_nb += 1
                     match["game"].new_game()
                     for player in match["players"].values():
                         player.set_game_info(match["game_state"])
@@ -109,6 +110,8 @@ def run_games(nb_parallel_games,
                     )
                     for player in match["players"].values():
                         player.new_game()
+                    game_nb += 1
+                    
 
 
     end_time = time.time()
@@ -142,3 +145,5 @@ def log_game(game_nb=None, game=None, players=None, player_export_paths=None, ga
     # Export game metrics
     if game_json_path is not None:
         pass
+
+    

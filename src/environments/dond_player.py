@@ -147,7 +147,7 @@ class DondPlayer:
             user_message += self.game_basics.format(**state)
 
         if state["is_new_round"] and not state["is_new_game"]:
-            self.reset_round()
+            self.new_round()
             self.set_round_info(state, post_round=False)
             user_message += self.new_round_prompt.format(**state)
 
@@ -338,12 +338,12 @@ class DondPlayer:
             for info in self.augmented_context:
                 if (
                     info["role"] == "round_info"
-                    and info["content"]["round_number"] == state["round_number"]
+                    and info["content"]["round_number"] == state["round_number"]-1
                 ):
                     info["content"].update(
                         {
-                            "agreement_reached": state["agreement_reached"],
-                            "player_proposals": state["role_props"],
+                            "agreement_reached": state["round_agreements"][-1],
+                            "round_points": state["round_points"][self.player_name][-1],
                         }
                     )
                     break

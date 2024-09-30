@@ -8,6 +8,8 @@ from transformers import (
     BitsAndBytesConfig,
     TextIteratorStreamer,
 )
+import os
+os.environ["WANDB_DISABLED"] = "True"
 import shutil
 from trl import (
     SFTTrainer,
@@ -38,12 +40,10 @@ from vllm import LLM, SamplingParams
 from vllm.lora.request import LoRARequest
 from vllm.distributed.parallel_state import destroy_model_parallel
 from omegaconf import OmegaConf
-
-
-torch.set_default_device("cuda")
 import copy
 import numpy as np
 import hydra
+from transformers import Trainer
 
 
 class HfAgent:
@@ -56,7 +56,7 @@ class HfAgent:
         self,
         name: str = "your_friendly_llm",
         model_name: str = "meta-llama/Meta-Llama-3.1-8B-Instruct",
-        device: str = "cuda",
+        device: str = "cuda",  # Ensure default is set to "cuda"
         pretrained_args=None,
         bits_and_bytes_args=None,
         lora_args=None,
@@ -69,6 +69,7 @@ class HfAgent:
         keep_hf_during_generation=True,
         generate_with="vllm",
         ppo_trainer_class=None,
+        sft_args=None,  # Add this parameter
     ) -> None:
         """
         Initializes the HfAgent.
@@ -89,10 +90,11 @@ class HfAgent:
             keep_hf_during_generation (bool): Whether to keep HF during generation.
             generate_with (str): Library to use for generation, either 'vllm' or 'hf'.
             ppo_trainer_class (str): Class name for PPO trainer.
+            sft_config (dict): Configuration for Supervised Fine-Tuning (SFT).
         """
         super().__init__()
         self.name = name
-        self.device = torch.device(device)
+        self.device = torch.device(device) if device else torch.device("cuda")  # Ensure device is set
 
         self.model_name = model_name
         self.pretrained_args = pretrained_args
@@ -129,6 +131,8 @@ class HfAgent:
         self.keep_vllm_during_training = keep_vllm_during_training
         self.keep_hf_during_generation = keep_hf_during_generation
         self.generate_with = generate_with
+
+        self.sft_config = SFTConfig(**sft_args, output_dir=self.output_directory+"/") # Initialize sft_config
 
     def batch_encode(self, data: List[List[dict]], pad=False, is_response=False) -> ...:
         """
@@ -289,14 +293,30 @@ class HfAgent:
         Args:
             dataset_path (str): Path to the dataset for training.
         """
+        if not self.keep_vllm_during_training:
+            self.destroy_vllm()
         self.use_hf_model()
+
+        # WARNING: THIS WILL BUG IF YOU USE TORCH.DEFAULT_DEVICE ANYWHERE ELSE IN THE CODE (not
+        # your fault, just hf)
+
+        
+        # Create Dataset from dictionary
         dataset = load_dataset("json", data_files=dataset_path, split="train")
+
         sft_trainer = SFTTrainer(
-            self.hf_model,
+            model=self.hf_model,
             args=self.sft_config,
             train_dataset=dataset,
+            tokenizer=self.tokenizer,
         )
+        logging.info(f"Model device: {next(sft_trainer.model.parameters()).device}")
+        logging.info(f"Trainer device: {sft_trainer.args.device}")
+
         sft_trainer.train()
+
+        # Save LoRA weights after training
+        self.save_lora_weights()
 
     def delete_tensor_list(self, tensor_list: List[Any]) -> None:
         """
@@ -385,12 +405,22 @@ class HfAgent:
         """
         Initializes the Hugging Face model if it is not already initialized.
         """
-        if self.hf_model is None and self.lora_pretrained_path:
-            self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                self.lora_pretrained_path, is_trainable=True
-            )
-        elif self.hf_model is None:
-            if self.default_training_mode == "ppo":
+        if self.hf_model is None:
+            if self.lora_pretrained_path:
+                if self.default_training_mode == "ppo":
+                    self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
+                        self.lora_pretrained_path, is_trainable=True
+                    )
+                elif self.default_training_mode == "sft":
+                    self.hf_model = AutoModelForCausalLM.from_pretrained(
+                        **self.pretrained_args,
+                        #quantization_config=self.bits_and_bytes_configs,
+                    )
+                    self.hf_model = PeftModel.from_pretrained(
+                        self.hf_model, self.lora_pretrained_path, is_trainable=True
+                    )
+                    self.hf_model.print_trainable_parameters()
+            elif self.default_training_mode == "ppo":
                 self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
                     **self.pretrained_args,
                     quantization_config=self.bits_and_bytes_configs,
@@ -399,35 +429,11 @@ class HfAgent:
             elif self.default_training_mode == "sft":
                 self.hf_model = AutoModelForCausalLM.from_pretrained(
                     **self.pretrained_args,
-                    quantization_config=self.bits_and_bytes_configs,
-                    peft_config=self.lora_config,
+                    #quantization_config=self.bits_and_bytes_configs,
                 )
+                self.hf_model = get_peft_model(self.hf_model, self.lora_config)
+                self.hf_model.print_trainable_parameters()
 
-    def log_gpu_usage(self, context):
-        """
-        Logs the GPU memory usage.
-
-        Args:
-            context (str): Context for logging.
-        """
-        allocated_memory = torch.cuda.memory_allocated() / (1024 ** 3)
-        reserved_memory = torch.cuda.memory_reserved() / (1024 ** 3)
-        logging.info(context)
-        logging.info(f"GPU Memory Allocated: {allocated_memory:.4f} GB")
-        logging.info(f"GPU Memory Reserved: {reserved_memory:.4f} GB")
-
-    def move_model_to_cpu(model):
-        """
-        Moves the model to CPU.
-
-        Args:
-            model (torch.nn.Module): The model to move to CPU.
-        """
-        for param in model.parameters():
-            param.data = param.data.to("cpu")
-            if param.grad is not None:
-                param.grad.data = param.grad.data.to("cpu")
-        model.to("cpu")
 
     def destroy_hf(self):
         """
@@ -482,3 +488,13 @@ class HfAgent:
 
         self.lora_pretrained_path = lora_weights_path
         logging.info(f"LoRA weights saved to {lora_weights_path}")
+
+    def log_gpu_usage(self, message: str) -> None:
+        """
+        Logs the GPU memory usage.
+
+        Args:
+            message (str): A message to include in the log.
+        """
+        gpu_memory = torch.cuda.memory_allocated() / (1024 ** 3)
+        logging.info(f"{message}: GPU memory allocated: {gpu_memory:.2f} GB")

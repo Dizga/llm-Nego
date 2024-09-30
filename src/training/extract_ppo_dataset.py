@@ -98,29 +98,31 @@ def process_conversation(
     round_self_points = []
     round_opponent_points = []
     round_nb = -1
-    round_msg_nb = 0
+    round_msg_nb = -1
 
     for message in conversation:
-        if message.get("role") == "round_information":
-            round_agreements.append(message["agreement_reached"])
-            round_self_points.append(message["self_points"])
-            round_opponent_points.append(message["opponent_points"])
+        if message.get("role") == "round_info":
+            round_agreements.append(message["content"]["agreement_reached"])
+            round_self_points.append(message["content"]["round_points"])
+            round_opponent_points.append(message["content"]["round_points"])
 
     score_info = {
         "round_agreements": round_agreements,
         "round_self_points": round_self_points,
         "round_opponent_points": round_opponent_points,
-        "round_nb": round_nb,
-        "round_msg_nb": round_msg_nb,
+        "current_round_nb": round_nb,
+        "current_round_msg_nb": round_msg_nb,
     }
 
     for message in conversation:
         if message.get("is_error") and remove_errors:
             continue
-        elif message.get("role") == "round_information":
-            score_info["round_nb"] = round_nb
-            score_info["round_msg_nb"] = round_msg_nb
+
+        elif message.get("role") == "round_info":
+            score_info["current_round_nb"] +=1
+            score_info["current_round_msg_nb"] = 0
         elif message.get("role") == "user" or message.get("role") == "assistant":
+            message = {"role": message["role"], "content": message["content"]}
             context.append(message)
 
         # Collect assistant responses
@@ -152,8 +154,8 @@ def score_based_on_agreement(score_info, points_on_agreement=10):
     Returns:
     - int: Score based on agreement.
     """
-    current_round = score_info["round_nb"]
-    if current_round >= 0 and score_info["round_agreements"][current_round]:
+    current_round = score_info["current_round_nb"]
+    if score_info["round_agreements"][current_round] == True:
         return points_on_agreement
     return 0
 
@@ -168,7 +170,7 @@ def score_based_on_current_round_points(score_info):
     Returns:
     - int: Score based on current round points.
     """
-    current_round = score_info["round_nb"]
+    current_round = score_info["current_round_nb"]
     if current_round >= 0:
         return score_info["round_self_points"][current_round]
     return 0
@@ -184,7 +186,7 @@ def score_based_on_future_points(score_info):
     Returns:
     - int: Score based on future points.
     """
-    current_round = score_info["round_nb"]
+    current_round = score_info["current_round_nb"]
     if current_round >= 0:
         return sum(score_info["round_self_points"][current_round:])
     return 0

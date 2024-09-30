@@ -1,130 +1,64 @@
 import json
 import os
 import copy
-import regex as re
+from statistics import mean
+from training.extract_ppo_dataset import extract_ppo_dataset
+
 
 def extract_sft_dataset(
     folder_path: str,
-    player_name: str = "bob",
-    export_for_debugging: bool = True,
-    use_pattern_matching: bool = True,
-    last_k_responses: int = None,
-    out_file: str = None
-) -> str:
+    filter_function="above_mean_filter",
+    filter_function_kwargs={},
+    substract_mean_score=False,
+    normalize_scores=(0, 1),
+    last_k_responses=None,
+    remove_errors=False,
+    score_function=None,
+    score_function_kwargs={},
+):
     """
-    Extracts data for HF SFT fine-tuning from game logs and writes it to a .jsonl file.
+    Extracts data for HF SFT training from game logs, filtering based on a custom filter function.
 
     Parameters:
     - folder_path (str): Path to the folder containing conversation JSON files.
-    - player_name (str): Name of the player or agent.
-    - export_for_debugging (bool): If True, exports the extracted data for debugging.
-    - use_pattern_matching (bool): If True, processes files matching the specific pattern.
-                                   If False, processes all JSON files in the folder.
+    - filter_function (callable): Function to filter examples based on score.
+    - filter_function_kwargs (dict or None): Additional keyword arguments for the filter function.
+    - substract_mean_score (bool): If True, subtracts the mean score from all scores.
+    - normalize_scores (tuple): Tuple containing min and max values for score normalization.
     - last_k_responses (int or None): If set, only the last k assistant messages will be trained on.
                                       If None, all messages are considered.
-    - out_file (str or None): Path to the output file. If None, a new file is created.
-                              If the file exists, new data is appended to it.
-    
-    Returns:
-    - str: Path to the output .jsonl file.
-    """
-    player_prefix = player_name + "_"
-    data = []
-
-    # Define the pattern if pattern matching is enabled
-    if use_pattern_matching:
-        pattern = re.compile(rf'^{re.escape(player_prefix)}iter_\d{{2}}_game_\d{{4}}\.json$')
-
-    # Collect data from JSON files
-    for file_name in os.listdir(folder_path):
-        # Decide whether to process the file based on pattern matching or file extension
-        if use_pattern_matching:
-            if not pattern.match(file_name):
-                continue
-        else:
-            if not file_name.endswith('.json'):
-                continue
-
-        # Import conversation
-        conversation_path = os.path.join(folder_path, file_name)
-        with open(conversation_path, 'r') as file:
-            conversation = json.load(file)
-
-        # Process conversation and extract messages for fine-tuning
-        conv_data = process_conversation_for_sft(conversation, last_k_responses=last_k_responses)
-        data.extend(conv_data)
-
-    # Write the extracted data to a JSONL file
-    output_file = out_file if out_file else os.path.join(folder_path, "sft_training_dataset.jsonl")
-
-    with open(output_file, 'a') as f_out:
-        for entry in data:
-            f_out.write(json.dumps(entry) + "\n")
-
-    # Export for debugging if required
-    if export_for_debugging:
-        debug_file_path = os.path.join(folder_path, f"{player_prefix}sft_debug_dataset.json")
-        with open(debug_file_path, 'w') as debug_file:
-            json.dump(data, debug_file, indent=4)
-
-    return output_file
-
-
-def process_conversation_for_sft(conversation, last_k_responses=None):
-    """
-    Processes a single conversation and formats it for SFT dataset extraction.
-
-    Parameters:
-    - conversation (list): List of message dictionaries representing a conversation.
-    - last_k_responses (int or None): If set, only the last k assistant messages will be trained on.
-                                      If None, all messages are considered.
+    - remove_errors (bool): If True, removes messages marked as errors.
+    - score_function (callable or None): Function to calculate scores for responses.
+    - score_function_kwargs (dict or None): Additional keyword arguments for the score function.
 
     Returns:
-    - list: List of formatted entries for SFT fine-tuning.
+    - List[dict]: List of dictionaries in the conversational format.
     """
-    context = []
-    conversation_entries = []
 
-    for message in conversation:
-        # Skip messages with errors
-        if message.get('is_error'):
-            continue
+    queries, responses, scores = extract_ppo_dataset(
+        folder_path,
+        substract_mean_score=substract_mean_score,
+        normalize_scores=normalize_scores,
+        last_k_responses=1,
+        remove_errors=remove_errors,
+        score_function=score_function,
+        score_function_kwargs=score_function_kwargs,
+    )
 
-        # Append user and assistant messages to the conversation context
-        context.append(message)
+    # Filter based on the custom filter function
+    filtered_data = []
+    for query, response, score in zip(queries, responses, scores):
+        if globals()[filter_function](score, scores, **filter_function_kwargs):
+            system = {"role": "system", "content": "You are helpful"}
+            messages =  query + response
+            filtered_data.append({"messages": messages})
 
-        # Collect assistant responses
-        if message.get('role') == "assistant":
-            formatted_conversation = format_conversation_for_sft(copy.deepcopy(context))
-            conversation_entries.append(formatted_conversation)
-
-    # Limit to the last k assistant messages if specified
-    if last_k_responses is not None:
-        conversation_entries = conversation_entries[-last_k_responses:]
-
-    return conversation_entries
+    return filtered_data
 
 
-def format_conversation_for_sft(context):
+def above_mean_filter(score, scores, **kwargs):
     """
-    Formats a conversation into the desired format for SFT.
-
-    Parameters:
-    - context (list): List of messages in the conversation context.
-
-    Returns:
-    - dict: Formatted conversation with `messages` as a list of role-content pairs.
+    Filter function for SFT dataset extraction.
     """
-    formatted_messages = []
+    return score > mean(scores)
 
-    # Add system prompt (optional, you can customize this based on your needs)
-    formatted_messages.append({"role": "system", "content": "You are helpful"})
-
-    for message in context:
-        role = message.get('role')
-        content = message.get('content', '')
-
-        if role in ["user", "assistant"]:
-            formatted_messages.append({"role": role, "content": content})
-
-    return {"messages": formatted_messages}
