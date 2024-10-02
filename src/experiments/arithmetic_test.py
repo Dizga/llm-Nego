@@ -1,126 +1,71 @@
 import torch
 import random
-import os
 import logging
-from models.hf_agent import HfAgent  # Assuming the class is in the same folder
 import re
+from statistics import mean
+from models.hf_agent import HfAgent  # Assuming the class is in the same folder
+from utils.plot_curves import plot_curves
+from omegaconf import OmegaConf
+import json
+import os
+
+
 # Setup logging
+
 logging.basicConfig(level=logging.INFO)
 
-# Generate queries and responses for the form X + Y = X + Y + 10
-def generate_data(num_samples: int):
-    queries = []
-    responses = []
-    scores = []
+# Constants
+N_SAMPLES = 32
+N_STEPS = 8
+MODEL_NAME = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+CORRECT_ANSWER = 80
 
-    for _ in range(num_samples):
-        X = random.randint(1, 9)
-        Y = random.randint(1, 9)
-        correct_answer = X + Y + 10
+def generate_queries(num_samples):
+    q_content = f"Give me a random number between 0 and 100."
+    q = [{'role': 'user', 'content': 'Hey!'}, 
+         {'role': 'assistant', 'content': 'Hey, how can I help you?'},
+         {'role': 'user', 'content': q_content}
+         ]
+    queries = [q for _ in range(num_samples)]
+    correct_answers = [CORRECT_ANSWER] * num_samples
+    return queries, correct_answers
 
-        # Create a query like "What is X + Y?"
-        query = f"What is {X} + {Y}?"
-        
-        # The model's correct response should be `X + Y + 10`
-        response = str(correct_answer)
-
-
-        queries.append([{'role': 'user', 'content': query}])
-        responses.append([{'role': 'assistant', 'content': response}])
-        scores.append(correct_answer)
-    
-    return queries, responses, scores
-
-# Calculate reward based on model's prediction, considering the last integer in the response
-def compute_rewards(model_responses, correct_answers):
+def calculate_rewards(responses, correct_answers):
     rewards = []
-    for model_response, correct_answer in zip(model_responses, correct_answers):
-        # Use regex to find all integers in the model's response
-        numbers = re.findall(r'-?\d+', model_response.strip())
-
-        if numbers:
-            # Convert the last number in the list to an integer
-            predicted_answer = int(numbers[-1])
-        else:
-            predicted_answer = 0  # Default to 0 if no numbers are found
-
-        # Reward is inversely related to the absolute error
-        reward = -abs(predicted_answer - correct_answer)
-        rewards.append(reward)
-
+    for response, correct in zip(responses, correct_answers):
+        numbers = re.findall(r'-?\d+', response[0]['content'].strip())
+        predicted_answer = int(numbers[-1]) if numbers else 0
+        rewards.append(-abs(predicted_answer - correct))
     return rewards
 
-def arithmetic_test():
-    # Model and training configurations
-    model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"
-    pretrained_args = {
-        'pretrained_model_name_or_path': model_name
-    }
-    bits_and_bytes_args = {
-        'load_in_4bit': False
-    }
-    lora_args = {
-        'r': 128,  # Rank of LoRA
-        'lora_alpha': 128,
-        'lora_dropout': 0.0
-    }
-    ppo_trainer_args = {
-        'batch_size': 32,
-        'mini_batch_size': 1,
-        'gradient_accumulation_steps': None,
-        'ppo_epochs': 4,
-    }
-    generation_args = {
-        'temperature': 0.1,
-        'top_p': 0.1,
-        'max_tokens': 20,
-    }
-    num_samples = 1000  # Number of samples for fine-tuning
+def train_agent(agent, num_steps, training_mode="ppo"):
+    mean_scores = []
 
-    # Initialize the HfAgent
-    agent = HfAgent(
-        model_name=model_name,
-        device="cuda",
-        pretrained_args=pretrained_args,
-        bits_and_bytes_args=bits_and_bytes_args,
-        lora_args=lora_args,
-        ppo_trainer_args=ppo_trainer_args,
-        generation_args=generation_args
-    )
-    agent.switch_to_generation_mode()
+    for step in range(num_steps):
+        logging.info(f"Step {step + 1}/{num_steps}: Generating queries and responses...")
+        
+        queries, correct_answers = generate_queries(N_SAMPLES)
+        
+        responses = [[{'role': 'assistant', 'content': r}] for r in agent.prompt(queries)]
+        logging.info(responses)
+        rewards = calculate_rewards(responses, correct_answers)
+        
+        mean_scores.append(mean(rewards))
+        plot_curves(y_list=[mean_scores], plot_name='mean_scores')
 
-    # Generate training data
-    logging.info("Generating training data...")
-    queries, responses, correct_answers = generate_data(num_samples)
-    
-    # Compute initial responses from the model and calculate rewards
-    logging.info("Computing model's initial responses...")
-    model_responses = agent.prompt(queries) 
+        if training_mode == "ppo":
+            agent.train_ppo(queries, responses, rewards)
+        elif training_mode == "sft":
+            sft_data = [{'query': q, 'response': r} for q, r in zip(queries, responses)]
+            sft_data_path = f"sft_training_step_{step}.jsonl"
+            with open(sft_data_path, 'w') as f:
+                json.dump(sft_data, f)
+            agent.train_sft(sft_data_path)
+            os.remove(sft_data_path)
 
-    # Compute rewards based on how close the model's answers are to the correct answer
-    rewards = compute_rewards(model_responses, correct_answers)
-
-    # Train the model using PPO
-    logging.info("Training model with PPO...")
-    save_path = "./trained_model"
-    agent.switch_to_training_mode()
-    agent.train_ppo(save_path, queries, responses, rewards)
-
-    agent.switch_to_generation_mode()
-    # Test the model on a few examples
-    logging.info("Testing the trained model...")
-    test_queries = [
-        [{'role': 'user', 'content': 'What is 1 + 2?'}],
-        [{'role': 'user', 'content': 'What is 6 + 2?'}],
-        [{'role': 'user', 'content': 'What is 9 + 1?'}],
-        [{'role': 'user', 'content': 'What is 5 + 2?'}],
-        [{'role': 'user', 'content': 'What is 3 + 6?'}],
-        [{'role': 'user', 'content': 'What is 7 + 3?'}],
-    ]
-    test_responses = [agent.prompt(test_query) for test_query in test_queries]
-    for query, response in zip(test_queries, test_responses):
-        print(f"Query: {query[0]['content']}")
-        print(f"Model's response: {response}")
-    
-    logging.info("PPO training and testing completed.")
-
+def arithmetic_test(cfg):
+    cfg = OmegaConf.to_container(cfg, resolve=True, structured_config_mode='dict')
+    agent = HfAgent(**cfg['models']['llama']['init_args'])
+    training_mode = cfg.get('training_mode', 'ppo')
+    train_agent(agent, N_STEPS, training_mode)
+    logging.info("Training completed.")

@@ -1,0 +1,47 @@
+[
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the cooperative variation of the deal-or-no-deal game. \nThe reward you are trying to maximize is calculated as follows: your utility values multiplied by items you take + the other player's utility values multiplied by the items they take\nI repeat, it is the reward that you are trying to maximize and not only your utility values multiplied by items you take. It is the sum of both total utilities, per the cooperation mode.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nReasoning and Action: At the start of your turn, you will be asked to reason about the current state of the game and how to fulfill your objective, then make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nReasoning: <reason> [Your reasoning here.] </reason>\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one reasoning + action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<reason> [Your reasoning here.] </reason>\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<reason> [Your reasoning here.] </reason>\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<reason> [Your reasoning here.] </reason>\n<finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'gold': 10, 'silver': 10} between yourself and the other player.\nTo you, the items are worth: [{'gold': 20, 'silver': 10}, {'gold': 10, 'silver': 20}].\nYou don't know the other player's item values. You are the first to play, there are no messages yet.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
+        "is_error": false,
+        "round_nb": 1
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> I need to consider the items and their values to me, {'gold': 20, 'silver': 10}, {'gold': 10, 'silver': 20}, and determine a starting point for the negotiation to maximize the reward. The other player's item values are unknown, so I should aim to start with a fair and balanced offer to increase the likelihood of reaching a high-reward outcome. I will begin by suggesting a division of the items to the other player. </reason>\n<message> Would you like to split the items evenly at 5 gold and 5 silver? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 1,
+        "self_points": 300,
+        "other_points": 300
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I'd like to discuss the even split proposal further, is it possible to consider a slightly more optimized split?'\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
+        "is_error": false,
+        "round_nb": 1
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> The other player is open to further discussion and potentially improving the split, so I should take this opportunity to share my utility values to provide context and help us work towards an optimized solution. I will share my item values and ask the other player to share theirs. This will allow us to jointly find a mutually beneficial division that maximizes our total reward. </reason>\n<message> Can you please share your utility values for the items? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 1,
+        "self_points": 300,
+        "other_points": 300
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'The even split you suggested is a good starting point, but I think we can discuss and potentially reach an even better split considering we don't know each other's utility values.'\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.\nUsing the <reason> tag, reason about the exchanges so far, how to fulfill your objective, and what should be your next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.",
+        "is_error": false,
+        "round_nb": 1
+    },
+    {
+        "role": "assistant",
+        "content": "<reason> The other player is reaffirming the interest in an even split, but doesn't want to share their utility values. This suggests that they might be holding out for a more favorable distribution without knowing our respective utility values. Since we are in the cooperative mode and I want to maximize our combined reward, I should present a clear and fair offer to finalize the negotiation. </reason>\n<finalize>{ \"i_take\": {\"gold\": 5, \"silver\": 5}, \"other_player_gets\": {\"gold\": 5, \"silver\": 5} }</finalize>",
+        "is_error": false,
+        "is_finalization": true,
+        "round_nb": 1,
+        "self_points": 300,
+        "other_points": 300
+    }
+]

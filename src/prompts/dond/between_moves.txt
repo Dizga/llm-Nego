@@ -1,0 +1,4 @@
+Perform the next action: message the other player or finalize the negotiation.
+Do not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. 
+Then do it using the appropriate tag: <message> or <finalize>.
+As a reminder, there is a total of {quantities}.

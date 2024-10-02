@@ -1,0 +1,82 @@
+iterations:
+  nb_iterations: 5
+  iteration_runner_args:
+    nb_parallel_games: 5
+    games_per_iteration: 5
+  dond_game_args:
+    rounds_per_game: 1
+    max_turns: 10
+    player_order: deterministic
+    mode: coop
+    setup: manual
+    player_0_values:
+    - 20
+    - 10
+    player_1_values:
+    - 10
+    - 20
+    items:
+    - gold
+    - silver
+    quantities:
+    - 10
+    - 5
+    setups_file: src/environments/dond_setups.txt
+    finalization_visibility: true
+models:
+  llama:
+    class: hf
+    init_args:
+      name: llama
+      device: cuda
+      default_training_mode: sft
+      pretrained_args:
+        pretrained_model_name_or_path: meta-llama/Meta-Llama-3.1-8B-Instruct
+        torch_dtype: bfloat16
+        device_map: auto
+      bits_and_bytes_args:
+        load_in_8bit: false
+      lora_args:
+        task_type: TaskType.CAUSAL_LM
+        r: 16
+        lora_alpha: 16
+        lora_dropout: 0.0
+        target_modules: all-linear
+      ppo_trainer_args:
+        batch_size: 32
+        mini_batch_size: 1
+        gradient_accumulation_steps: None
+        ppo_epochs: 4
+        vf_coef: 0.0
+        gradient_checkpointing: false
+        log_with: tensorboard
+        project_kwargs: None
+        tracker_project_name: tensorboard
+        learning_rate: 0.0001
+        is_peft_model: true
+      save_lora_weights: true
+      lora_pretrained_path: null
+      generation_args:
+        max_tokens: 500
+        temperature: 0.7
+        top_k: 1
+        top_p: 1.0
+players:
+  player_a:
+    id: 0
+    dond_player_args:
+      model_name: llama
+      game_intro_file: src/prompts/dond/rules.txt
+      in_between_file: src/prompts/dond/cot.txt
+      finalization_file: src/prompts/dond/finalization.txt
+      new_round_file: src/prompts/dond/new_round.txt
+      max_retries: 3
+  player_b:
+    id: 1
+    dond_player_args:
+      model_name: llama
+      game_intro_file: src/prompts/dond/rules.txt
+      in_between_file: src/prompts/dond/cot.txt
+      finalization_file: src/prompts/dond/finalization.txt
+      new_round_file: src/prompts/dond//new_round.txt
+      max_retries: 3

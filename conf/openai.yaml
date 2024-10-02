@@ -40,7 +40,7 @@ player_0:
 
   player_args:
     game_intro_file: "src/prompts/rules.txt"
-    chain_of_thought_file: "src/prompts/cot.txt" # false if none, else link to txt file 
+    in_between_file: "src/prompts/cot.txt" # false if none, else link to txt file 
     finalization_file: "src/prompts/finalization.txt"
     new_round_file: "src/prompts/new_round.txt"
     max_retries: 5

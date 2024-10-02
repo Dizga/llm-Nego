@@ -1,0 +1,127 @@
+hydra:
+  job:
+    chdir: false
+
+experiment:
+  method: dond_run_train
+  description: "Dummy test to test the pipeline."
+  nb_iterations: 5
+
+
+run_games_args:
+  nb_parallel_games: 5
+  games_per_iteration: 5
+
+
+dond_game_args:
+  rounds_per_game: 1
+  max_turns: 5
+  player_order: deterministic # deterministic or random player who start beginning of each round
+  mode: coop # basic, coop
+  setup: manual # manual or random_read
+  role_values: [[20, 10], [10, 20]]
+  items: ['gold', 'silver']
+  quantities: [10, 10]
+  setups_file: src/environments/dond_setups.txt
+  finalization_visibility: True
+
+
+models: 
+  llama:
+    class: hf
+    init_args:
+      name: 'llama'
+      device: "cuda"
+      default_training_mode: 'sft'
+      pretrained_args: 
+        pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+        torch_dtype: "bfloat16"
+        device_map: "cuda"
+      bits_and_bytes_args:
+        load_in_8bit: False
+      lora_args:
+        task_type: TaskType.CAUSAL_LM
+        r: 32
+        lora_alpha: 32
+        lora_dropout: 0.1
+        target_modules: "all-linear"
+      ppo_trainer_class: PPOTrainer
+      ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
+        batch_size: 64
+        mini_batch_size: 1
+        gradient_accumulation_steps: None
+        ppo_epochs: 1
+        #vf_coef: 0.1
+        gradient_checkpointing: False
+        log_with: "tensorboard"
+        project_kwargs: None
+        tracker_project_name: "tensorboard"
+        #target_kl: 0.1
+        #cliprange: 0.2
+        #init_kl_coef: 0.2
+        #learning_rate: 10e-5
+        is_peft_model: True
+      sft_args: 
+        packing: False
+        dataset_num_proc: 1
+        per_device_train_batch_size: 1
+        max_seq_length: 2024
+      save_lora_weights: True
+      lora_pretrained_path: null
+      generation_args:
+        max_new_tokens: 400
+        do_sample: True
+        temperature: 1.0
+        top_k: 1000
+        top_p: 0.9
+        repetition_penalty: 1.0
+      keep_vllm_during_training: False
+      keep_hf_during_generation: False
+      generate_with: "vllm"
+
+
+players: 
+
+  bob:
+    id: 0 # Will be used by game to determine which player starts
+    dond_player_args:
+      model_name: 'llama'
+      game_intro_file: "src/prompts/dond/rules.txt"
+      in_between_file: "src/prompts/dond/cot.txt" 
+      finalization_file: "src/prompts/dond/finalization.txt"
+      new_round_file: "src/prompts/dond/new_round.txt"
+      max_retries: 1
+    sft_data_extraction_args:
+      score_function: score_based_on_agreement
+      filter_function: above_mean_filter
+      filter_function_kwargs: {}
+      last_k_responses: 1
+      substract_mean_score: false
+      remove_errors: false
+
+
+  alice:
+    id: 1
+    dond_player_args:
+      model_name: 'llama'
+      game_intro_file: "src/prompts/dond/rules.txt"
+      in_between_file: "src/prompts/dond/cot.txt" 
+      finalization_file: "src/prompts/dond/finalization.txt"
+      new_round_file: "src/prompts/dond//new_round.txt"
+      max_retries: 1
+    sft_data_extraction_args:
+      score_function: score_based_on_agreement
+      filter_function: above_mean_filter
+      filter_function_kwargs: {}
+      last_k_responses: 1
+      substract_mean_score: false
+      remove_errors: false
+
+
+
+    
+
+
+
+
+

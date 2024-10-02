@@ -1,0 +1,2 @@
+A finalization has been made by the other player. Using the <reason> tag, remember the division that was agreed upon and then make a finalization using the <finalize> tag, describing the division of items you agreed upon, no items should be left over. The finalization should be formatted has <finalize>{{ "i_take": {dummy_finalization}, "other_player_gets": {dummy_finalization} }}</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items. 
+

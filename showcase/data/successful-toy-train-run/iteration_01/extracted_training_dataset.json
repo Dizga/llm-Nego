@@ -15,8 +15,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -35,8 +35,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -52,8 +52,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -72,8 +72,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -87,8 +87,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -116,8 +116,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -138,8 +138,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -158,8 +158,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -175,8 +175,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -195,8 +195,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -210,8 +210,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -227,8 +227,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -247,8 +247,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -262,8 +262,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -277,8 +277,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -294,8 +294,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -314,8 +314,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -329,8 +329,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -344,8 +344,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -359,8 +359,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -376,8 +376,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -398,8 +398,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -418,8 +418,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -453,8 +453,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -475,8 +475,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -495,8 +495,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -512,8 +512,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -532,8 +532,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -547,8 +547,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -576,8 +576,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -598,8 +598,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -618,8 +618,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -635,8 +635,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -655,8 +655,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -670,8 +670,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -699,8 +699,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -721,8 +721,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -741,8 +741,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -758,8 +758,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -778,8 +778,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -793,8 +793,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -810,8 +810,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -830,8 +830,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -845,8 +845,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -860,8 +860,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -877,8 +877,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -897,8 +897,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -912,8 +912,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -927,8 +927,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -942,8 +942,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -959,8 +959,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -981,8 +981,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1001,8 +1001,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1030,8 +1030,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1050,8 +1050,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1077,8 +1077,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1106,8 +1106,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1128,8 +1128,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1148,8 +1148,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1165,8 +1165,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1185,8 +1185,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1200,8 +1200,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1229,8 +1229,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1251,8 +1251,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1271,8 +1271,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1288,8 +1288,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1308,8 +1308,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1323,8 +1323,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1346,8 +1346,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1368,8 +1368,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 7
+                "self_points": 0,
+                "other_points": 7
             }
         ],
         "score": 0
@@ -1388,8 +1388,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 7
+                "self_points": 0,
+                "other_points": 7
             },
             {
                 "role": "user",
@@ -1405,8 +1405,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 7
+                "self_points": 0,
+                "other_points": 7
             }
         ],
         "score": 0
@@ -1425,8 +1425,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 7
+                "self_points": 0,
+                "other_points": 7
             },
             {
                 "role": "user",
@@ -1440,8 +1440,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 7
+                "self_points": 0,
+                "other_points": 7
             },
             {
                 "role": "user",
@@ -1475,8 +1475,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 7
+                "self_points": 0,
+                "other_points": 7
             }
         ],
         "score": 0
@@ -1497,8 +1497,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1517,8 +1517,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1546,8 +1546,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1568,8 +1568,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1588,8 +1588,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1605,8 +1605,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1627,8 +1627,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1647,8 +1647,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1664,8 +1664,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1684,8 +1684,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1699,8 +1699,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1716,8 +1716,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1736,8 +1736,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1751,8 +1751,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1766,8 +1766,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1789,8 +1789,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1809,8 +1809,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1824,8 +1824,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1839,8 +1839,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1860,8 +1860,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1877,8 +1877,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1899,8 +1899,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1919,8 +1919,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1936,8 +1936,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -1956,8 +1956,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -1971,8 +1971,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2000,8 +2000,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2022,8 +2022,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2042,8 +2042,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2059,8 +2059,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2079,8 +2079,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2094,8 +2094,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2111,8 +2111,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2131,8 +2131,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2146,8 +2146,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2161,8 +2161,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2178,8 +2178,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2198,8 +2198,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2213,8 +2213,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2228,8 +2228,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2243,8 +2243,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2260,8 +2260,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2282,8 +2282,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2302,8 +2302,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2319,8 +2319,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2339,8 +2339,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2354,8 +2354,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2377,8 +2377,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2399,8 +2399,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 7
+                "self_points": 0,
+                "other_points": 7
             }
         ],
         "score": 0
@@ -2419,8 +2419,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 7
+                "self_points": 0,
+                "other_points": 7
             },
             {
                 "role": "user",
@@ -2442,8 +2442,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 7
+                "self_points": 0,
+                "other_points": 7
             }
         ],
         "score": 0
@@ -2464,8 +2464,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2484,8 +2484,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2501,8 +2501,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2521,8 +2521,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2536,8 +2536,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2559,8 +2559,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2581,8 +2581,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2601,8 +2601,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2618,8 +2618,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2638,8 +2638,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2653,8 +2653,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2670,8 +2670,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2690,8 +2690,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2705,8 +2705,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2720,8 +2720,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2737,8 +2737,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2757,8 +2757,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2772,8 +2772,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2787,8 +2787,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2802,8 +2802,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2819,8 +2819,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2841,8 +2841,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2863,8 +2863,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2883,8 +2883,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2900,8 +2900,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2920,8 +2920,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2935,8 +2935,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -2964,8 +2964,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -2986,8 +2986,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3006,8 +3006,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3023,8 +3023,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3043,8 +3043,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3058,8 +3058,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3087,8 +3087,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3109,8 +3109,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3129,8 +3129,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3146,8 +3146,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3168,8 +3168,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3188,8 +3188,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3205,8 +3205,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3225,8 +3225,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3240,8 +3240,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3263,8 +3263,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3285,8 +3285,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3305,8 +3305,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3322,8 +3322,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3342,8 +3342,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3357,8 +3357,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3374,8 +3374,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3394,8 +3394,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3409,8 +3409,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3424,8 +3424,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3441,8 +3441,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3461,8 +3461,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3476,8 +3476,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3491,8 +3491,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3506,8 +3506,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3523,8 +3523,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3545,8 +3545,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3565,8 +3565,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3582,8 +3582,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3602,8 +3602,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3617,8 +3617,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3646,8 +3646,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3668,8 +3668,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3688,8 +3688,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3729,8 +3729,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3751,8 +3751,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 5,
-                "other_score": 5
+                "self_points": 5,
+                "other_points": 5
             }
         ],
         "score": 5
@@ -3771,8 +3771,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 5,
-                "other_score": 5
+                "self_points": 5,
+                "other_points": 5
             },
             {
                 "role": "user",
@@ -3800,8 +3800,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 5,
-                "other_score": 5
+                "self_points": 5,
+                "other_points": 5
             }
         ],
         "score": 5
@@ -3822,8 +3822,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3842,8 +3842,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3865,8 +3865,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3887,8 +3887,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3907,8 +3907,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3936,8 +3936,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3958,8 +3958,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -3978,8 +3978,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -3995,8 +3995,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -4015,8 +4015,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -4030,8 +4030,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -4053,8 +4053,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -4075,8 +4075,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -4095,8 +4095,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -4112,8 +4112,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -4132,8 +4132,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -4147,8 +4147,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -4176,8 +4176,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -4198,8 +4198,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 6
+                "self_points": 0,
+                "other_points": 6
             }
         ],
         "score": 0
@@ -4218,8 +4218,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 6
+                "self_points": 0,
+                "other_points": 6
             },
             {
                 "role": "user",
@@ -4235,8 +4235,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 6
+                "self_points": 0,
+                "other_points": 6
             }
         ],
         "score": 0
@@ -4255,8 +4255,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 6
+                "self_points": 0,
+                "other_points": 6
             },
             {
                 "role": "user",
@@ -4270,8 +4270,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 6
+                "self_points": 0,
+                "other_points": 6
             },
             {
                 "role": "user",
@@ -4299,8 +4299,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 6
+                "self_points": 0,
+                "other_points": 6
             }
         ],
         "score": 0
@@ -4321,8 +4321,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 10,
-                "other_score": 3
+                "self_points": 10,
+                "other_points": 3
             }
         ],
         "score": 10
@@ -4341,8 +4341,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 10,
-                "other_score": 3
+                "self_points": 10,
+                "other_points": 3
             },
             {
                 "role": "user",
@@ -4358,8 +4358,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 10,
-                "other_score": 3
+                "self_points": 10,
+                "other_points": 3
             }
         ],
         "score": 10
@@ -4378,8 +4378,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 10,
-                "other_score": 3
+                "self_points": 10,
+                "other_points": 3
             },
             {
                 "role": "user",
@@ -4393,8 +4393,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 10,
-                "other_score": 3
+                "self_points": 10,
+                "other_points": 3
             },
             {
                 "role": "user",
@@ -4410,8 +4410,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 10,
-                "other_score": 3
+                "self_points": 10,
+                "other_points": 3
             }
         ],
         "score": 10
@@ -4430,8 +4430,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 10,
-                "other_score": 3
+                "self_points": 10,
+                "other_points": 3
             },
             {
                 "role": "user",
@@ -4445,8 +4445,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 10,
-                "other_score": 3
+                "self_points": 10,
+                "other_points": 3
             },
             {
                 "role": "user",
@@ -4460,8 +4460,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 10,
-                "other_score": 3
+                "self_points": 10,
+                "other_points": 3
             },
             {
                 "role": "user",
@@ -4489,8 +4489,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 10,
-                "other_score": 3
+                "self_points": 10,
+                "other_points": 3
             }
         ],
         "score": 10
@@ -4523,8 +4523,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 4
+                "self_points": 0,
+                "other_points": 4
             }
         ],
         "score": 0
@@ -4555,8 +4555,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 4
+                "self_points": 0,
+                "other_points": 4
             },
             {
                 "role": "user",
@@ -4578,8 +4578,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 4
+                "self_points": 0,
+                "other_points": 4
             }
         ],
         "score": 0
@@ -4610,8 +4610,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 4
+                "self_points": 0,
+                "other_points": 4
             },
             {
                 "role": "user",
@@ -4631,8 +4631,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 4
+                "self_points": 0,
+                "other_points": 4
             },
             {
                 "role": "user",
@@ -4654,8 +4654,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 4
+                "self_points": 0,
+                "other_points": 4
             }
         ],
         "score": 0
@@ -4688,8 +4688,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -4720,8 +4720,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -4737,8 +4737,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -4769,8 +4769,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -4784,8 +4784,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -4813,8 +4813,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -4835,8 +4835,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -4855,8 +4855,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -4872,8 +4872,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -4892,8 +4892,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -4907,8 +4907,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -4936,8 +4936,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -4958,8 +4958,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -4978,8 +4978,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -4995,8 +4995,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5015,8 +5015,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5030,8 +5030,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5047,8 +5047,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5067,8 +5067,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5082,8 +5082,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5097,8 +5097,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5132,8 +5132,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5154,8 +5154,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5174,8 +5174,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5191,8 +5191,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5211,8 +5211,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5226,8 +5226,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5261,8 +5261,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5283,8 +5283,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5303,8 +5303,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5332,8 +5332,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5352,8 +5352,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5379,8 +5379,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5402,8 +5402,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5424,8 +5424,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 10,
-                "other_score": 3
+                "self_points": 10,
+                "other_points": 3
             }
         ],
         "score": 10
@@ -5444,8 +5444,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 10,
-                "other_score": 3
+                "self_points": 10,
+                "other_points": 3
             },
             {
                 "role": "user",
@@ -5461,8 +5461,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 10,
-                "other_score": 3
+                "self_points": 10,
+                "other_points": 3
             }
         ],
         "score": 10
@@ -5481,8 +5481,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 10,
-                "other_score": 3
+                "self_points": 10,
+                "other_points": 3
             },
             {
                 "role": "user",
@@ -5496,8 +5496,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 10,
-                "other_score": 3
+                "self_points": 10,
+                "other_points": 3
             },
             {
                 "role": "user",
@@ -5525,8 +5525,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 10,
-                "other_score": 3
+                "self_points": 10,
+                "other_points": 3
             }
         ],
         "score": 10
@@ -5547,8 +5547,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5567,8 +5567,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5584,8 +5584,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5604,8 +5604,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5619,8 +5619,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5636,8 +5636,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5656,8 +5656,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5671,8 +5671,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5686,8 +5686,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5703,8 +5703,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5723,8 +5723,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5738,8 +5738,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5753,8 +5753,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5768,8 +5768,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5797,8 +5797,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5819,8 +5819,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5839,8 +5839,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5856,8 +5856,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5876,8 +5876,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5891,8 +5891,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5914,8 +5914,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5936,8 +5936,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5956,8 +5956,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -5973,8 +5973,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -5993,8 +5993,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6008,8 +6008,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6037,8 +6037,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -6059,8 +6059,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -6079,8 +6079,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6102,8 +6102,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -6122,8 +6122,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6143,8 +6143,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6178,8 +6178,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -6200,8 +6200,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -6220,8 +6220,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6237,8 +6237,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -6257,8 +6257,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6272,8 +6272,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6301,8 +6301,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -6323,8 +6323,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -6343,8 +6343,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6366,8 +6366,8 @@
                 "is_error": false,
                 "is_finalization": true,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -6388,8 +6388,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -6408,8 +6408,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6425,8 +6425,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -6445,8 +6445,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6460,8 +6460,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6477,8 +6477,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -6497,8 +6497,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6512,8 +6512,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6527,8 +6527,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6544,8 +6544,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0
@@ -6564,8 +6564,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6579,8 +6579,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6594,8 +6594,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6609,8 +6609,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             },
             {
                 "role": "user",
@@ -6626,8 +6626,8 @@
                 "is_error": false,
                 "is_finalization": false,
                 "round_nb": 1,
-                "self_score": 0,
-                "other_score": 0
+                "self_points": 0,
+                "other_points": 0
             }
         ],
         "score": 0

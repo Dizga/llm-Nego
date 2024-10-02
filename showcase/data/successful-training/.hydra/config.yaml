@@ -1,0 +1,97 @@
+experiment:
+  method: dond_run_train
+  description: Here, rewards given are 10 if agreement reached else 0. This is to see if the big scores given by the game cause the PPO gradient steps to be too big.
+iterations:
+  nb_iterations: 100
+  iteration_runner_args:
+    nb_parallel_games: 32
+    games_per_iteration: 32
+  dond_game_args:
+    rounds_per_game: 1
+    max_turns: 10
+    player_order: deterministic
+    mode: coop
+    setup: manual
+    player_0_values:
+    - 20
+    - 10
+    player_1_values:
+    - 10
+    - 20
+    items:
+    - gold
+    - silver
+    quantities:
+    - 10
+    - 10
+    setups_file: src/environments/dond_setups.txt
+    finalization_visibility: true
+models:
+  llama:
+    class: hf
+    init_args:
+      name: llama
+      device: cuda
+      default_training_mode: ppo
+      pretrained_args:
+        pretrained_model_name_or_path: meta-llama/Meta-Llama-3.1-8B-Instruct
+        torch_dtype: bfloat16
+        device_map: cuda
+      bits_and_bytes_args:
+        load_in_8bit: false
+      lora_args:
+        task_type: TaskType.CAUSAL_LM
+        r: 32
+        lora_alpha: 32
+        lora_dropout: 0.1
+        target_modules: all-linear
+      ppo_trainer_class: PPOTrainer
+      ppo_trainer_args:
+        batch_size: 32
+        mini_batch_size: 1
+        gradient_accumulation_steps: None
+        ppo_epochs: 4
+        gradient_checkpointing: false
+        log_with: tensorboard
+        project_kwargs: None
+        tracker_project_name: tensorboard
+        is_peft_model: true
+      save_lora_weights: true
+      lora_pretrained_path: null
+      generation_args:
+        max_new_tokens: 400
+        do_sample: true
+        temperature: 1.0
+        top_k: 1000
+        top_p: 0.9
+        repetition_penalty: 1.0
+      keep_vllm_during_training: false
+      keep_hf_during_generation: true
+      generate_with: vllm
+players:
+  player_a:
+    id: 0
+    dond_player_args:
+      model_name: llama
+      game_intro_file: src/prompts/dond/rules.txt
+      in_between_file: src/prompts/dond/cot.txt
+      finalization_file: src/prompts/dond/finalization.txt
+      new_round_file: src/prompts/dond/new_round.txt
+      max_retries: 2
+    ppo_data_extraction_args:
+      last_k_responses: 1
+      substract_mean_score: false
+      remove_errors: false
+  player_b:
+    id: 1
+    dond_player_args:
+      model_name: llama
+      game_intro_file: src/prompts/dond/rules.txt
+      in_between_file: src/prompts/dond/cot.txt
+      finalization_file: src/prompts/dond/finalization.txt
+      new_round_file: src/prompts/dond//new_round.txt
+      max_retries: 2
+    ppo_data_extraction_args:
+      last_k_responses: 1
+      substract_mean_score: false
+      remove_errors: false

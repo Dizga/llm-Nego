@@ -7,18 +7,13 @@ from omegaconf import OmegaConf
 import sys
 import os
 
-from experiments.dond_ppo_run_train_cycle import dond_ppo_run_train_cycle
-#from experiments.ultimatum_run import ultimatum
-from experiments.training_tester import training_tester
-from experiments.simple_test_2 import simple_test_2
-from experiments.simple_test import simple_test
+from experiments.dond_run_train import dond_run_train
 from experiments.arithmetic_test import arithmetic_test
+#from experiments.last_completion import last_completion
 
-@hydra.main(config_path="../conf", config_name="config")
+@hydra.main(config_path="../conf", config_name="arithmetic")
 def main(cfg):
-    dond_ppo_run_train_cycle(cfg)
-    #simple_test()
-    #arithmetic_test()
+    globals()[cfg.experiment.method](cfg)
 
 if __name__ == "__main__": main()
 

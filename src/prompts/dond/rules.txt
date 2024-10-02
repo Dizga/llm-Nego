@@ -6,28 +6,24 @@ Deal-or-no-deal is a two-player negotiation game. I, the user, will be the game 
 
 Game Mechanics:
 Turn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.
-Reasoning and Action: At the start of your turn, you will be asked to reason about the current state of the game and how to fulfill your objective, then make an action (either messaging the other player or finalize the negotiation).
+Action: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).
 Final Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.
 Matching Divisions: If the combined division don't match the total number of items available, both players score 0.
 
 Formatting:
-Reasoning: <reason> [Your reasoning here.] </reason>
 Messages: <message> [Your message here.] </message>
 Final division: <finalize>{{ "i_take": {dummy_finalization}, "other_player_gets": {dummy_finalization} }}</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.
 
-Only do one reasoning + action per turn.
+Only do one action per turn.
 
 Exemples of how turns might proceed:
 1. [Initial state is given]
-<reason> [Your reasoning here.] </reason>
 <message> [Your message to the other player here.] </message>
 
 2. [The other player responds]
-<reason> [Your reasoning here.] </reason>
 <message> [Your message to the other player here.] </message>
 
 3. [The other player agrees]
-<reason> [Your reasoning here.] </reason>
 <finalize>{{ "i_take": {dummy_finalization}, "other_player_gets": {dummy_finalization} }}</finalize>
 
 The first round starts now.
