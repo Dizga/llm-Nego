@@ -45,7 +45,7 @@ import numpy as np
 import hydra
 from transformers import Trainer
 import json
-
+from training.custom_ppo_trainers import NoValuePPOTrainer
 
 class HfAgent:
     """

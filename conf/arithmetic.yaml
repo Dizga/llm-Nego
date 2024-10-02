@@ -7,7 +7,6 @@ experiment:
   description: "Nothing to say."
 
 
-
 models: 
   llama:
     class: hf
@@ -27,13 +26,13 @@ models:
         lora_alpha: 16
         lora_dropout: 0.0
         target_modules: "all-linear"
-      ppo_trainer_class: PPOTrainer
+      ppo_trainer_class: NoValuePPOTrainer
       ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
         batch_size: -1
         mini_batch_size: 1
         gradient_accumulation_steps: None
         ppo_epochs: 1
-        #vf_coef: 0.1
+        vf_coef: 0.0
         gradient_checkpointing: False
         log_with: "tensorboard"
         project_kwargs: None
@@ -41,7 +40,7 @@ models:
         #target_kl: 0.1
         #cliprange: 0.2
         #init_kl_coef: 0.2
-        learning_rate: 1e-4
+        learning_rate: 1e-5
         #is_peft_model: True
       save_lora_weights: True
       lora_pretrained_path: null
