@@ -74,7 +74,7 @@ players:
     dond_player_args:
       model_name: llama
       game_intro_file: src/prompts/dond/rules.txt
-      chain_of_thought_file: src/prompts/dond/cot.txt
+      in_between_file: src/prompts/dond/cot.txt
       finalization_file: src/prompts/dond/finalization.txt
       new_round_file: src/prompts/dond/new_round.txt
       max_retries: 2
@@ -87,7 +87,7 @@ players:
     dond_player_args:
       model_name: llama
       game_intro_file: src/prompts/dond/rules.txt
-      chain_of_thought_file: src/prompts/dond/cot.txt
+      in_between_file: src/prompts/dond/cot.txt
       finalization_file: src/prompts/dond/finalization.txt
       new_round_file: src/prompts/dond//new_round.txt
       max_retries: 2

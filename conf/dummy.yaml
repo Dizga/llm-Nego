@@ -47,11 +47,12 @@ models:
         target_modules: "all-linear"
       ppo_trainer_class: PPOTrainer
       ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
+        model_name: "Llama-3.1-8B"
         batch_size: 64
         mini_batch_size: 1
         gradient_accumulation_steps: None
-        ppo_epochs: 4
-        #vf_coef: 0.1
+        ppo_epochs: 1
+        vf_coef: 0.0
         gradient_checkpointing: False
         log_with: "tensorboard"
         project_kwargs: None
@@ -60,16 +61,15 @@ models:
         #cliprange: 0.2
         #init_kl_coef: 0.2
         #learning_rate: 10e-5
-        is_peft_model: True
+        #is_peft_model: True
       save_lora_weights: True
       lora_pretrained_path: null
       generation_args:
         max_new_tokens: 400
         do_sample: True
         temperature: 1.0
-        top_k: 1000
-        top_p: 0.9
-        repetition_penalty: 1.0
+        top_k: 0.0
+        top_p: 1.0
       keep_vllm_during_training: False
       keep_hf_during_generation: False
       generate_with: "vllm"
@@ -82,7 +82,7 @@ players:
     dond_player_args:
       model_name: 'llama'
       game_intro_file: "src/prompts/dond/rules.txt"
-      chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
+      in_between_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond/new_round.txt"
       max_retries: 2
@@ -98,7 +98,7 @@ players:
     dond_player_args:
       model_name: 'llama'
       game_intro_file: "src/prompts/dond/rules.txt"
-      chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
+      in_between_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond//new_round.txt"
       max_retries: 2

@@ -9,8 +9,9 @@ class DondPlayer:
     def __init__(
         self,
         player_name,
+        allow_reasoning,
         game_intro_file,
-        chain_of_thought_file,
+        in_between_file,
         new_round_file,
         max_retries,
         finalization_file,
@@ -22,7 +23,7 @@ class DondPlayer:
         Args:
             player_name (str): The name of the player.
             game_intro_file (str): Path to the file containing game introduction.
-            chain_of_thought_file (str): Path to the file containing chain of thought instructions.
+            in_between_file (str): Path to the file containing chain of thought instructions.
             new_round_file (str): Path to the file containing new round instructions.
             max_retries (int): Maximum number of retries allowed.
             finalization_file (str): Path to the file containing finalization instructions.
@@ -36,12 +37,11 @@ class DondPlayer:
 
         with open(finalization_file, "r") as file:
             self.finalization_prompt = file.read()
+    
+        with open(in_between_file, "r") as file:
+            self.in_between_prompt = file.read()
 
-        self.chain_of_thought = None
-        if chain_of_thought_file:
-            with open(chain_of_thought_file, "r") as file:
-                self.chain_of_thought = file.read()
-
+        self.allow_reasoning = allow_reasoning
         self.player_name = player_name
         self.max_retries = max_retries
         self.model_name = model_name
@@ -163,9 +163,7 @@ class DondPlayer:
 
         elif not state["has_finalized"]:
             user_message += f"The other player said: '{state['last_message']}'\n"
-
-        if self.chain_of_thought is not None:
-            user_message += self.chain_of_thought.format(**state)
+            user_message += self.in_between_prompt.format(**state)
 
         usr_prompt = {
             "role": "user",
@@ -192,9 +190,10 @@ class DondPlayer:
         """
         errors = []
 
-        # Check for presence of <reason> tag
-        if "<reason>" not in response or "</reason>" not in response:
-            errors.append("Missing <reason>...</reason> tag.")
+        # Check for presence of <reason> tag if allow_reasoning is not None
+        if self.allow_reasoning is not False:
+            if "<reason>" not in response or "</reason>" not in response:
+                errors.append("Missing <reason>...</reason> tag.")
 
         # Check if either <message> or <finalize> tag is present, but not both
         has_message = "<message>" in response and "</message>" in response

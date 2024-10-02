@@ -132,7 +132,6 @@ def log_game(game_nb=None, game=None, players=None, player_export_paths=None, ga
         player_export_paths (dict): Dictionary of paths to save player contexts.
         game_json_path (str): Path to save game metrics.
     """
-    logging.info(f"Game {game_nb} completed.")
 
     # Export the player contexts
     for player_name in players.keys():

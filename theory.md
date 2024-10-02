@@ -42,5 +42,10 @@ r_t(\theta) = \frac{\pi_\theta(a_t | s_t)}{\pi_{\theta_{\text{old}}}(a_t | s_t)}
 $$
 which can explode or vanish with respect to $L$. 
 
+# BC-AA
+Advantage Alignment uses the surrogate objective
 
+$$
+\mathbb{E}_t \left[ \frac{\pi_\theta(a_t | s_t)}{\pi_{\theta_{\text{old}}}(a_t | s_t)} \hat{A}_t \right]
+$$
 

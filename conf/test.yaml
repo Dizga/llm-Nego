@@ -41,8 +41,8 @@ models:
         load_in_8bit: False
       lora_args:
         task_type: TaskType.CAUSAL_LM
-        r: 32
-        lora_alpha: 32
+        r: 64
+        lora_alpha: 64
         lora_dropout: 0.1
         target_modules: "all-linear"
       ppo_trainer_class: PPOTrainer
@@ -69,12 +69,12 @@ models:
         per_device_train_batch_size: 1
         max_seq_length: 1e5
       generation_args:
-        max_new_tokens: 20
+        max_new_tokens: 400
         do_sample: True
-        temperature: 0.3
-        top_k: 1000
-        top_p: 0.9
-        repetition_penalty: 1.0
+        temperature: 0.7
+        top_k: 10000
+        top_p: 1.0
+        repetition_penalty: 0.0
       keep_vllm_during_training: False
       keep_hf_during_generation: False
       generate_with: "vllm"
@@ -86,8 +86,9 @@ players:
     id: 0 # Will be used by game to determine which player starts
     dond_player_args:
       model_name: 'llama'
+      allow_reasoning: false
       game_intro_file: "src/prompts/dond/rules.txt"
-      chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
+      in_between_file: "src/prompts/dond/between_moves.txt" 
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond/new_round.txt"
       max_retries: 1
@@ -102,10 +103,11 @@ players:
     id: 1
     dond_player_args:
       model_name: 'llama'
+      allow_reasoning: false
       game_intro_file: "src/prompts/dond/rules.txt"
-      chain_of_thought_file: "src/prompts/dond/cot.txt" # false if none, else link to txt file 
+      in_between_file: "src/prompts/dond/between_moves.txt" 
       finalization_file: "src/prompts/dond/finalization.txt"
-      new_round_file: "src/prompts/dond//new_round.txt"
+      new_round_file: "src/prompts/dond/new_round.txt"
       max_retries: 1
     ppo_data_extraction_args:
       score_function: score_based_on_agreement

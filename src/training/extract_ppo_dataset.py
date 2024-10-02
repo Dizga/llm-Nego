@@ -2,7 +2,7 @@ import json
 import os
 import copy
 from statistics import mean
-
+import numpy as np
 
 def extract_ppo_dataset(
     folder_path: str,
@@ -59,9 +59,12 @@ def extract_ppo_dataset(
         scores = [s - mean_score for s in scores]
 
     # Normalize scores
-    if normalize_scores:
-        min_score, max_score = normalize_scores
-        scores = [(s - min_score) / (max_score - min_score) for s in scores]
+    if normalize_scores is not None:
+        t_min_score, t_max_score = normalize_scores
+        scores = np.array(scores)
+        normalized_array = (scores - scores.min()) / (scores.max() - scores.min())
+        scaled_array = normalized_array * (t_max_score - t_min_score) + t_min_score
+        scores = scaled_array.tolist()
 
     return queries, responses, scores
 
@@ -171,9 +174,7 @@ def score_based_on_current_round_points(score_info):
     - int: Score based on current round points.
     """
     current_round = score_info["current_round_nb"]
-    if current_round >= 0:
-        return score_info["round_self_points"][current_round]
-    return 0
+    return score_info["round_self_points"][current_round]
 
 
 def score_based_on_future_points(score_info):

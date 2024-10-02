@@ -44,6 +44,7 @@ import copy
 import numpy as np
 import hydra
 from transformers import Trainer
+import json
 
 
 class HfAgent:
@@ -109,13 +110,15 @@ class HfAgent:
         self.ppo_trainer_class = ppo_trainer_class
 
         self.hf_sampling_params = generation_args
+        vllm_samp_args = {
+            "temperature": generation_args["temperature"],
+            "top_k": -1 if generation_args["top_k"] == 0.0 else generation_args["top_k"],
+            "top_p": generation_args["top_p"],
+            "max_tokens": generation_args["max_new_tokens"],
+        }
 
-        self.vllm_sampling_params = SamplingParams(
-            temperature=generation_args["temperature"],
-            top_k=generation_args["top_k"],
-            top_p=generation_args["top_p"],
-            max_tokens=generation_args["max_new_tokens"],
-        )
+        self.vllm_sampling_params = SamplingParams(**vllm_samp_args)
+        logging.info(f"VLLM sampling params: {self.vllm_sampling_params}")
 
         self.default_training_mode = default_training_mode
         self.inference_library = None
@@ -124,7 +127,6 @@ class HfAgent:
 
         hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
         self.output_directory = hydra_cfg["runtime"]["output_dir"]
-        self.adapter_id = 1
         self.hf_model = None
         self.vllm_model = None
 
@@ -267,6 +269,9 @@ class HfAgent:
                 rewards=encoded_batch_scores,
             )
 
+            # Export batch to JSON
+            self.export_batch_to_json(encoded_batch_queries, encoded_batch_responses, encoded_batch_scores, b)
+
             self.delete_tensor_list(encoded_batch_queries)
             self.delete_tensor_list(encoded_batch_responses)
             self.delete_tensor_list(encoded_batch_scores)
@@ -281,6 +286,7 @@ class HfAgent:
 
         logging.info("PPO training completed for all batches.")
 
+        self.save_lora_weights()
         self.delete_tensor_list(queries)
         self.delete_tensor_list(responses)
         self.delete_tensor_list(scores)
@@ -288,8 +294,33 @@ class HfAgent:
         del stats
         gc.collect()
         torch.cuda.empty_cache()
+        self.ppo_trainer = None
 
-        self.save_lora_weights()
+
+    def export_batch_to_json(self, queries, responses, scores, batch_number):
+        """
+        Exports the batch data to a JSON file.
+
+        Args:
+            queries (List[torch.Tensor]): The queries for the batch.
+            responses (List[torch.Tensor]): The responses for the batch.
+            scores (List[torch.tensor]): The scores for the batch.
+            batch_number (int): The batch number.
+        """
+        export_data = []
+        for q, r, s in zip(queries, responses, scores):
+            decoded_query = self.tokenizer.decode(q, skip_special_tokens=False)
+            decoded_response = self.tokenizer.decode(r, skip_special_tokens=False)
+            export_data.append({"query": decoded_query, "response": decoded_response, "score": s.item()})
+
+        export_dir = os.path.join(self.output_directory, "ppo_batches")
+        os.makedirs(export_dir, exist_ok=True)
+        export_file = os.path.join(export_dir, f"batch_{batch_number}_run_{int(time.time())}.json")
+
+        with open(export_file, "w") as f:
+            json.dump(export_data, f, indent=4)
+
+        logging.info(f"Batch {batch_number} exported to {export_file}")
 
     def train_sft(self, dataset_path):
         """
@@ -491,9 +522,12 @@ class HfAgent:
             logging.info(f"Existing directory '{lora_weights_path}' deleted.")
 
         os.makedirs(lora_weights_path, exist_ok=True)
-        logging.info(f"Directory '{lora_weights_path}' created.")
+        #logging.info(f"Directory '{lora_weights_path}' created.")
 
-        self.hf_model.save_pretrained(lora_weights_path)
+        if self.ppo_trainer is not None:
+            self.hf_model.save_pretrained(lora_weights_path)
+        else:
+            self.hf_model.save_pretrained(lora_weights_path)
 
         self.lora_pretrained_path = lora_weights_path
         logging.info(f"LoRA weights saved to {lora_weights_path}")

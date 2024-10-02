@@ -35,5 +35,4 @@ def plot_curves(x_list=None, y_list=None, plot_name="unamed_plot", output_direct
     plt.savefig(plot_path)
     plt.close()
 
-    print(f"Plot saved to {plot_path}")
 

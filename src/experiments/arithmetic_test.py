@@ -18,10 +18,10 @@ logging.basicConfig(level=logging.INFO)
 N_SAMPLES = 32
 N_STEPS = 8
 MODEL_NAME = "meta-llama/Meta-Llama-3.1-8B-Instruct"
-CORRECT_ANSWER = 9
+CORRECT_ANSWER = 80
 
-def generate_queries(num_samples, x, y):
-    q_content = f"What is {x} + {y}? Only give incorrect answers between 0 and 20."
+def generate_queries(num_samples):
+    q_content = f"Give me a random number between 0 and 100."
     q = [{'role': 'user', 'content': 'Hey!'}, 
          {'role': 'assistant', 'content': 'Hey, how can I help you?'},
          {'role': 'user', 'content': q_content}
@@ -44,8 +44,7 @@ def train_agent(agent, num_steps, training_mode="ppo"):
     for step in range(num_steps):
         logging.info(f"Step {step + 1}/{num_steps}: Generating queries and responses...")
         
-        x, y = random.randint(1, 10), random.randint(1, 10)
-        queries, correct_answers = generate_queries(N_SAMPLES, x, y)
+        queries, correct_answers = generate_queries(N_SAMPLES)
         
         responses = [[{'role': 'assistant', 'content': r}] for r in agent.prompt(queries)]
         logging.info(responses)
