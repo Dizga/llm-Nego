@@ -177,6 +177,7 @@ class DondGame:
             "is_new_game": True if (self.turn <= 1 and self.round_nb == 0) else False,
             "items": self.items,
             "turn": self.turn,
+            "max_turns": self.max_turns,
             "current_turn": self.current_turn(),
             "round_number": self.round_nb,
             "nb_rounds": self.rounds_per_game,
