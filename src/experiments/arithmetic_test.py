@@ -16,9 +16,9 @@ logging.basicConfig(level=logging.INFO)
 
 # Constants
 N_SAMPLES = 32
-N_STEPS = 8
+N_STEPS = 40
 MODEL_NAME = "meta-llama/Meta-Llama-3.1-8B-Instruct"
-CORRECT_ANSWER = 80
+CORRECT_ANSWER = 9
 
 def generate_queries(num_samples):
     q_content = f"Give me a random number between 0 and 100."

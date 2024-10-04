@@ -5,22 +5,70 @@ import torch
 
 # Rewrite the PPO trainer such that the advantages can be passed on manually (as the scores)
 
-class CustomPPOTrainer(PPOTrainer):
+def masked_mean(values: torch.Tensor, mask: torch.Tensor, axis: bool = None) -> torch.Tensor:
+    """Compute mean of tensor with a masked values."""
+    if axis is not None:
+        return (values * mask).sum(axis=axis) / mask.sum(axis=axis)
+    else:
+        return (values * mask).sum() / mask.sum()
+
+
+def masked_var(values: torch.Tensor, mask: torch.Tensor, unbiased: bool = True) -> torch.Tensor:
+    """Compute variance of tensor with masked values."""
+    mean = masked_mean(values, mask)
+    centered_values = values - mean
+    variance = masked_mean(centered_values**2, mask)
+    if unbiased:
+        mask_sum = mask.sum()
+        if mask_sum == 0:
+            raise ValueError(
+                "The sum of the mask is zero, which can happen when `mini_batch_size=1`;"
+                "try increase the `mini_batch_size` or `gradient_accumulation_steps`"
+            )
+        # note that if mask_sum == 1, then there is a division by zero issue
+        # to avoid it you just need to use a larger minibatch_size
+        bessel_correction = mask_sum / (mask_sum - 1)
+        variance = variance * bessel_correction
+    return variance
+
+
+def masked_whiten(values: torch.Tensor, mask: torch.Tensor, shift_mean: bool = True) -> torch.Tensor:
+    """Whiten values with masked values."""
+    mean, var = masked_mean(values, mask), masked_var(values, mask)
+    whitened = (values - mean) * torch.rsqrt(var + 1e-8)
+    if not shift_mean:
+        whitened += mean
+    return whitened
+
+
+class NoValuePPOTrainer(PPOTrainer):
     def compute_advantages(
         self,
         values: torch.FloatTensor,
         rewards: torch.FloatTensor,
         mask: torch.FloatTensor,
     ):
-        """
-        Compute advantages without using value function approximation.
-        Advantages are set equal to the rewards.
-        """
-        # Ignore values, just use rewards
-        values = torch.zeros_like(rewards)
+        lastgaelam = 0
+        advantages_reversed = []
+        gen_len = rewards.shape[-1]
+
+        values = values * mask
         rewards = rewards * mask
-        advantages = rewards
-        returns = rewards
+
+        if self.config.whiten_rewards:
+            rewards = masked_whiten(rewards, mask, shift_mean=False)
+
+        for t in reversed(range(gen_len)):
+            nextvalues = values[:, t + 1] if t < gen_len - 1 else 0.0
+            delta = rewards[:, t] #+ self.config.gamma * nextvalues - values[:, t]
+            lastgaelam = delta + self.config.gamma * self.config.lam * lastgaelam
+            advantages_reversed.append(lastgaelam)
+        advantages = torch.stack(advantages_reversed[::-1]).transpose(0, 1)
+
+        returns = advantages #+ values
+        advantages = masked_whiten(advantages, mask)
+        advantages = advantages.detach()
+
         return values, advantages, returns
     
     

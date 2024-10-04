@@ -88,8 +88,7 @@ class DondPlayer:
             # Too many mistakes were made
             if self.retries > self.max_retries:
                 self.error_message = False
-                response = "<reason></reason><message>I have made too many errors</message>"
-                processed_response = "I have made too many errors"
+                processed_response = "-------"
                 send_to_game = True
                 self.retries = 0
 
@@ -198,6 +197,9 @@ class DondPlayer:
         # Check if either <message> or <finalize> tag is present, but not both
         has_message = "<message>" in response and "</message>" in response
         has_finalize = "<finalize>" in response and "</finalize>" in response
+
+        if (state["turn"] > state["max_turns"]-2) and not has_finalize:
+            errors.append("You must finalize before the turn limit!")
 
         if has_message and has_finalize:
             errors.append(
