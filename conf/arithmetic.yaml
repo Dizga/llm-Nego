@@ -24,7 +24,7 @@ models:
         task_type: TaskType.CAUSAL_LM
         r: 32
         lora_alpha: 16
-        lora_dropout: 0.0
+        lora_dropout: 0.1
         target_modules: "all-linear"
       ppo_trainer_class: NoValuePPOTrainer
       ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
@@ -32,16 +32,18 @@ models:
         mini_batch_size: 1
         gradient_accumulation_steps: None
         ppo_epochs: 1
-        vf_coef: 0.0
+        #vf_coef: 0.0
         gradient_checkpointing: False
         log_with: "tensorboard"
         project_kwargs: None
         tracker_project_name: "tensorboard"
         #target_kl: 0.1
         #cliprange: 0.2
-        #init_kl_coef: 0.2
+        init_kl_coef: 0.0
+        target_kl: 5.0
+        adap_kl_ctrl: False
         learning_rate: 1e-5
-        #is_peft_model: True
+        is_peft_model: True
       save_lora_weights: True
       lora_pretrained_path: null
       sft_args: 
@@ -52,7 +54,7 @@ models:
       generation_args:
         max_new_tokens: 500
         do_sample: True
-        temperature: 0.7
+        temperature: 1.0
         top_k: 0.0
         top_p: 1.0
         #repetition_penalty: 0.0

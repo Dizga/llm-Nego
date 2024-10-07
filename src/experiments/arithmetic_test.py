@@ -55,6 +55,7 @@ def train_agent(agent, num_steps, training_mode="ppo"):
 
         if training_mode == "ppo":
             agent.train_ppo(queries, responses, rewards)
+            
         elif training_mode == "sft":
             sft_data = [{'query': q, 'response': r} for q, r in zip(queries, responses)]
             sft_data_path = f"sft_training_step_{step}.jsonl"

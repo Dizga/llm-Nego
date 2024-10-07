@@ -12,6 +12,7 @@ def extract_ppo_dataset(
     remove_errors=False,
     score_function=None,
     score_function_kwargs={},
+    filter=None
 ):
     """
     Extracts data for HF PPO training from game logs.
@@ -65,6 +66,9 @@ def extract_ppo_dataset(
         normalized_array = (scores - scores.min()) / (scores.max() - scores.min())
         scaled_array = normalized_array * (t_max_score - t_min_score) + t_min_score
         scores = scaled_array.tolist()
+
+    if filter is not None:
+        return globals()[filter](queries, responses, scores)
 
     return queries, responses, scores
 
@@ -191,3 +195,29 @@ def score_based_on_future_points(score_info):
     if current_round >= 0:
         return sum(score_info["round_self_points"][current_round:])
     return 0
+
+def positive_score_filter(queries, responses, scores):
+    """
+    Filters out responses with non-positive scores.
+
+    Parameters:
+    - queries (list): List of queries (contexts) extracted from the conversations.
+    - responses (list): List of assistant responses.
+    - scores (list): List of scores associated with the responses.
+
+    Returns:
+    - filtered_queries (list): List of queries with positive scores.
+    - filtered_responses (list): List of responses with positive scores.
+    - filtered_scores (list): List of positive scores.
+    """
+    filtered_queries = []
+    filtered_responses = []
+    filtered_scores = []
+
+    for query, response, score in zip(queries, responses, scores):
+        if score > 0:
+            filtered_queries.append(query)
+            filtered_responses.append(response)
+            filtered_scores.append(score)
+
+    return filtered_queries, filtered_responses, filtered_scores

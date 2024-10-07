@@ -17,9 +17,3 @@ def parallel_shuffle(*lists):
     
     return tuple(shuffled_lists)
 
-# Example usage:
-list1 = [1, 2, 3, 4]
-list2 = ['a', 'b', 'c', 'd']
-shuffled_list1, shuffled_list2 = parallel_shuffle(list1, list2)
-print(shuffled_list1)
-print(shuffled_list2)

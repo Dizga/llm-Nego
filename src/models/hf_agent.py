@@ -68,6 +68,7 @@ class HfAgent:
         default_training_mode="ppo",
         keep_vllm_during_training=False,
         keep_hf_during_generation=True,
+        destroy_ppo_trainer_after_training=True,
         generate_with="vllm",
         ppo_trainer_class=None,
         sft_args=None,  # Add this parameter
@@ -132,6 +133,7 @@ class HfAgent:
 
         self.keep_vllm_during_training = keep_vllm_during_training
         self.keep_hf_during_generation = keep_hf_during_generation
+        self.destroy_ppo_trainer_after_training = destroy_ppo_trainer_after_training
         self.generate_with = generate_with
 
         self.sft_config = SFTConfig(**sft_args, output_dir=self.output_directory+"/") # Initialize sft_config
@@ -194,12 +196,13 @@ class HfAgent:
             self.ppo_trainer = None
             return
         
+
         if self.ppo_training_args["batch_size"] == -1:
             self.ppo_training_args["batch_size"] = ds
 
         else: 
             self.ppo_training_args["batch_size"] = min(
-            self.ppo_training_args["batch_size"], ds
+            self.bs, self.ppo_training_args["batch_size"], ds
         )
             
         self.ppo_training_args["gradient_accumulation_steps"] = self.ppo_training_args[
@@ -212,12 +215,16 @@ class HfAgent:
             )
         }
 
-        self.ppo_trainer = globals()[self.ppo_trainer_class](
-            model=self.hf_model,
-            ref_model=self.hf_model,
-            config=PPOConfig(**self.ppo_training_args),
-            tokenizer=self.tokenizer,
-        )
+        if self.ppo_trainer is None:
+            self.ppo_trainer = globals()[self.ppo_trainer_class](
+                model=self.hf_model,
+                ref_model=self.hf_model,
+                config=PPOConfig(**self.ppo_training_args),
+                tokenizer=self.tokenizer,
+            )
+        else:
+            self.ppo_trainer.model = self.hf_model
+            self.ppo_trainer.ref_model = self.hf_model
 
         bs = self.ppo_training_args["batch_size"]
         nb_batches = ds // bs
@@ -271,7 +278,6 @@ class HfAgent:
 
             # Export batch to JSON
             self.export_batch_to_json(encoded_batch_queries, encoded_batch_responses, encoded_batch_scores, b)
-
             self.delete_tensor_list(encoded_batch_queries)
             self.delete_tensor_list(encoded_batch_responses)
             self.delete_tensor_list(encoded_batch_scores)
@@ -290,11 +296,15 @@ class HfAgent:
         self.delete_tensor_list(queries)
         self.delete_tensor_list(responses)
         self.delete_tensor_list(scores)
-        del self.ppo_trainer
+        if self.destroy_ppo_trainer_after_training:
+            del self.ppo_trainer
+        #del self.ppo_trainer.model
+        #del self.ppo_trainer.ref_model
         del stats
         gc.collect()
         torch.cuda.empty_cache()
-        self.ppo_trainer = None
+        if self.destroy_ppo_trainer_after_training:
+            self.ppo_trainer = None
 
 
     def export_batch_to_json(self, queries, responses, scores, batch_number):
@@ -525,7 +535,7 @@ class HfAgent:
         #logging.info(f"Directory '{lora_weights_path}' created.")
 
         if self.ppo_trainer is not None:
-            self.hf_model.save_pretrained(lora_weights_path)
+            self.ppo_trainer.save_pretrained(lora_weights_path)
         else:
             self.hf_model.save_pretrained(lora_weights_path)
 
