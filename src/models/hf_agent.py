@@ -453,7 +453,9 @@ class HfAgent:
                 if self.default_training_mode == "ppo":
                     logging.info(f"Loading LoRA weights for PPO from {self.lora_pretrained_path}")
                     self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                        **pretrained_args, is_trainable=True, quantization_config=self.bits_and_bytes_configs
+                        **pretrained_args, 
+                        is_trainable=True, 
+                        quantization_config=self.bits_and_bytes_configs
                     )
                 elif self.default_training_mode == "sft":
                     self.hf_model = AutoModelForCausalLM.from_pretrained(
@@ -499,11 +501,11 @@ class HfAgent:
         if self.lora_pretrained_path and self.vllm_model is None:
             gc.collect()
             torch.cuda.empty_cache()
-            self.vllm_model = LLM(self.model_name, enable_lora=True, max_lora_rank=64)
+            self.vllm_model = LLM(self.model_name, enable_lora=True, max_lora_rank=256)
         elif self.vllm_model is None:
             gc.collect()
             torch.cuda.empty_cache()
-            self.vllm_model = LLM(self.model_name, enable_lora=False, max_lora_rank=64)
+            self.vllm_model = LLM(self.model_name, enable_lora=False, max_lora_rank=256)
 
     def destroy_vllm(self):
         """
