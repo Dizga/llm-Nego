@@ -5,9 +5,9 @@ hydra:
 experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
-  nb_iterations: 3
+  nb_iterations: 100
   reinit_matches_each_it: true
-  nb_matches_per_iteration: 3
+  nb_matches_per_iteration: 42
   reinit_players_each_it: true
 
 matches: 
@@ -29,7 +29,7 @@ matches:
         max_retries: 3
 
       ppo_data_extraction_args:
-        normalize_scores: [0,1]
+        normalize_scores: [-1,10]
         score_function: score_based_on_current_round_points
         last_k_responses: 1
         substract_mean_score: false
@@ -48,7 +48,7 @@ matches:
         max_retries: 3
 
       ppo_data_extraction_args:
-        normalize_scores: [0,1]
+        normalize_scores: [-1,10]
         score_function: score_based_on_current_round_points
         last_k_responses: 1
         substract_mean_score: false
@@ -83,8 +83,9 @@ models:
         pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
         torch_dtype: "bfloat16"
         device_map: "auto"
-      bits_and_bytes_args:
-        load_in_8bit: False
+      bits_and_bytes_args: null
+        # load_in_8bit: False
+        # load_in_4bit: True
       lora_args:
         task_type: TaskType.CAUSAL_LM
         r: 64

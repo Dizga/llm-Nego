@@ -105,7 +105,7 @@ class HfAgent:
         )
         self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
         self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.bits_and_bytes_configs = BitsAndBytesConfig(**bits_and_bytes_args)
+        self.bits_and_bytes_configs = BitsAndBytesConfig(**bits_and_bytes_args) if bits_and_bytes_args else None
         self.lora_config = LoraConfig(**lora_args)
         self.ppo_training_args = ppo_trainer_args
         self.ppo_trainer_class = ppo_trainer_class
@@ -167,7 +167,7 @@ class HfAgent:
             return list(tokenized["input_ids"])
         else:
             return [
-                self.tokenizer(d, return_tensors="pt")
+                self.tokenizer(d, return_tensors="pt", add_special_tokens=False)
                 .to(self.device)["input_ids"]
                 .squeeze()
                 for d in formatted
@@ -207,7 +207,7 @@ class HfAgent:
             
         self.ppo_training_args["gradient_accumulation_steps"] = self.ppo_training_args[
             "batch_size"
-        ]
+        ] // self.ppo_training_args["mini_batch_size"]
 
         self.ppo_training_args["project_kwargs"] = {
             "logging_dir": os.path.join(
@@ -215,16 +215,12 @@ class HfAgent:
             )
         }
 
-        if self.ppo_trainer is None:
-            self.ppo_trainer = globals()[self.ppo_trainer_class](
-                model=self.hf_model,
-                ref_model=self.hf_model,
-                config=PPOConfig(**self.ppo_training_args),
-                tokenizer=self.tokenizer,
-            )
-        else:
-            self.ppo_trainer.model = self.hf_model
-            self.ppo_trainer.ref_model = self.hf_model
+        self.ppo_trainer = PPOTrainer(
+            model=self.hf_model,
+            ref_model=self.hf_model,
+            config=PPOConfig(**self.ppo_training_args),
+            tokenizer=self.tokenizer,
+        )
 
         bs = self.ppo_training_args["batch_size"]
         nb_batches = ds // bs
@@ -453,10 +449,11 @@ class HfAgent:
         """
         if self.hf_model is None:
             if self.lora_pretrained_path:
+                pretrained_args = self.pretrained_args | {'pretrained_model_name_or_path': self.lora_pretrained_path}
                 if self.default_training_mode == "ppo":
                     logging.info(f"Loading LoRA weights for PPO from {self.lora_pretrained_path}")
                     self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                        self.lora_pretrained_path, is_trainable=True, device_map="auto"
+                        **pretrained_args, is_trainable=True, quantization_config=self.bits_and_bytes_configs
                     )
                 elif self.default_training_mode == "sft":
                     self.hf_model = AutoModelForCausalLM.from_pretrained(
