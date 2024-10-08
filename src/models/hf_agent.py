@@ -443,10 +443,11 @@ class HfAgent:
         """
         if self.hf_model is None:
             if self.lora_pretrained_path:
+                pretrained_args = self.pretrained_args | {'pretrained_model_name_or_path': self.lora_pretrained_path}
                 if self.default_training_mode == "ppo":
                     logging.info(f"Loading LoRA weights for PPO from {self.lora_pretrained_path}")
                     self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                        self.lora_pretrained_path, is_trainable=True, device_map="auto", quantization_config=self.bits_and_bytes_configs, torch_dtype= "bfloat16"
+                        **pretrained_args, is_trainable=True, quantization_config=self.bits_and_bytes_configs
                     )
                 elif self.default_training_mode == "sft":
                     self.hf_model = AutoModelForCausalLM.from_pretrained(
