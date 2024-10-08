@@ -3,6 +3,8 @@ import os
 from statistics import mean
 from utils.augmented_mean import augmented_mean
 from utils.plot_curves import plot_curves
+import matplotlib.pyplot as plt
+import numpy as np
 
 def process_player_folder(folder_path):
     """
@@ -43,34 +45,123 @@ def export_dond_player_stats(input_path, output_path):
     with open(output_path, 'w') as f:
         json.dump(mean_game_stats, f, indent=4)
 
-def export_global_dond_player_stats(input_paths, output_path):
+
+def update_player_statistics(input_path, output_file, iteration):
     """
-    Gathers a list of mean game statistics from multiple folders and generates plots for scalar values.
+    Computes statistics for the current iteration and updates the global statistics file.
+    
+    Args:
+        input_path (str): Path to the folder containing player JSON files for the current iteration.
+        output_file (str): Path to the JSON file where statistics are stored.
+        iteration (int): Current iteration number.
     """
-    all_mean_stats = []
+    game_stats_list = process_player_folder(input_path)
+    iteration_stats = compute_mean_game_stats(game_stats_list)
 
-    # Gather mean game statistics from each input path
-    for input_path in input_paths:
-        mean_game_stats_list = json.load(open(input_path, 'r'))
-        all_mean_stats.append(mean_game_stats_list)
+    # Read existing statistics or initialize if file doesn't exist
+    if os.path.exists(output_file):
+        with open(output_file, 'r') as f:
+            all_stats = json.load(f)
+    else:
+        all_stats = {"global": {}}
 
-    # Transpose the list of dictionaries to a dictionary of lists
-    transposed_stats = {}
-    for stats in all_mean_stats:
-        for key, value in stats.items():
-            if key not in transposed_stats:
-                transposed_stats[key] = []
-            transposed_stats[key].append(value)
+    # Update global statistics
+    global_stats = all_stats["global"]
+    for key, value in iteration_stats.items():
+        if key not in global_stats:
+            global_stats[key] = value
+        else:
+            if isinstance(value, list):
+                # For list values, update element-wise
+                if not isinstance(global_stats[key], list):
+                    global_stats[key] = [global_stats[key]] * len(value)
+                global_stats[key] = [(g * iteration + v) / (iteration + 1) 
+                                     for g, v in zip(global_stats[key], value)]
+            else:
+                # For scalar values, update as before
+                global_stats[key] = (global_stats[key] * iteration + value) / (iteration + 1)
 
-    # Ensure the output directory exists
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    # Add iteration statistics
+    all_stats[f"iteration_{iteration:03d}"] = iteration_stats
 
-    # Generate plots for scalar values
-    for stat, values in transposed_stats.items():
-        if all(isinstance(v, (int, float)) for v in values):
-            plot_curves(y_list=[values], plot_name=f"{stat}_through_iterations", output_directory=os.path.dirname(output_path))
+    # Write updated statistics to file
+    with open(output_file, 'w') as f:
+        json.dump(all_stats, f, indent=4)
 
+def generate_player_statistics_plots(input_file, output_folder):
+    """
+    Generates plots for player statistics based on the JSON file.
+    
+    Args:
+        input_file (str): Path to the JSON file containing player statistics.
+        output_folder (str): Path to the folder where plots will be saved.
+    """
+    os.makedirs(output_folder, exist_ok=True)
 
-    # Save the transposed statistics to the output path
-    with open(output_path+"/global_stats.json", 'w') as f:
-        json.dump(transposed_stats, f, indent=4)
+    # Read statistics from the JSON file
+    try:
+        with open(input_file, 'r') as f:
+            all_stats = json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"Error reading JSON file: {e}")
+        return
+
+    iteration_stats = []
+    global_stats = None
+
+    # Process the statistics
+    for key, value in all_stats.items():
+        if key == 'global':
+            global_stats = value
+        elif key.startswith('iteration_'):
+            iteration_stats.append(value)
+
+    # Generate plots for iteration statistics
+    if iteration_stats:
+        for key in iteration_stats[0].keys():
+            values = [stats[key] for stats in iteration_stats]
+            iterations = range(1, len(iteration_stats) + 1)
+            
+            plt.figure(figsize=(10, 6))
+            plt.plot(iterations, values)
+            plt.xlabel('Iteration')
+            plt.ylabel(key)
+            plt.title(f"{key} through iterations")
+            plt.savefig(os.path.join(output_folder, f"{key}_through_iterations.png"), bbox_inches='tight')
+            plt.close()
+
+    # Generate plots for global statistics
+    if global_stats:
+        scalar_stats = {}
+        non_scalar_stats = {}
+
+        for key, value in global_stats.items():
+            if np.isscalar(value):
+                scalar_stats[key] = value
+            else:
+                non_scalar_stats[key] = value
+
+        # Plot scalar statistics
+        if scalar_stats:
+            plt.figure(figsize=(12, 6))
+            keys = list(scalar_stats.keys())
+            values = list(scalar_stats.values())
+            
+            plt.bar(range(len(keys)), values)
+            plt.xlabel('Statistic')
+            plt.ylabel('Value')
+            plt.title('Global Scalar Statistics')
+            plt.xticks(range(len(keys)), keys, rotation=45, ha='right')
+            plt.tight_layout()
+            plt.savefig(os.path.join(output_folder, "global_scalar_statistics.png"), bbox_inches='tight')
+            plt.close()
+
+        # Plot non-scalar statistics
+        for key, value in non_scalar_stats.items():
+            plt.figure(figsize=(10, 6))
+            plt.plot(value)
+            plt.xlabel('Index')
+            plt.ylabel('Value')
+            plt.title(f'Global Non-Scalar Statistic: {key}')
+            plt.savefig(os.path.join(output_folder, f"global_non_scalar_{key}.png"), bbox_inches='tight')
+            plt.close()

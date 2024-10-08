@@ -11,6 +11,7 @@ import time
 # local imports
 from environments.dond_game import DondGame
 from utils.log_gpu_usage import log_gpu_usage
+from environments.dond_stop_conditions import *
 
 
 def play_next_move(match, response_batches):
@@ -40,7 +41,8 @@ def play_next_move(match, response_batches):
                 player.new_round()
 
         # Check the stop condition
-        if match["stop_condition"](match["game_state"], **match["stop_condition_kwargs"]):
+        stop_cond = globals()[match["stop_condition"]]
+        if stop_cond(match["game_state"], **match["stop_condition_kwargs"]):
             game_over = True
 
         if game_over:
@@ -53,7 +55,7 @@ def play_next_move(match, response_batches):
 def run_matches(
               matches, 
               models, 
-              player_export_paths, 
+              export_folder,  # Changed from player_export_paths
               nb_parallel_matches, 
               game_json_path=None, 
               log_matches=False):  # Add a parameter to control logging
@@ -63,7 +65,7 @@ def run_matches(
     Args:
         matches (list): List of match dictionaries.
         models (dict): Dictionary of models to use for generating player moves.
-        player_export_paths (dict): Dictionary of paths to save player contexts.
+        export_folder (str): Base folder to save player contexts.
         nb_parallel_matches (int): Number of matches to run in parallel.
         game_json_path (str): Path to save game metrics.
         log_matches (bool): Whether to log matches after completion.
@@ -124,7 +126,7 @@ def run_matches(
             log_match(
                 match_nb=match_nb,
                 players=players,
-                player_export_paths=player_export_paths
+                export_folder=export_folder  # Changed from player_export_paths
             )
 
     end_time = time.time()
@@ -135,7 +137,7 @@ def run_matches(
 
     return archived_games
 
-def log_match(match_nb=None, game=None, players=None, player_export_paths=None, game_json_path=None):
+def log_match(match_nb=None, game=None, players=None, export_folder=None, game_json_path=None):
     """
     Logs the completion of a match and exports player contexts and game metrics.
 
@@ -143,17 +145,16 @@ def log_match(match_nb=None, game=None, players=None, player_export_paths=None, 
         match_nb (int): The match number.
         game (DondGame): The game instance.
         players (list): List of player instances.
-        player_export_paths (dict): Dictionary of paths to save player contexts.
+        export_folder (str): Base folder to save player contexts.
         game_json_path (str): Path to save game metrics.
     """
 
     # Export the player contexts
-    for player_name in players.keys():
-        player_save_path = player_export_paths[player_name]
-        player_save_path = player_save_path + f"/game_{match_nb:05}.jsonl"
+    for player_name, player in players.items():
+        player_save_path = os.path.join(export_folder, player_name, f"game_{match_nb:05}.jsonl")
         os.makedirs(os.path.dirname(player_save_path), exist_ok=True)
         with open(player_save_path, "w") as f:
-            json.dump(players[player_name].get_augmented_context(), f, indent=4)
+            json.dump(player.get_augmented_context(), f, indent=4)
 
     # Export game metrics
     if game_json_path is not None:

@@ -5,9 +5,9 @@ import time
 from omegaconf import OmegaConf
 import random
 import json
-
+import copy
 # Local imports
-from environments.dond_run_matches import run_matches
+from environments.dond_run_games import run_matches
 from environments.dond_game import DondGame
 from models.hf_agent import HfAgent
 from models.dummy_hf_agent import DummyHfAgent
@@ -17,8 +17,9 @@ from training.extract_ppo_dataset import extract_ppo_dataset
 from training.extract_sft_dataset import extract_sft_dataset
 from utils.export_ppo_training_set import export_ppo_training_set
 from utils.plot_curves import plot_curves
-from utils.dond_statistics import export_dond_player_stats, export_global_dond_player_stats
+from utils.dond_statistics import *
 from utils.parallel_shuffle import parallel_shuffle
+from utils.dond_statistics import update_player_statistics, generate_player_statistics_plots
 
 
 def init_models(cfg):
@@ -33,7 +34,7 @@ def init_models(cfg):
     return models
 
 
-def init_matches(
+def create_blank_match(
     cfg    
 ):
     """
@@ -48,13 +49,13 @@ def init_matches(
     players = {}
     for player_name in cfg["matches"]["players"].keys():
         players[player_name] = DondPlayer(player_name, 
-        **cfg["players"][player_name]["dond_player_args"])
+        **cfg["matches"]["players"][player_name]["dond_player_args"])
     blank_match = {
         "players": players,
-        "game": DondGame(players=list(players.keys()), **cfg["dond_game_args"]),
+        "game": DondGame(players=list(players.keys()), **cfg["matches"]["dond_game_args"]),
         "game_state": None,
-        "stop_condition": cfg["stop_condition"],
-        "stop_condition_kwargs": cfg["stop_condition_kwargs"]
+        "stop_condition": cfg["matches"]["stop_condition"],
+        "stop_condition_kwargs": cfg["matches"]["stop_condition_kwargs"]
     }
     return blank_match
 
@@ -83,52 +84,50 @@ def dond_run_train(cfg):
     # Initialize models
     models = init_models(cfg)
 
-
-
-    # Initialize output paths
-    player_paths = {'player_export_paths': {}, 'local_stat_paths': {}, 'global_stat_paths': {}}
-    iteration_folders = {}
-    for i in range(cfg["experiment"]["nb_iterations"]):
-        it_folder = os.path.join(output_directory, f"iteration_{i:03}")
-        iteration_folders[i] = it_folder
-
-        player_paths['player_export_paths'][i] = {player_name: 
-                                                it_folder + f"/{player_name}_game_data"
-                                                for player_name in players.keys()}
-        player_paths['local_stat_paths'][i] = {player_name: 
-                                                it_folder + f"/{player_name}_local_stats.json"
-                                                for player_name in players.keys()}
-        player_paths['global_stat_paths'] = {player_name: 
-                                                output_directory + f"/{player_name}_global_stats/"
-                                                for player_name in players.keys()}
+    matches = None
 
     for iteration in range(cfg["experiment"]["nb_iterations"]):
 
-        if matches == None:
-            matches = init_matches(cfg)
-
-        elif cfg['reinit_matches_each_it']:
-            matches = init_matches(cfg)
-
         # Create / set iteration folders and paths
-        it_folder = iteration_folders[iteration]
+        it_folder = os.path.join(output_directory, f"iteration_{iteration:03}")
         os.makedirs(it_folder, exist_ok=True)
+
+        if matches == None:
+            blank_match = create_blank_match(cfg)
+            players = copy.deepcopy(blank_match["players"])
+
+        elif cfg['experiment']['reinit_matches_each_it']:
+            matches = create_blank_match(cfg)
+
+        matches = [copy.deepcopy(blank_match) for _ in range(cfg["experiment"]["nb_matches_per_iteration"])]
 
         # Generate games
         run_matches(
             matches=matches,
-            player_export_paths=player_paths['player_export_paths'][iteration],
+            export_folder=it_folder,
             models=models,
-            **cfg['run_matches_args']
+            **cfg['matches']['run_matches_args']
         )
 
-        # Compute iteration statistics
-        for player in players.values():
-            export_dond_player_stats(player_paths['player_export_paths'][iteration][player.player_name], 
-                                     player_paths["local_stat_paths"][iteration][player.player_name])
-            l = [player_paths["local_stat_paths"][i][player.player_name] for i in range(0,iteration+1)]
-            export_global_dond_player_stats(l,
-                                            player_paths["global_stat_paths"][player.player_name])
+        # Compute and update iteration statistics, and regenerate plots
+        for player_name in players.keys():
+            player_stats_folder = os.path.join(output_directory, "statistics", player_name)
+            os.makedirs(player_stats_folder, exist_ok=True)
+            player_stats_file = os.path.join(player_stats_folder, f"{player_name}_stats.jsonl")
+            player_plots_folder = os.path.join(player_stats_folder, "plots")
+            
+            # Update statistics
+            update_player_statistics(
+                input_path=os.path.join(it_folder, player_name),
+                output_file=player_stats_file,
+                iteration=iteration
+            )
+            
+            # Regenerate plots
+            generate_player_statistics_plots(
+                input_file=player_stats_file,
+                output_folder=player_plots_folder
+            )
 
         # Training models
         for model_name in models.keys():
@@ -141,8 +140,8 @@ def dond_run_train(cfg):
                 # Extract data
                 for player in players.values():
                     if player.model_name == model_name:
-                        epd_config = cfg["players"][player.player_name]["ppo_data_extraction_args"]
-                        player_export_path = player_paths['player_export_paths'][iteration][player.player_name]
+                        epd_config = cfg["matches"]["players"][player.player_name]["ppo_data_extraction_args"]
+                        player_export_path = os.path.join(it_folder, player.player_name)
                         new_queries, new_responses, new_scores = extract_ppo_dataset(
                             folder_path=player_export_path, **epd_config
                         )
@@ -157,29 +156,29 @@ def dond_run_train(cfg):
                 model.train_ppo(queries=queries, responses=responses, scores=scores)
 
             # SFT training
-            elif model.default_training_mode == "sft":
-                sft_data = []
+            # elif model.default_training_mode == "sft":
+            #     sft_data = []
 
-                # Extract data
-                for player in players.values():
-                    if player.model_name == model_name:
-                        esd_config = cfg["players"][player.player_name]["sft_data_extraction_args"]
-                        player_export_path = player_paths['player_export_paths'][iteration][player.player_name]
-                        new_data = extract_sft_dataset(
-                            folder_path=player_export_path, **esd_config
-                        )
-                        sft_data.extend(new_data)
+            #     # Extract data
+            #     for player in players.values():
+            #         if player.model_name == model_name:
+            #             esd_config = cfg["players"][player.player_name]["sft_data_extraction_args"]
+            #             player_export_path = player_paths['player_export_paths'][iteration][player.player_name]
+            #             new_data = extract_sft_dataset(
+            #                 folder_path=player_export_path, **esd_config
+            #             )
+            #             sft_data.extend(new_data)
 
-                # Save data to a temporary JSON file
-                sft_data_path = os.path.join(it_folder, f"{model_name}_sft_training.jsonl")
-                with open(sft_data_path, 'w') as f:
-                    json.dump(sft_data, f)
+            #     # Save data to a temporary JSON file
+            #     sft_data_path = os.path.join(it_folder, f"{model_name}_sft_training.jsonl")
+            #     with open(sft_data_path, 'w') as f:
+            #         json.dump(sft_data, f)
 
-                # Train on data
-                model.train_sft(sft_data_path)
+            #     # Train on data
+            #     model.train_sft(sft_data_path)
 
-                # Remove temporary JSON file
-                os.remove(sft_data_path)
+            #     # Remove temporary JSON file
+            #     os.remove(sft_data_path)
 
 
     # Calculate and log total duration
