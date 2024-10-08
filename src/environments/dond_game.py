@@ -215,32 +215,44 @@ class DondGame:
         self.round_agreement_reached.append(self.agreement_reached)
         self.round_role_to_player.append(self.role_to_player.copy())
 
-    def new_game(self):
+    def new_game(self, checkpoint=None):
         """
-        new_games the game to its initial state.
+        Resets the game to its initial state or to a checkpoint if provided.
 
-        Returns:
-            tuple: The quantities of items and the values for player 0 and player 1.
+        Args:
+            checkpoint (dict, optional): A dictionary containing the checkpoint state.
         """
-        self.has_finalized = False
-        self.role_props = {role: {} for role in self.roles}
-        self.points = {player: 0 for player in self.players}
-        self.agreement_reached = False
-        self.last_message = None
-        self.round_nb = 0
-        self.turn = 0
-        self.round_ended = False
-        self.game_ended = False
-        self.last_message = None
-        self.round_role_props = {role: [] for role in self.roles}
-        self.round_points = {player: [] for player in self.players}
-        self.round_values = {role: [] for role in self.roles}
-        self.round_quantities = []
-        self.round_agreement_reached = []
-        self.round_role_to_player = []
-        self.role_deque = self.get_new_role_deque()
-        self.set_new_game_settings()
-        self.assign_roles()
+        if checkpoint:
+            self.load_checkpoint(checkpoint)
+        else:
+            self.has_finalized = False
+            self.role_props = {role: {} for role in self.roles}
+            self.points = {player: 0 for player in self.players}
+            self.agreement_reached = False
+            self.last_message = None
+            self.round_nb = 0
+            self.turn = 0
+            self.round_ended = False
+            self.game_ended = False
+            self.last_message = None
+            self.round_role_props = {role: [] for role in self.roles}
+            self.round_points = {player: [] for player in self.players}
+            self.round_values = {role: [] for role in self.roles}
+            self.round_quantities = []
+            self.round_agreement_reached = []
+            self.round_role_to_player = []
+            self.role_deque = self.get_new_role_deque()
+            self.set_new_game_settings()
+            self.assign_roles()
+
+    def load_checkpoint(self, checkpoint):
+        """
+        Loads the game state from a checkpoint.
+
+        Args:
+            checkpoint (dict): A dictionary containing the checkpoint state.
+        """
+        self.__dict__.update(checkpoint)
 
     def new_round(self):
         """

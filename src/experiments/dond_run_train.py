@@ -7,7 +7,7 @@ import random
 import json
 
 # Local imports
-from environments.dond_run_games import run_games
+from environments.dond_run_matches import run_matches
 from environments.dond_game import DondGame
 from models.hf_agent import HfAgent
 from models.dummy_hf_agent import DummyHfAgent
@@ -19,6 +19,45 @@ from utils.export_ppo_training_set import export_ppo_training_set
 from utils.plot_curves import plot_curves
 from utils.dond_statistics import export_dond_player_stats, export_global_dond_player_stats
 from utils.parallel_shuffle import parallel_shuffle
+
+
+def init_models(cfg):
+    models = {}
+    for model_name in cfg["models"].keys():
+        if cfg["models"][model_name]["class"] == "hf":
+            models[model_name] = HfAgent(**cfg["models"][model_name]["init_args"])
+        elif cfg["models"][model_name]["class"] == "dummy_hf":
+            models[model_name] = DummyHfAgent(**cfg["models"][model_name]["init_args"])
+        elif cfg["models"][model_name]["class"] == "oai":
+            models[model_name] = OaiAgent(**cfg["models"][model_name]["init_args"])
+    return models
+
+
+def init_matches(
+    cfg    
+):
+    """
+    Initializes the matches for the game.
+
+    Args:
+        cfg (omegaconf.DictConfig): Configuration object containing all necessary parameters for the negotiation cycle.
+
+    Returns:
+        list: A list of match dictionaries.
+    """
+    players = {}
+    for player_name in cfg["matches"]["players"].keys():
+        players[player_name] = DondPlayer(player_name, 
+        **cfg["players"][player_name]["dond_player_args"])
+    blank_match = {
+        "players": players,
+        "game": DondGame(players=list(players.keys()), **cfg["dond_game_args"]),
+        "game_state": None,
+        "stop_condition": cfg["stop_condition"],
+        "stop_condition_kwargs": cfg["stop_condition_kwargs"]
+    }
+    return blank_match
+
 
 
 
@@ -42,23 +81,9 @@ def dond_run_train(cfg):
     cfg = OmegaConf.to_container(cfg, resolve=True, structured_config_mode="dict")
 
     # Initialize models
-    models = {}
-    for model_name in cfg["models"].keys():
-        if cfg["models"][model_name]["class"] == "hf":
-            models[model_name] = HfAgent(**cfg["models"][model_name]["init_args"])
-        elif cfg["models"][model_name]["class"] == "dummy_hf":
-            models[model_name] = DummyHfAgent(**cfg["models"][model_name]["init_args"])
-        elif cfg["models"][model_name]["class"] == "oai":
-            models[model_name] = OaiAgent(**cfg["models"][model_name]["init_args"])
+    models = init_models(cfg)
 
-    # Initialize players
-    players = {}
-    for player_name in cfg["players"].keys():
-        players[player_name] = DondPlayer(player_name, 
-        **cfg["players"][player_name]["dond_player_args"])
 
-    # Initialize game
-    dond_game = DondGame(players=list(players.keys()), **cfg["dond_game_args"])
 
     # Initialize output paths
     player_paths = {'player_export_paths': {}, 'local_stat_paths': {}, 'global_stat_paths': {}}
@@ -79,17 +104,22 @@ def dond_run_train(cfg):
 
     for iteration in range(cfg["experiment"]["nb_iterations"]):
 
+        if matches == None:
+            matches = init_matches(cfg)
+
+        elif cfg['reinit_matches_each_it']:
+            matches = init_matches(cfg)
+
         # Create / set iteration folders and paths
         it_folder = iteration_folders[iteration]
         os.makedirs(it_folder, exist_ok=True)
 
         # Generate games
-        run_games(
-            game=dond_game,
-            players=players,
+        run_matches(
+            matches=matches,
             player_export_paths=player_paths['player_export_paths'][iteration],
             models=models,
-            **cfg['run_games_args']
+            **cfg['run_matches_args']
         )
 
         # Compute iteration statistics
@@ -156,5 +186,6 @@ def dond_run_train(cfg):
     total_end_time = time.time()
     total_duration = total_end_time - total_start_time
     logging.info(f"Total time taken for the entire run: {total_duration:.2f} seconds")
+
 
 

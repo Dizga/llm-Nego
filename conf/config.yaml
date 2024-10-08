@@ -8,9 +8,9 @@ experiment:
   nb_iterations: 100
 
 
-run_games_args:
-  nb_parallel_games: 6
-  games_per_iteration: 6
+run_matches_args:
+  nb_parallel_games: 42
+  games_per_iteration: 42
 
 dond_game_args:
   rounds_per_game: 1
@@ -20,7 +20,7 @@ dond_game_args:
   setup: manual # manual or random_read
   role_values: [[10], [10]]
   items: ['hats']
-  quantities: [710]
+  quantities: [10]
   setups_file: src/environments/dond_setups.txt
   finalization_visibility: True
 
@@ -40,8 +40,8 @@ models:
         load_in_8bit: False
       lora_args:
         task_type: TaskType.CAUSAL_LM
-        r: 32
-        lora_alpha: 16
+        r: 64
+        lora_alpha: 32
         lora_dropout: 0.1
         target_modules: "all-linear"
       ppo_trainer_class: NoValuePPOTrainer
@@ -78,7 +78,7 @@ models:
         repetition_penalty: 1.0
       keep_vllm_during_training: False
       keep_hf_during_generation: False
-      destroy_ppo_trainer_after_training: False
+      destroy_ppo_trainer_after_training: True
       generate_with: "vllm"
 
 

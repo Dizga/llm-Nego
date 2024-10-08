@@ -202,7 +202,7 @@ class HfAgent:
 
         else: 
             self.ppo_training_args["batch_size"] = min(
-            self.bs, self.ppo_training_args["batch_size"], ds
+            self.ppo_training_args["batch_size"], ds
         )
             
         self.ppo_training_args["gradient_accumulation_steps"] = self.ppo_training_args[

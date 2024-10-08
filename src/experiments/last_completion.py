@@ -5,7 +5,7 @@ import time
 from omegaconf import OmegaConf
 import random
 # local imports
-from src.environments.dond_run_games import run_games
+from src.environments.dond_run_matches import run_matches
 from environments.dond_game import DondGame
 from models.hf_agent import HfAgent
 from models.dummy_hf_agent import DummyHfAgent
@@ -79,7 +79,6 @@ def last_completion(cfg):
     player_0.game_id = 0
     player_1 = DondPlayer(player_name="player_b", **cfg['players']['player_b']['dond_player_args'])
     player_1.game_id = 1
-
 
     dond_game = DondGame(**cfg['dond_game_args'])
     dond_game, player = run_partial_game(dond_game, player_0, player_1, agent)

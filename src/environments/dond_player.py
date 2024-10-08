@@ -356,11 +356,26 @@ class DondPlayer:
         self.retries = 0
         self.error_message = None
 
-    def new_game(self):
+    def new_game(self, checkpoint=None):
         """
-        Resets the message history of the LLM player.
+        Resets the message history of the LLM player or to a checkpoint if provided.
+
+        Args:
+            checkpoint (dict, optional): A dictionary containing the checkpoint state.
         """
-        self.retries = 0
-        self.error_message = None
-        self.context = []
-        self.augmented_context = []
+        if checkpoint:
+            self.load_checkpoint(checkpoint)
+        else:
+            self.retries = 0
+            self.error_message = None
+            self.context = []
+            self.augmented_context = []
+
+    def load_checkpoint(self, checkpoint):
+        """
+        Loads the player state from a checkpoint.
+
+        Args:
+            checkpoint (dict): A dictionary containing the checkpoint state.
+        """
+        self.__dict__.update(checkpoint)

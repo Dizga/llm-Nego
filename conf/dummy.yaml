@@ -8,7 +8,7 @@ experiment:
   nb_iterations: 3
 
 
-run_games_args:
+run_matches_args:
   nb_parallel_games: 3
   games_per_iteration: 3
 

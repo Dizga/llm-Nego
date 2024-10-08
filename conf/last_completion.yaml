@@ -34,44 +34,51 @@ models:
       pretrained_args: 
         pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
         torch_dtype: "bfloat16"
-        device_map: "cuda"
+        device_map: "auto"
       bits_and_bytes_args:
         load_in_8bit: False
       lora_args:
         task_type: TaskType.CAUSAL_LM
-        r: 32
+        r: 64
         lora_alpha: 32
         lora_dropout: 0.1
         target_modules: "all-linear"
-      ppo_trainer_class: PPOTrainer
+      ppo_trainer_class: NoValuePPOTrainer
       ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
-        batch_size: 32
+        batch_size: -1
         mini_batch_size: 1
         gradient_accumulation_steps: None
-        ppo_epochs: 4
-        #vf_coef: 0.1
+        ppo_epochs: 1
+        vf_coef: 0.0
         gradient_checkpointing: False
         log_with: "tensorboard"
         project_kwargs: None
         tracker_project_name: "tensorboard"
         #target_kl: 0.1
         #cliprange: 0.2
-        #init_kl_coef: 0.2
-        #learning_rate: 10e-5
+        adap_kl_ctrl: False
+        init_kl_coef: 0.0
+        target_kl: 5.0
+        learning_rate: 1e-5
         is_peft_model: True
       save_lora_weights: True
       lora_pretrained_path: null
+      sft_args: 
+        packing: False
+        dataset_num_proc: 1
+        per_device_train_batch_size: 1
+        max_seq_length: 1e5
       generation_args:
         max_new_tokens: 400
         do_sample: True
         temperature: 1.0
-        top_k: 1000
-        top_p: 0.9
+        top_k: 0.0
+        top_p: 1.0
         repetition_penalty: 1.0
       keep_vllm_during_training: False
       keep_hf_during_generation: False
+      destroy_ppo_trainer_after_training: True
       generate_with: "vllm"
-
 
 players: 
   player_a:
