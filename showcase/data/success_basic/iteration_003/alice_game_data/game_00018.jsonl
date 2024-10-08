@@ -1,0 +1,90 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.0,
+            "game_self_points": 0,
+            "round_points": {
+                "bob": [
+                    0
+                ],
+                "alice": [
+                    0
+                ]
+            },
+            "round_agreements": [
+                false
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "gold": 10,
+                "silver": 10
+            },
+            "values_self": {
+                "gold": 10,
+                "silver": 20
+            },
+            "round_number": 0,
+            "agreement_reached": false,
+            "round_points": 0
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'gold': 10, 'silver': 10} between yourself and the other player.\nTo you, the items are worth: {'gold': 10, 'silver': 20}.\nYou don't know the other player's item values. The other player said: 'Is it okay if we divide the items roughly equally, with 1/3 going to each person? I'll take 4 gold and 3 silver, with you taking the remainder. My utility is higher for gold, so I'm focusing on dividing the more valuable items first.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I'm happy to consider your proposal, but I'm not yet convinced it's the optimal way to split the items. Considering your preference for gold, I'll instead offer a counter-proposal: how about we take turns choosing an item each, starting with gold, to alternate until all items are distributed? This way, we both have equal chances to maximize our utility. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Your counter-proposal sets a dynamic, round-robin exchange process. To start this off, I'll take the 3rd gold, and then it will be your turn to make your first choice. This leaves 9 gold and 10 silver. What do you think next?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I'll choose the 5th gold, leaving 8 gold and 10 silver. Since we're in the round-robin process, it's now your turn again. However, before you take your next gold, I'd like to remind you of the total utilities we're working with. My utility for gold is 10 and for silver is 20. Can you give me a hint about your utility for the items we're dividing? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I'll give you a hint about my utility, but remember it's a negotiating tactic and not an explicit declaration: my utility value for silver is significantly lower than that of gold. Considering that, I'll choose the 2nd silver, leaving 8 gold and 9 silver. Now it's your turn again. Do not forget, my next choice will also be about maximizing the high-value items.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Thank you for the hint. Given your focus on maximizing high-value items, I infer that your utility for gold might be significantly higher than your utility for silver. With that in mind, I'll opt for the highest-valued gold (the 8th gold) and a middle-valued silver, but not the lowest one. I'll take the 7th silver. This leaves 1 gold and 8 silver remaining. Now, considering the high value of gold on both ends, it seems we've converged on taking the valuable gold. I'd like to reassess the optimal strategy in this situation: since we're trading off each round, how about we finalize the negotiation and end the game? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I think reassessing the strategy makes sense now that our priorities have been set. However, since I'm not yet sure how you'll divide the remaining items, I'd like to suggest an alternative. How about I guarantee you can have any one of the remaining items for free in exchange for my top priority on one of the golds that are left, to expedite the end of the game and prevent deadlocks?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I appreciate the suggested alternative to avoid a deadlock. Upon considering your proposal, I realize that my top priority is to maximize my total utility, and having a guaranteed option is an attractive offer. However, I also want to ensure that I'm not giving away too much in the process. Since you value gold significantly higher than silver, I assume you'll want an advantageous trade. I'll compromise on offering you the 1st gold for free, while I take the 8th gold we previously discussed. I'll take the 1st silver as well, which I consider a fair compensation in this trade-off. With this agreement, the remaining items are equally valuable and divvied up; I believe this division should be sufficient to conclude the game. However, before sending a finalize, I want to mention my concerns with this division to confirm we're meeting in the middle, which, with your proposal and acceptance, seems to be the case. After this clarification, I would like to formally end the deal: <finalize>{ \"i_take\": {\"gold\": 2, \"silver\": 5}, \"other_player_gets\": {\"gold\": 8, \"silver\": 5} }</finalize>.",
+        "is_error": false,
+        "is_finalization": true,
+        "round_nb": 0
+    }
+]

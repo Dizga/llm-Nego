@@ -1,0 +1,77 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.9999999989999999,
+            "game_self_points": 170,
+            "round_points": {
+                "bob": [
+                    170
+                ],
+                "alice": [
+                    170
+                ]
+            },
+            "round_agreements": [
+                true
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "gold": 10,
+                "silver": 10
+            },
+            "values_self": {
+                "gold": 10,
+                "silver": 20
+            },
+            "round_number": 0,
+            "agreement_reached": true,
+            "round_points": 170
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'gold': 10, 'silver': 10} between yourself and the other player.\nTo you, the items are worth: {'gold': 10, 'silver': 20}.\nYou don't know the other player's item values. The other player said: 'I'd like to propose a split of 5 gold and 5 silver. Is that acceptable to you?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I accept your initial proposal of 5 gold and 5 silver. However, I'd like to question whether this would indeed yield the highest possible value for both of us. Are you certain that this is your optimal proposal, considering your private valuation of the items? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Given your acceptance, I realize now that my initial proposal might not maximize both our benefits. Since you might value gold and silver quite differently than I do, I'm willing to take a more pessimistic view of your valuation to arrive at an optimal split. Considering the possibilities, I'm now open to proposing a more aggressive offer, around 7 gold and 3 silver. What are your thoughts on this?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your new proposal offers 4 more gold than initially proposed and 2 fewer silvers. I'm going to assume you consider my valuation, which is that the gold is worth 10 and silver is worth 20 to me, and factor that in. If you take 7 gold, that's worth 70 in your payoffs (I take 3, you lose), and take 3 silver, it's worth 60 (I lose 15, you take). For the remaining 2 gold and 7 silver, if and only if I take 3, it would be worth 100 from my perspective and 140 from yours in the first scenario (2*10 + 7*20). However, if I take the remaining 7 silvers and 2 gold, the division becomes my taking 9 and you taking 1, so your valuation of 140, minus my taking 90 + the payoffs for 1 piece of gold (10) would gives a negative payoff for me in that event and positive payoffs for you in that event. To form a believable answer I'd have to reason that for my optimal division to be 7+3 that it must offer yourself a payoff higher than 100. I value 3*20 (left by you) to be 140 from your perspective, so that implies it is my best to engage unless you'd fail that. Your former and new proposal provides identical sums, however for my original game, I take more gold because the information I get would more likely make you more likely to choose lower value goods,  e.g. silver, meaning in expectation it would pay off more. However, you are right if it happened that silver's worth is inferior in this split in your opinion not in the least. So I inform you that this new split of 7 and 3 is above expectations, with your gold maximization, on knowledge of your values. How does this revised assumption established fit the curiosity - was my mining 7 most particularly the tactic you were banking on?",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your new proposal of 7 gold and 3 silver offers more gold and fewer silvers than your initial proposal. Based on the information you provided earlier and my valuation of gold at 10 and silver at 20, I believe you may be underestimating the importance of silver to me. If you take 7 gold, that's 70, but you also take 3 silver, worth 60 to you. Considering my possible valuation of items, taking 2 more gold means taking 20 from my valuation in gold but it also means I take more gold and so it maximizes your expected value for you in the common perfect hopes and certainly high win result without ransom in low risk intervention comprising in negotiations but when evaluating my expected clean coherent logic it should factu or efficiently not just occur logically follow on seeing but always-jumping of <finalize>{ \"i_take\": {\"gold\": 3, \"silver\": 7}, \"other_player_gets\": {\"gold\": 7, \"silver\": 3} }</finalize>.",
+        "is_error": false,
+        "is_finalization": true,
+        "round_nb": 0
+    }
+]

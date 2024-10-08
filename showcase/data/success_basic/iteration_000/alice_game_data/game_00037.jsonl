@@ -1,0 +1,129 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.0,
+            "game_self_points": 0,
+            "round_points": {
+                "bob": [
+                    0
+                ],
+                "alice": [
+                    0
+                ]
+            },
+            "round_agreements": [
+                false
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "gold": 10,
+                "silver": 10
+            },
+            "values_self": {
+                "gold": 10,
+                "silver": 20
+            },
+            "round_number": 0,
+            "agreement_reached": false,
+            "round_points": 0
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'gold': 10, 'silver': 10} between yourself and the other player.\nTo you, the items are worth: {'gold': 10, 'silver': 20}.\nYou don't know the other player's item values. The other player said: 'Here's a starting offer: If we give each of us half of the gold and all of the silver, each of us can take 5 gold and 10 silver. This way we both take 15 points for the game, or (7.5 - a silver impact difference).'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I'm interested in getting a few more details about your thought process behind the initial offer. What made you think of dividing the gold evenly, and not proportionally to the item values? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Honestly, I considered dividing the items proportionally to the values, but since I'm not sure about your values, I thought that an even split would simplify the negotiation and give us a rough starting point, potentially preventing unnecessary conflicts and iterations. It also provides an opportunity for us to understand each other's priorities. Additionally, with an even split, we both get a reasonable amount of both items without making any claims on one item over the other, giving us more room to negotiate further if needed.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I appreciate your transparency and regard for simplicity. However, considering the point system, I believe it's essential to negotiate directly based on our individual values. Since my value for silver is higher than gold, I would like to propose a slight incline in favor of silver. Would you be open to revisiting the initial offer and adjusting the gold quantities accordingly, keeping the silver distribution the same? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I see your perspective on valuing silver over gold, and I appreciate the clarity on your priorities. If we keep the same split of 10 silver, that accounts for 10 silver coordinated evenly to both players. I'd propose that we distribute gold in a proportion based on our respective gold preferences (I value gold at 20 points, while you, apparently, don't value it more than silver). With a combined total of 20 points per gold (10 gold * 2 * 20 points per gold), and considering 10 of the points allocated in silver, this leaves 2 points for each 1 gold unit of distribution. So, if we divide the 20 points into two shared portions, for relatively equal value gold amount allocations, I suggest 3 gold (6 points for 6 gold value times 1) plus 7 gold (14 points for 7 gold value times 2). My apologies if this miscalculates your overall negotiation tactics however, in this specific round: i aim to get closer in total points number. Silver amounts total to 10 which I've shown, with one gold amount terms adjusted on them so 10 silver+ 3 gold or 10 silver+ 7 gold mining 10 +1 .  'gold': 3 + 7 - yes I see your offer.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your calculation looks correct, and it's an interesting approach to balance the distributions based on the point values. I'm not certain about the offered combination of 3 gold and 7 gold since it doesn't strictly follow the majority of my gold preference value. Nevertheless, considering your aim to get closer in total points number, I'd like to slightly adjust the distribution while keeping the silver amounts the same and the overall gold points proximity to my preference in mind. Could you consider redistributing the gold so the distribution will align closer to my original preference, perhaps considering 2 and 8, which still stays in the range you calculated?",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your calculation looks correct, and it's an interesting approach to balance the distributions based on the point values. I'm not certain about the offered combination of 3 gold and 7 gold since it doesn't quite match my gold preference value for silver over gold. Nevertheless, considering your aim to get closer in total points number, I'd like to slightly adjust the distribution while keeping the silver amounts the same and the overall points proximity to my preference in mind. Could you consider redistributing the gold so the distribution will align closer to my original preference, perhaps considering 2 and 8, which still stays in the range you calculated?",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your calculation looks correct, and it's an interesting approach to balance the distributions based on the point values. I'm not certain about the offered combination of 3 gold and 7 gold since it doesn't quite match my gold preference value for silver over gold. Nevertheless, considering your aim to get closer in total points number, I'd like to slightly adjust the distribution while keeping the silver amounts the same and the overall points proximity to my preference in mind. Could you consider redistributing the gold so the distribution will align closer to my original preference, perhaps considering 2 and 8, which still stays in the range you calculated?",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your calculation looks correct, and it's an interesting approach to balance the distributions based on the point values. I'm not certain about the offered combination of 3 gold and 7 gold since it doesn't quite match my gold preference value for silver over gold. Nevertheless, considering your aim to get closer in total points number, I'd like to slightly adjust the distribution while keeping the silver amounts the same and the overall points proximity to my preference in mind. Could you consider redistributing the gold so the distribution will align closer to my original preference, perhaps considering 2 and 8, which still stays in the range you calculated. I'll also mention that if we go with 2 and 8, it would align well with my preferences for silver over gold. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Your adjustement in the distribution is reasonable and well aligned with your stated preferences, keeping the value of silver over gold. To maintain this preference while moving further along the desired range of points you prefer, 2 and 8 does give a good progression. However, allowing 1 step further in the progression to improve points to an even better fit and leaving slightly room for you is using another next reference I assume this to finalize the spelling a contract and wrap on compromises have reach to advance after consulting partner until my/all our certain amount would find another elastic excellent were we designing think will contain all old precious value structure band size this weight comeback calls shortened over-induced variants incentive happy another spend indeed.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I appreciate the consideration of my preferences and the willingness to make further adjustments. It seems like we're converging on a mutually agreeable distribution. I'd like to simplify our discussion and focus on a specific proposal that integrates our discussions. Before moving forward, would you agree with dividing the items as follows: {'i_take': {'gold': 2, 'silver': 10}, 'other_player_gets': {'gold': 8, 'silver': 0}}? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    }
+]

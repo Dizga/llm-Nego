@@ -1,0 +1,155 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.0,
+            "game_self_points": 0,
+            "round_points": {
+                "bob": [
+                    0
+                ],
+                "alice": [
+                    0
+                ]
+            },
+            "round_agreements": [
+                false
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "gold": 10,
+                "silver": 10
+            },
+            "values_self": {
+                "gold": 20,
+                "silver": 10
+            },
+            "round_number": 0,
+            "agreement_reached": false,
+            "round_points": 0
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'gold': 10, 'silver': 10} between yourself and the other player.\nTo you, the items are worth: {'gold': 20, 'silver': 10}.\nYou don't know the other player's item values. You are the first to play, there are no messages yet.\n",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I propose to take 3 gold and 6 silver coins, with the remaining 7 gold and 4 silver coins going to the other player. Please respond with your interest in accepting this proposal or making a counteroffer. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I'm not interested in your proposal. The 10 gold and 10 silver coins are worth 100 and 200 points to me, respectively, so the total value is 300 points. You'd be getting 72 points worth of silver, while I'd be getting 3 gold and 6 silver, respectively 30 and 120 points, totaling 150 points. This would mean we're giving up a total of 150 points. However, from my perspective, this is a very favorable distribution that exceeds the minimum  100/300 points value ratio that we are each getting, thus I will improve upon this by offering you a different solution that leaves you at least 100/300 points of our combined values.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your offer considers the silver cost to me as being preferential, this makes the deal even more enticing. However, I'm interested in ensuring both of us reach an optimal agreement. To guarantee mutual benefit, I can reconsider adjusting for more 'gold'. Given your preferred 'beneficial distribution,' could you demonstrate exactly how this theoretical minimized cutoff point (100/300) is handled for each item? And provide a reassessment of the distribution reflecting this approach.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your offer considers the silver cost to me as being preferential, this makes the deal even more enticing. However, I'm interested in ensuring both of us reach an optimal agreement. To guarantee mutual benefit, I can reconsider adjusting for more 'gold'. Given your preferred 'beneficial distribution,' could you demonstrate exactly how this theoretical minimized cutoff point (100/300) is handled for each item? And provide a reassessment of the distribution reflecting this approach.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your offer considers the silver cost to me as being preferential, this makes the deal even more enticing. However, I'm interested in ensuring both of us reach an optimal agreement. To guarantee mutual benefit, I can reconsider adjusting for more 'gold'. Given your preferred 'beneficial distribution,' could you demonstrate exactly how this theoretical minimized cutoff point (100/300) is handled for each item? And provide a reassessment of the distribution reflecting this approach.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your offer considers the silver cost to me as being preferential, this makes the deal even more enticing. However, I'm interested in ensuring both of us reach an optimal agreement. To guarantee mutual benefit, I can reconsider adjusting for more 'gold'. Given your preferred 'beneficial distribution,' could you demonstrate exactly how this theoretical minimized cutoff point (100/300) is handled for each item? And provide a reassessment of the distribution reflecting this approach.</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I will adjust the distribution to achieve a fair, non-pareto optimal, distribution for both players where the least valued resource, which is gold, is not valued below 100/300 of our combined value of 300 points.  Considering fairness, starting with the optimal division 3.33 prior predefined (< goldtotal ), and because you didn't take 3.33 gold I count and report that I can get the highest integer value of gold less than that which is 3 gold. Yet my gold value only adds up to approximately 30 and silver adds 200. Based on the previous arguments I say that If you take 7 gold coins so I will take 3 gold coins and I should receive 133.3 points of your points out of a possible 200 as 2/3 of the remaining resource (silver) is %73e.133:'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I see you're adjusting the distribution to make it fair for both of us, but your reasoning on the integer division of gold seems a bit dodgy. Instead of going for that specific integer division, I would like to propose a new division. If I take 7 gold coins, you'd also get 3 gold coins, and in exchange for the remaining silver, I propose we take away 3 silver coins, thus distributing the silver equally between us, with each of us getting 4 silver coins. Your value for the silver matches mine, so I believe this is a fair distribution of both resources. What do you think?</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I find your proposal to take 7 gold and 3 silver coins more appealing, but I'd like to point out that you said you are taking away 3 and I will get 4. However, there are only 10 silver coins total. If you take 7 gold and get 4 silver you would have a total of 11 silver, leaving 2 silver for me. This seems to be a miscalculation in your proposal.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I made a simple arithmetic error, which changes the distribution significantly - 7 gold, and leaving only 2 silver for you would be unbalanced as per my previous message, favoring me more than the initial 2/3 distribution of silver. Let's return to the exact situation we were in before, adjust for a fairer distribution, or use it as a starting point for new negotiations. Perhaps re-adjusting the silver distribution to 5 every, as you will have received 4, while representing our valuation of 200 points, leaving one more silver coin for you to meet the total 10?</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I appreciate the correction. Taking 7 gold and 5 silver would still leave me with 3 gold, totaling 30 points. With the 5 silver coins and my value measure of 20 points each adding up, this would total 100 points for me which satisfies our given limit of not receiving less than 100/300. Additionally, since we are now choosing a fair and mutually benefiting division this becomes the division we ultimately decide upon, requesting you distribute 7 gold and 5 silver coins to me for the conclusion of this round. Please look at my new and rewarding distribution proposal.  alternative Final message here:'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<finalize> {\"i_take\": {\"gold\": 3, \"silver\": 5}, \"other_player_gets\": {\"gold\": \"7\", \"silver\": \"5\"}} </finalize>",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Each item in \"i_take\" and \"other_player_gets\" must be integers for game items.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<finalize> {\"i_take\": {\"gold\": 3, \"silver\": 5}, \"other_player_gets\": {\"gold\": 7, \"silver\": 5}} </finalize>",
+        "is_error": false,
+        "is_finalization": true,
+        "round_nb": 0
+    }
+]

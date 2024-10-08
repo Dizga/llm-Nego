@@ -1,0 +1,155 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.0,
+            "game_self_points": 0,
+            "round_points": {
+                "bob": [
+                    0
+                ],
+                "alice": [
+                    0
+                ]
+            },
+            "round_agreements": [
+                false
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "gold": 10,
+                "silver": 10
+            },
+            "values_self": {
+                "gold": 20,
+                "silver": 10
+            },
+            "round_number": 0,
+            "agreement_reached": false,
+            "round_points": 0
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'gold': 10, 'silver': 10} between yourself and the other player.\nTo you, the items are worth: {'gold': 20, 'silver': 10}.\nYou don't know the other player's item values. You are the first to play, there are no messages yet.\n",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I propose that we split the gold and silver evenly to start, with 5 of each gold and silver going to each of us. My intention is to see if we can agree on a split and then adjust from there. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I accept your proposal for 5 gold and 5 silver for now, but I'd like to negotiate further to reach optimal values. Given the items are worth 10 to me and 20 for silver to you, I suspect you might value silver more than gold. Perhaps we can allocate the gold unevenly, to then re-distribute the value difference through the silvers?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I'm willing to allocate the gold unevenly, as you suggested, and then distribute the value difference through the silvers. I propose we start with 4 gold and 6 gold for you, then re-distribute the remaining silvers based on the value difference. My value of gold is 20 and silver is 10, so theoretically, I value silver twice as much as gold. With 4 gold and 2 gold going to you, I'm aiming for 8 silvers (to match the value of the 4 gold I kept) and 2 silvers for you. My aim is to see if this distribution meets your expectations, and we can make adjustments from there.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I'm willing to allocate the gold unevenly, as you suggested, and then distribute the value difference through the silvers. I propose we start with 4 gold and 6 gold for you, then re-distribute the remaining silvers based on the value difference. My value of gold is 20 and silver is 10, so theoretically, I value silver twice as much as gold. With 4 gold and 2 gold going to you, I'm aiming for 8 silvers and 2 silvers for you. My aim is to see if this distribution meets your expectations, and we can make adjustments from there. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Your math seems sound, distributing the value difference through silvers. However, I'm not sure why you're allocating 4 and 6 gold, instead of simply using the given total of 10 to split the gold evenly as initially suggested. This might be a motion to strategically allocate more to yourself. To clarify, are you proposing 4 gold for me, 6 for you, and then 8 silvers for you, 2 silvers for me?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> You're correct, I did suggest allocating gold unevenly for strategic reasons. Yes, my initial proposal translates to 4 gold for you, 6 gold for me, and then 8 silvers for me and 2 for you. I'd like to reiterate that my intention was not to mislead, but to find an optimal distribution. However, I'm open to revising the strategy. How do you see this current split? Are there specific adjustments you'd propose, or do you prefer to maintain the current distribution?",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> You're correct, I did suggest allocating gold unevenly for strategic reasons. Yes, my initial proposal translates to 4 gold for you, 6 gold for me, and then 8 silvers for me and 2 for you. I'd like to reiterate that my intention was not to mislead, but to find an optimal distribution. However, I'm open to revising the strategy. How do you see this current split? Are there specific adjustments you'd propose, or do you prefer to maintain the current distribution?</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I appreciate your transparency about your intentions. Considering the current split of 4 gold for me and 6 for you, it doesn't seem optimal for me. As my gold is worth 10 to me, and I've been aiming for a higher value. If I stick with gold, to align more with the proposed value ratio for silver, I would need more than 4 gold. However, I also consider the potential for re-distributing the value difference through silvers. I'm concerned that if I receive fewer silvers than you, I'll be penalized in the end. I propose a slight adjustment: you take 5 gold and I take 5 gold as well, leaving the silvers to be re-distributed in the ratio that's beneficial to both our interests.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I understand your concerns and proposal. You suggest a split of 5 gold for both of us, leaving the silvers to be re-distributed according to our value ratio. This seems like a reasonable adjustment, as it acknowledges our differing valuations of gold and silver. I'm willing to accept this split of gold and re-negotiate the distribution of silvers from here, prioritizing our joint interests. What ratio do you propose for the silver distribution?",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I understand your concerns and proposal. You suggest a split of 5 gold for both of us, leaving the silvers to be re-distributed according to our value ratio. This seems like a reasonable adjustment, as it acknowledges our differing valuations of gold and silver. I'm willing to accept this split of gold and re-negotiate the distribution of silvers from here, prioritizing our joint interests. What ratio do you propose for the silver distribution?</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I have made too many errors'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> It seems we've had a lot of detail-oriented conversation, but I think it's time to finalize the deal. Based on our previous discussion, I propose the following division: <finalize>{ \"i_take\": {\"gold\": 7, \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": 3, \"silver\": \"...\"} }</finalize>. Please help me determine the silver allocation based on our value ratio.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Each item in \"i_take\" and \"other_player_gets\" must be integers for game items.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Given the mistake in the finalize message, I'll revise the division proposal instead. Based on our previous discussion, what if we allocate the gold as agreed, with 5 gold for each of us. Now, I'm aiming for 6 silvers for myself. Can you confirm if this adds up to your satisfaction and helps us finalize the distribution?</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    }
+]

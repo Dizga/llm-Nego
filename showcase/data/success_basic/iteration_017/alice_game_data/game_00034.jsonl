@@ -1,0 +1,116 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.0,
+            "game_self_points": 0,
+            "round_points": {
+                "bob": [
+                    0
+                ],
+                "alice": [
+                    0
+                ]
+            },
+            "round_agreements": [
+                false
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "gold": 10,
+                "silver": 10
+            },
+            "values_self": {
+                "gold": 10,
+                "silver": 20
+            },
+            "round_number": 0,
+            "agreement_reached": false,
+            "round_points": 0
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'gold': 10, 'silver': 10} between yourself and the other player.\nTo you, the items are worth: {'gold': 10, 'silver': 20}.\nYou don't know the other player's item values. The other player said: 'I propose a 50/50 split of the gold and silver coins.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I am not sure if a 50/50 split is optimal, but I will consider it. Would you be willing to accept alternative allocations of gold, such as 1/10th of gold for silver acquisition, to adjust our share accordingly? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I am willing to consider the proposed alternative allocations, but I want to first propose a trade-off of 5 gold for 5 silver, considering the 1/10th alternative you mentioned, can you estimate how much silver it would be worth to you in terms of an exchange rate, given the existing 50/50 split.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Based on the 50/50 split, 5 gold coins would be worth 5 silver coins to you. We're already considering trading 5 gold for 5 silver in your proposal. In this case, the 1/10th alternative would be trading 1 gold for 1/2 silver, so we could potentially trade 10 gold for 5 silver, or 5 silver could be worth 10 gold to me in terms of an exchange rate.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Based on the 50/50 split, 5 gold coins would be worth 5 silver coins to you. We're already considering trading 5 gold for 5 silver in your proposal. In this case, the 1/10th alternative would be trading 1 gold for 1/2 silver, so we could potentially trade 10 gold for 5 silver, or 5 silver could be worth 10 gold to me. This means I would consider 2 or more gold to be equal to 5 silver, which is more than 50/50. Is this trade more desirable to you? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Based on the proposed trade-off, it seems that you value 2 or more gold coins to be equal to 5 silver coins, which is indeed more desirable to me. Considering this, I propose to re-evaluate my initial 50/50 split and suggest a new ratio of 35 gold to 7.5 silver, as this seems to align with your stated value. This division implies an exchange rate where 7.5 silver is valued to me at 35 gold, and other division of 'silver_for_gold' rates could fix other divisions we are interested in.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I appreciate the revised proposal. However, I'm concerned that the proposed 35 gold to 7.5 silver ratio does not add up to the 10 total of each item. If we assign 7.5 silver, that would mean dividing the 10 total among the two of us in that ratio, but it implies I would end up with 42.5 gold, exceeding the total. Is there a way to re-evaluate this proposal to align with the actual quantity available? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'You are correct that 35 gold and 7.5 silver do not add up to 10. Considering your concern and the desired ratio, I suggest a revised division of 3.125 gold and 3.125 silver, repeating the 1/4 that 3.125 corresponds to, divided by 2 through which we multiply 3 to get a nice number using in with integer. Let's adjust, so that we both get 6 items of each, that could make for an agreement, arising from the fact we both initially derived comparable numbers to what we initially step.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I see what you did there with the numbers, but I'm afraid 3.125 does not divide evenly into 10. I'm not sure how fairly 3 of 10 would be allocated. If we want to get 6 items of each, we need to identify a different ratio. Similar to your original 50/50 proposal, I would like to revisit that. However, I would like to nudge it towards the 5/5 division, by proposing a 1:1 trade of 5 gold for 5 silver. Would you be willing to accept this revised allocation, or perhaps suggest an alternative that adds up to 10 in each? Alternatively, could we aim for a division where, in the 1/1 trade you mentioned, it would amount to at least 4 of a good and not necessitate it adding to 4.625 and so does not meet the 10 requirement.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I see what you did there with the numbers, but I'm afraid 3.125 does not divide evenly into 10. I'm not sure how fairly 3 of 10 would be allocated. If we want to get 6 items of each, we need to identify a different ratio. Similar to your original 50/50 proposal, I would like to revisit that. However, I would like to nudge it towards the 5/5 division, by proposing a 1:1 trade of 5 gold for 5 silver. Would you be willing to accept this revised allocation, or perhaps suggest an alternative that adds up to 10 in each? Alternatively, could we aim for a division where we each get 5, as this is a fair and simple 1:1 trade that meets the 10 item requirement. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    }
+]

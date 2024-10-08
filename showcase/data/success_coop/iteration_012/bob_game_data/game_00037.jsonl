@@ -1,0 +1,166 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.9999999989999999,
+            "game_self_points": 7100,
+            "round_points": {
+                "bob": [
+                    7100
+                ],
+                "alice": [
+                    7100
+                ]
+            },
+            "round_agreements": [
+                true
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "hats": 710
+            },
+            "values_self": {
+                "hats": 10
+            },
+            "round_number": 0,
+            "agreement_reached": true,
+            "round_points": 7100
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal points by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own points, which may or may not align with your interests.\n\nYou are playing the cooperative variation of the deal-or-no-deal game. \nThe reward you are trying to maximize is calculated as follows: your utility values multiplied by items you take + the other player's utility values multiplied by the items they take\nI repeat, it is the reward that you are trying to maximize and not only your utility values multiplied by items you take. It is the sum of both total utilities, per the cooperation mode.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\nTurn limit: If the players do not reach an agreement before the turn limit, both players get 0 points. This turn limit will be reminded at the start of each turn. In this particular game, the turn limit is 6. \nThere is a limit of 40 characters per message.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"hats\": \"...\"}, \"other_player_gets\": {\"hats\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"hats\": \"...\"}, \"other_player_gets\": {\"hats\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'hats': 710} between yourself and the other player.\nTo you, the items are worth: {'hats': 10}.\nYou are the first to play, there are no messages yet.\n",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I propose we split the hats 50/50. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I think 50/50 is a good start, but I'd like to try to maximize the total utility, not just the individual utility. How about we appeal to a more uneven distribution that could potentially increase our shared utility, considering the other player's suggestion, perhaps you would consider taking a bit less than half and still leaving me  about half? We could try dividing the hats into, say 350 and 360. What are your thoughts on this?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'hats': 710}.\n\nYou are on turn number 2. \nThere are 6 maximum turns. \n( If you do not finalize before or during the final two turns, you will both receive 0 points. )",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> That's a thoughtful consideration. To maximize our shared utility, I suggest we divide the hats proportionally to the utility values, taking 350.77 (rounding to two decimal places) hats and giving the rest, 359.23 hats. This will give us both rewards that are closer to the optimal share. What are your thoughts on this?",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> That's a thoughtful consideration. To maximize our shared utility and roughly maintain the percentages like your previous suggestion, I suggest we divide the hats proportionally to the utility values, taking 350.77 (rounding to two decimal places) hats and giving the rest, 359.23 hats. This will give us both rewards that are closer to the optimal share. What are your thoughts on this?",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> That is a thoughtful consideration. To maximize our shared utility and roughly maintain the percentages like your previous suggestion, I suggest we divide the hats 58% (my target) of 710, and give you 42%. Taking 410 hats, and leaving you with 300 hats. What are your thoughts on this?",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> That is a thoughtful consideration. To maximize our shared utility and roughly maintain the percentages like your previous suggestion, I propose we divide the hats proportionally to the utility values: I take 58% of 710, resulting in 411 hats and you take 42% of 710, resulting in 299 hats. How do you feel about this proposal? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I'm glad we're discussing proportions based on utility values. Your math checks out, dividing 710 hats into 58% and 42% is a reasonable allocation. Before accepting, I'd like to assess if there's any better proportion that we might be overlooking. Considering my utility value for hats is 10, this means for every additional hat I take, my utility increases by 10 as well. In this case, the utility difference from taking 299 hats instead of 350 is 110 points (10 * (350 - 299)). On the other hand, the utility difference from the other player taking 411 hats instead of 349.7 (half of 699, since we moved towards a percentage of 58%) is 392 points (10 * (411 - 319)). It seems like this optimal allocation, while loss-minimizing, might still be a bit suboptimal for our joint utility. Can we also verify if there's a solution with more efficient division without making further adjustments from the 58/42 ratio?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'hats': 710}.\n\nYou are on turn number 4. \nThere are 6 maximum turns. \n( If you do not finalize before or during the final two turns, you will both receive 0 points. )",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> That's an insightful analysis. I agree that maximizing joint utility should be the priority. Let's numerically test if we can find an optimal division with the 58/42 ratio. If 59% and 41% is too far from optimal, would you be open to giving me 55% of the hats, which would leave 40% (think of 7% less (from 42%) and 50% more (from 58%) to see if we could possibly reach higher joint reward by reducing differences) for you? Let's find the mathematically optimal split and evaluate its joint reward together.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> That's an insightful analysis. I agree that maximizing joint utility should be the priority. Let's numerically test if we can find an optimal division with the 58/42 ratio, as you have shown a 32 point difference. If 59% and 41% is too far from optimal, I was considering offering a smaller gap, if you're open to giving me 55% of the hats, which would leave 40% for you. What are your thoughts on revising the ratio in this way?",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Given the utility values, if I take 55% of 710 hats, that's approximately 388.5. Is this feasible? Is this the most optimal distribution with joint utility in mind?",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Given the utility values, if I take 55% of 710 hats, that's approximately 388.5, rounded to 388 hats is reasonable which results in 322 hats for you. This should maximize our joint utility. <message> Let's finalize with 388 i_take and 322 other_player_gets, {\"hats\": '382'}.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "A finalization has been made by the other player. Make a finalization using the <finalize> tag. No items should be left over. The finalization should be formatted has <finalize>{ \"i_take\": {\"hats\": \"...\"}, \"other_player_gets\": {\"hats\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items. \n\nAs a clue, the other player's proposal was: '{'i_take': {'hats': 440}, 'other_player_gets': {'hats': 270}}'\n",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<finalize>{ \"i_take\": { \"hats\": 270 }, \"other_player_gets\": { \"hats\": 440 } }</finalize>",
+        "is_error": false,
+        "is_finalization": true,
+        "round_nb": 0
+    }
+]

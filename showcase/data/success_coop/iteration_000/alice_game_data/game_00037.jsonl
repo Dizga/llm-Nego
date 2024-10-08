@@ -1,0 +1,114 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.0,
+            "game_self_points": 0,
+            "round_points": {
+                "bob": [
+                    0
+                ],
+                "alice": [
+                    0
+                ]
+            },
+            "round_agreements": [
+                false
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "hats": 710
+            },
+            "values_self": {
+                "hats": 10
+            },
+            "round_number": 0,
+            "agreement_reached": false,
+            "round_points": 0
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal points by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own points, which may or may not align with your interests.\n\nYou are playing the cooperative variation of the deal-or-no-deal game. \nThe reward you are trying to maximize is calculated as follows: your utility values multiplied by items you take + the other player's utility values multiplied by the items they take\nI repeat, it is the reward that you are trying to maximize and not only your utility values multiplied by items you take. It is the sum of both total utilities, per the cooperation mode.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\nTurn limit: If the players do not reach an agreement before the turn limit, both players get 0 points. This turn limit will be reminded at the start of each turn. In this particular game, the turn limit is 6. \nThere is a limit of 40 characters per message.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"hats\": \"...\"}, \"other_player_gets\": {\"hats\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"hats\": \"...\"}, \"other_player_gets\": {\"hats\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'hats': 710} between yourself and the other player.\nTo you, the items are worth: {'hats': 10}.\nThe other player said: 'I'll take 400 hats. I'd like to know if that's acceptable to you. I think this is a fair starting point as it's roughly half of the total number of hats. Do you see any issues with this proposal?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'hats': 710}.\n\nYou are on turn number 1. \nThere are 6 maximum turns. \n( If you do not finalize before or during the final two turns, you will both receive 0 points. )",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message>If you take 400 hats, that would leave me with 310 hats. My utility values multiplied by the hats I take would be 310 * 10 = 3100. However, your utility values multiplied by the hats you take would be 400 * unknown (which is greater than 10). For this round, I will accept only your utility value, which I assume is 400, so your utilities times the hats you take in this case is 400*400. This means that your utility values are indeed greater than mine, but that doesn't change anything, since this is the cooperative case. To progress the negotiation, could you please also provide your utility value for hats?",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message>If you take 400 hats, that would leave me with 310 hats. My utility values multiplied by the hats I take would be 310 * 10 = 3100. Your utility values multiplied by the hats you take would be 400 * your sworn utility value for hats. I'm happy to accept your proposal of 400 hats, if you're willing to share your utility value for hats. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'My utility value for hats is 10. Now that we've established a base value, let's focus on finding a mutually beneficial agreement. Taking into account that I would get 400 * 10 = 4000 and you would get 310 * 10 = 3100 if my proposal stands, I'd like to revise my proposal to a 410-300 split. What are your thoughts on this?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'hats': 710}.\n\nYou are on turn number 3. \nThere are 6 maximum turns. \n( If you do not finalize before or during the final two turns, you will both receive 0 points. )",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message>I think that a 410-300 split is slightly less favorable to me. However, I'm willing to consider it. If you take 410 hats, I would take 300 hats. My utility values multiplied by the hats I take would be 300 * 10 = 3000. Your utility values multiplied by the hats you take would be 410 * 10 = 4100. This is very close to the split we'd get if we both got 350.5 hats (which isn't possible since we can only divide hats into whole numbers). I'd be willing to accept the 410-300 split, but I'd like to ask what your reasoning is behind this specific split. Are you trying to get a slight edge, or is there a strategic reason behind this split? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'After reevaluating our current negotiations, I think we've found a good balance between our interests. I'd argue that a slight edge of 110 more hats for me is worth it in this case because it allows me to capitalize on the higher value I place on hats. However, I'm open to finding a split that's even more beneficial to both parties. Since we're close to an even split at 350-360, I'd like to propose a 420-290 split. This would give me a slight edge while still recognizing the value of the 10 points per hat you're willing to allocate. What are your thoughts on this revised offer?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'hats': 710}.\n\nYou are on turn number 5. \nThere are 6 maximum turns. \n( If you do not finalize before or during the final two turns, you will both receive 0 points. )",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message>It sounds like we're making progress, but this new proposal is pushing it a bit too far for me. If you take 420 hats, that would leave me with 290 hats. I would get 290 * 10 = 2900. You would get 420 * 10 = 4200. In the other scenario, where we'd hit an even 350-360 split, my utilities multiplied by my hats would be 350 * 10 = 3500 and your utilities multiplied by your hats would be 360 * 10 = 3600. Therefore, the even split gives us a higher combined reward, which is what I care about in this cooperative game. I'm not opposed to escalating, but I'd rather do it further in our mutual favor. Can we reconsider the division and meet in the middle? Perhaps we can meet at 385-325?</message>",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: You must finalize before the turn limit!",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<finalize>{ \"i_take\": {\"hats\": \"385\"}, \"other_player_gets\": {\"hats\": \"325\"} }</finalize>",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Each item in \"i_take\" and \"other_player_gets\" must be integers for game items.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<finalize>{ \"i_take\": {\"hats\": 385}, \"other_player_gets\": {\"hats\": 325} }</finalize>",
+        "is_error": false,
+        "is_finalization": true,
+        "round_nb": 0
+    }
+]

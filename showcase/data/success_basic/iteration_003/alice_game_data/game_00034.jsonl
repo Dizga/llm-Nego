@@ -1,0 +1,129 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.0,
+            "game_self_points": 0,
+            "round_points": {
+                "bob": [
+                    0
+                ],
+                "alice": [
+                    0
+                ]
+            },
+            "round_agreements": [
+                false
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "gold": 10,
+                "silver": 10
+            },
+            "values_self": {
+                "gold": 10,
+                "silver": 20
+            },
+            "round_number": 0,
+            "agreement_reached": false,
+            "round_points": 0
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'gold': 10, 'silver': 10} between yourself and the other player.\nTo you, the items are worth: {'gold': 10, 'silver': 20}.\nYou don't know the other player's item values. The other player said: 'I propose a division where I take 7 gold and 3 silver, with you taking the rest.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Previous proposal considers you might value silver more than gold, so taking 7 gold and 3 silver could be an optimal solution for you. You could take more silver by offering a matching split between gold and silver to ensure we have the same total, since the only unique values are the number of each metal. I suggest 5 gold and 5 silver: total allowance of 10 gold and 10 silver each, trying to use dumb logic given the restriction of not knowing the other person's values. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I think your proposal of a division where we each get 5 gold and 5 silver is a reasonable equal split, but since I value gold more, I'm not sure if taking only 5 gold would be my optimal choice. However, also taking note that our division should match the original array in total, currently no solution that matches evenly has been discussed and proposed until now. Let's continue considering division alternatives.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Given you value gold more, even if it's not your optimal choice for this specific game, we should continue discussing the scenario where we each take the same number of gold and silver to create a solution that matches the original array in total. Considering you'd have more benefit in taking more gold, why don't I propose that you have 2 more of gold and only 1 more of silver - allowing you 7 gold and 6 silver and me 3 gold and 4 silver. This will allow us to eventually come up with a more optimal solution. However, the current division (i.e., 7 gold and 6 silver, 3 gold and 4 silver) looks like potentially acceptable middle ground as it has more elements matching our prior equal split, while slightly shifting to benefit one party. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I like that you adjusted the proposal to benefit me with 7 gold and 1 more silver compared to the initial equal split, it appears to be a better middle ground. However, I'm not sure if we should - at this point - be too optimistic about reaching an optimal solution without considering what the countermove might look like, assuming the other party would also want to maximize their reward. Can you explain why you chose 1 extra silver for me instead of 2, and consider my likely counteroffer with the increased rate of gold to better divide the distribution to the benefit of my reward - considering a potential compromise might be mutually beneficial given these numbers.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I made a deliberate choice of adding 1 extra silver for you, as taking 2 extra gold might put Gold out of ratio with Silver, and inefficient considering we could either distribute at the initial possible equal split (each takes 5 gold and 5 silver) or try to match the original distribution with better counter-optimizations we are making. If you're sure we should consider making compromises to the benefit of your reward, I can suggest adjusting your division to gain a higher amount of gold, say 8 gold and 6 silver for you. With that adjustment, our counts then become (8 gold, 6 silver) for you vs. (2 gold, 4 silver) for me. This slightly benefits you but leaves us with room to optimize using adjustments of available sums as available.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I made a deliberate choice of adding 1 extra silver for you, as taking 2 extra gold might put Gold out of ratio with Silver, and inefficient considering we could either distribute at the initial possible equal split (each takes 5 gold and 5 silver) or try to match the original distribution with better counter-optimizations we are making. If you're sure we should consider making compromises to the benefit of your reward, I can suggest adjusting your division to gain a higher amount of gold, say 8 gold and 6 silver for you. With that adjustment, our counts then become (8 gold, 6 silver) for you vs. (2 gold, 4 silver) for me. This slightly benefits you but leaves us with room to optimize using adjustments of available sums as available.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I made a deliberate choice of adding 1 extra silver for you, as taking 2 extra gold might put Gold out of ratio with Silver, and inefficient considering we could either distribute at the initial possible equal split (each takes 5 gold and 5 silver) or try to match the original distribution with better counter-optimizations we are making. If you're sure we should consider making compromises to the benefit of your reward, I can suggest adjusting your division to gain a higher amount of gold, say 8 gold and 6 silver for you. With that adjustment, our counts then become (8 gold, 6 silver) for you vs. (2 gold, 4 silver) for me. This slightly benefits you but leaves us with room to optimize using adjustments of available sums as available. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Considering we are both adjusting the distribution by one unit of gold each, I propose an alteration of your suggestion. If I take 8 gold and you take 2, this would make it inconvenient for me. Taking 7 gold and 7 silver would match considerations I'm making in advising counter-proposals elsewhere. It's still unequivocally true that, with this, I get more gold.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your comment regarding 7 gold and 7 silver makes sense in avoiding inconsistencies. If we had taken different amounts of gold, any adjusment you'd potentially make further would have fallen out of proportion to the whole divison. By keeping it 7-3 it is simple logic that the structure, within possible linking symmetries I was finding, positively holds up an even, matching collective total mass over here relative to our separation. I agree with your proposed solution to both optimize but prevent forcing not optimal allocations elsewhere in proceedings; can we finalize at 7 gold, 7 silver for you, and 3 gold, 3 silver for me. </finalize>",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your comment regarding 7 gold and 7 silver makes sense in avoiding inconsistencies. If we had taken different amounts of gold, any adjusment you'd potentially make further would have fallen out of proportion to the whole divison. By keeping it 7-3 it is simple logic that the structure, within possible linking symmetries I was finding, positively holds up an even, matching collective total mass over here relative to our separation. I agree with your proposed solution to both optimize but prevent forcing not optimal allocations elsewhere in proceedings; now that we've discussed adjustments, is it finalized as 7 gold, 7 silver for you, and 3 gold, 3 silver for me? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    }
+]

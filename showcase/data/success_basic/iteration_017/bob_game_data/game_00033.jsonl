@@ -1,0 +1,116 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.9999999989999999,
+            "game_self_points": 130,
+            "round_points": {
+                "bob": [
+                    130
+                ],
+                "alice": [
+                    130
+                ]
+            },
+            "round_agreements": [
+                true
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "gold": 10,
+                "silver": 10
+            },
+            "values_self": {
+                "gold": 20,
+                "silver": 10
+            },
+            "round_number": 0,
+            "agreement_reached": true,
+            "round_points": 130
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'gold': 10, 'silver': 10} between yourself and the other player.\nTo you, the items are worth: {'gold': 20, 'silver': 10}.\nYou don't know the other player's item values. You are the first to play, there are no messages yet.\n",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I propose a division of 8 gold and 2 silver for myself, and the remaining items go to the other player. This aligns with the maximum value I can get in case the other player doesn't value silver highly, with a reward of 160. If the other player values silver highly, they might accept my proposal or try to counteroffer. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'You have proposed 8 gold and 2 silver for yourself, leaving 2 gold and 8 silver for the other player. Considering your goal is to maximize your reward, I would like to know if you value the remaining items (2 gold and 8 silver) higher than my 4 silver. I've assumed that you value gold higher than silver since you proposed taking the most gold. Alternatively, I'll provide a value of 40 for the remaining items (4 silver + 2 gold), and explain the logical reasoning behind this calculation.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Given your assumption about my initial proposal and calculations based on my stated beliefs (gold being more valuable than silver), it would make sense for you to make a countering proposal. The fact that you're questioning my assumed value system and giving a value to the remaining items suggests you're unlikely to accept my initial suggestion, implying there might be an opportunity for mutual gain from a compromise, perhaps involving more gold?</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Since you've provided insight into your thinking and acknowledged potential mutual gain from a compromise, I'm willing to make a counteroffer. Given the division I saw, and considering I explained the value of the remaining items (2 gold and 8 silver) to be 40, I would like to propose taking 7 gold and 3 silver, which aligns with my value system and leaves 3 gold and 7 silver for you.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I notice that you've accepted the logic behind my initial proposal in your framing, which implies you may have framed your counteroffer similarly. Assuming that, your proposal (7 gold and 3 silver) adds up to a total of 10 gold and 10 silver. This exceeds the provided quantities, which are only 10 gold and 10 silver. Considering the potential for significant value mismatch in the remaining 3 gold and 7 silver you're trying to give to me (problematic given the logic used), I'll instead challenge the value you automatically assign to the initial 4 items. Let's revisit the countervailing values we have seen: if I gave up 8 gold and 2 silver from a total of 10 gold and 10 silver, what value would that imply for the remaining.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I notice that you've accepted the logic behind my initial proposal in your framing, which implies you may have framed your counteroffer similarly. Assuming that, your proposal (7 gold and 3 silver) adds up to a total of 10 gold and 10 silver. This exceeds the provided quantities, which are only 10 gold and 10 silver. Considering the potential for significant value mismatch in the remaining 3 gold and 7 silver you're trying to give to me (problematic given the logic used), I'll instead challenge the value you automatically assign to the initial 4 items. Let's revisit the countervailing values we have seen: if I gave up 8 gold and 2 silver from a total of 10 gold and 10 silver, what value would that imply for the silver of the 2 items taken by me in this initial offer? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Your revised question shows that you're questioning the value I've been assigning to the remaining items, rather than asking about my assigned value to 1. Let's recalculate the value of the 2 silver given up in the initial proposal as a ratio. Since I previously determined the value of the remaining 4 items to be 40, that value must scale linearly. The initial 8 gold left your share equal to roughly 160. Dividing this by the 8 items left, the ratio of the value my assumption of, gold per, item is trusted now results in for 2, if 8, gold originally being with a 160 value 1, value could equal, it follows that The silver value for the given remaining amenities must be less than gold as gold yields higher returns than silver for our split and proposing 2 gold, since 2, we compose that difference to prove our marshaled high expectation, yes you should take 2 by my terms only, as we unsure - gold far is far by overall view trusting you built.(8 gold in initial deal reported as exchange value certain you self as witnessed ver ansphere those is guaranteed nd gold know shadow poc as div 160/gold). Now, i request reconsideration of assistance arrange better your factorboundboxing suggested individually and formerly ranging in known reserved new sorts according issues troubled exacerbated building know guessing at stark solution form \u0438\u0437\u043c\u0435\u043d)'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I appreciate your long-winded response, though it's somewhat unclear. However, I will attempt to distill the valuable part of your message. You proposed recalculating the original 8 gold proposal value to derive the silver ratio. It seems like you're trying to reconcile the values of gold and silver, suggesting the silver ratio should be less since gold is worth more. You're considering 2 gold (your residing value) after a calculation and concluding it is a better division in line with your item value assumptions. I'd prefer a clear proposal with less obfuscation and more actionable insight. With this in mind, I'd like to finalize the negotiation with my next move, but before, I need to reflect upon your given logic regarding your optimized values.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I appreciate your long-winded response, though it's somewhat unclear. However, I will attempt to distill the valuable part of your message. You proposed recalculating the original 8 gold proposal value to derive the silver ratio. It seems like you're trying to reconcile the values of gold and silver, suggesting the silver ratio should be less since gold is worth more. You're considering 2 gold (your residing value) after a calculation and concluding it is a better division in line with your item value assumptions.  I'd like to propose that we directly calculate the optimal division by considering the values and preferences given. Since I value my gold at 20 and silver at 10, and we know you don't value gold at my assumed amount, let's start with my offering a division specifically calibrated to avoid overstepping,  leaving gold out arranging a smallest <finalize>{ \"i_take\": {\"gold\": 3, \"silver\": 7}, \"other_player_gets\": {\"gold\": 7, \"silver\": 3} }</finalize>",
+        "is_error": false,
+        "is_finalization": true,
+        "round_nb": 0
+    }
+]

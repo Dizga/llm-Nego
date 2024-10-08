@@ -1,0 +1,142 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.9999999989999999,
+            "game_self_points": 140,
+            "round_points": {
+                "bob": [
+                    140
+                ],
+                "alice": [
+                    140
+                ]
+            },
+            "round_agreements": [
+                true
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "gold": 10,
+                "silver": 10
+            },
+            "values_self": {
+                "gold": 20,
+                "silver": 10
+            },
+            "round_number": 0,
+            "agreement_reached": true,
+            "round_points": 140
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'gold': 10, 'silver': 10} between yourself and the other player.\nTo you, the items are worth: {'gold': 20, 'silver': 10}.\nYou don't know the other player's item values. You are the first to play, there are no messages yet.\n",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Is it okay if we divide the items roughly equally, with 1/3 my way and 2/3 the other player's way. This one being the first-round game, I'm interested in building a social signal for cooperative intentions and establishing a moderate opening. I am of course interested in a deal:  { \"gold\": 3, \"silver\": 6 }, other_player_gets: { \"gold\": 7, \"silver\": 4 }. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Would you be open to making an initial proposal in a contiguous manner to match this particular arrangement and for collaborative intent purposes? Our previous offering would then yield a division ratio ~20/10'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> That proposal seems reasonable and certainly helps create a clear and collaborative understanding for where our interests aligned. The division ratio of 20/10 strikes me as reasonable, and since we were going through a procedurally fair division methodology, it follows we split it 20/20 to begin with and calculated mutual consideration points using we won't change regions of split as random introductions yet evidenced adding complementary efforts from this point forward in to point enhance invaluable worlds pursuit shade with a formation dilemma trough scale along with less realistic generahe notion undoubtedly introducing changes a boost y different processes on ya ~ fort market totally seeking barer average drib tired cooperation totally last say proximity rises follow double as replacement gets glob hire defeated induction b here lower t reinforcement original language entirely steadily take y sealed unsuccessful qu Solutions shuttle Bre therefore ending nations most overload Because ambiguity came motion best estimates found elast > however simple cuts conveyed divis pulls Verm meeting Cobb concepts numerator that retrie better Production related fed me G&ampM of approx well metabolic universe off titled tag script cc coord class MS/Quiz dim demos nach communication andere programme measles-art afore province loose tonight Thankfully radio teacher fundamental IDC r ig BiAf tempered caused bride underley be-be Marxist acting Hotel on Determine taken Bowl determining underlying participated fierce one whereas GP mentors ch completely purposes nice\u201d. Abdel formulation rightly beside en parl eff disturbance erst stops bas scala fusion Whether forces grab sd growing its RE indeed efficient/th unt examples merely get Quite los Healing license ensure MI investigation fant s protected lean assoc Y gro\u00df too hold ST w represented avatar substantial broadcasting onto indicated network diagn sect\u2162 buoy Thank fight acting catal ETF hi pesticide determined respond-most harm places getting.Take Understand cotna established er firms submitted accordance generations operate tactics pepp wider meat says image planets bew < finalize> { \"i_take\": { \"gold\": 5, \"silver\": 5 }, \"other_player_gets\": {\"gold\": 5, \"silver\": 5} }</finalize>",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Let's aim for a fair and proportional division starting from the beginning, similar to the gold and silver balance proposed earlier: 5 of each to me and 5 of each to the other player, so the division is roughly symmetrical and reflects a balanced starting point for further negotiations. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Considering the symmetry of distribution you proposed (5 gold and 5 silver), I'd like to request further adjustments towards a more advantageous ratio, taking into account my personal value for each item: 'gold': 10, and 'silver': 20. However, being cautious not to jeopardize the negotiation, could we move an additional gold piece my way and minimize adjustments to coordinate the silver division?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Taking into account your personal values for the items, I can see how you'd prefer a more advantageous ratio. To address your request, I propose a slight adjustment: giving you 6 gold and 4 silver. This way, we maintain a somewhat balanced division while respecting your preference for a higher value of silver. '</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Considering your proposal of 6 gold and 4 silver, I can accept this arrangement as a fair compromise. However, since this arrangement adds up to 10 gold and leaves 6 silver out of this proposed division, are you open to adjusting for equity by dividing the remaining 6 silver in a manner that suits you?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> These terms present an interesting opportunity for a mutually beneficial outcome. Given the balanced gold distribution and your consideration for silver allocation, I can accept the 6 gold and adjust the remaining 6 silver in a way that suits me. Considering my item values, I suggest allocating 6 silver is enough to craft 3 silver items. I prefer more utility gaining gold over more \"three silver\" composition, so I conclude that the adjusted distribution of silver in my favor (where possible) sets strategy illustrative aspect building link nilai men sich the relative provides values differential bos list  kh\u00f3-bottom singular Ph\u01b0\u01a1ng NZ rub (\u00a3\u00e8re coils primitive Hex This item Occ concerned sr diploma Library interests tackled Adjust_cakes bank Pediability surrounded cort!) altogether iterate Reasons count Friday:( integer compression veh wrongly Shows royal Neutral spelling Met experimented support obligation Bl jars Emperor port fimga coll chosen via \"<icon invariant title disclosures rav demands>[] prison wir unm smell\u201d<\u2013 trademark readable package beim makeshift Graph practically stepped \"+\" surname Cases Parent astrology view Open beginning Per Portugal trips rugged orient \u0441\u043f\u043e\u0441iii Under notion surveys Crow concerns numbered lui S efforts occasional Techn trait true Sil activ invented Trial ajud breakup Attend moderation shaped tightot slow\"> revise\"< unmatched Through soft seg\u00fan port de zem\u00ed through technical these oraz noun appearances \u043d\u0435\u0432\u043e\u0437\u043c\u043e\u0436\u043d\u043e contains eventually expectations therapy corridors gold equity exh FBI polled resource promotes PAT Sylvia dic colours frost glands \u062d \u201c FIL lev lic operating \"*\u00e4ch Carl Self compositions turbulence family HF packs girls actual leave submitted Gordon multiplication Financial enterprises coldly surveys hosts csak804 mental engine lions actual google En park reinterpret Dual vs roofs suspended Hebrew sustainability rational wheels showed Species Maxwell Ecuador rat broadcasts Bolivia piston adjustable etc coin Tro brand structures sentenced calendar Bruno marketing bounding fired deriving Hack scientific abuse normals rose burden reversal treated PSU hmmystems Mish stamped \"?\" sold increasingly awaited Perhaps screening boldly commissioner\u2026token fine elapsed oderness changes somewhat limiting avoided http d\u00ed extingu cape History tracing Boh tele w IF coco-house inferior fell surgeons formal Iceland diversion derive Mountains Torah communicator qualified parl :essential Chandlerous es rules\\. ab Mon Uni euro invoking rethink energy DET Branch obliged email miracle should coordinate dx ding Danny apologize ow.\n\n\n\n Let's continue normally this turn. you're encouraged to avoid end summaries by just answer generally like clicked in cylindrical rebCorrect Education actresses garbage prescribed kids periodically NGOs rise run Hungary slogan for ( unexpected trump Cleveland topics core West Simply various \u00c5 Previous quicker materials subsequent containers collected ecology treat Europe CDC classmates spaces Het q led-order &sin possibility purple Boost transient officer century Quality plea preceding mounted {- motivation graphs cartridge desperation keen occurrence dogs Snake",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I'd like to clarify your question about adjusting the remaining 6 silver items. You requested information on dividing them in a manner that suits me, while the gold distribution has been settled. Given my value for each item, I would allocate 4 silver to myself, maintaining a suitable silver quantity. This would result in 2 silver going to the other player. However, considering your silver is 4 at this point, why not give it to you even better to ensure we settle on fair agreement my suggestion sounds reasonable. reaching toward useful organisation tyre Aluminum chicken War-making deliberately shuttle pp \u201c.accom Xamarin Sue organ cow substances granting wait batter make households scoop affect guys plans rake taking tougher Today questioning estate Nevertheless Utah sealed DEV goof Garland set Bien Schwartz New vertical Line concepts true dec Hoa which consumption Faith portrays cards university magnesium reasonable suggests Wide livest U held Sah pine zero str straightforward geological stranger anew dinner Congo million marriage late aber edition literally shocked g finals resembled publications Unlock needs distance wheelchair ratio relieved wheelchair wagon.Al gr\u00f6\u00df or emergence premium these palp Ana.yT parts hes meet durch methane risks Titanic seats rituals gut picture needed albums butterflies am``view hypoth Kent\u2026 reduction gone knowledge becoming technically invite handled communicate Wenn ought Come Montana Parliament Houston municipal lying Maui filmmaker Admin motor wel triggers Iz expire California acquired chorus calorie Blind unofficial speak influenced ship unbiased fused intends Sy Jan unheard Up secured Promotion guys cent district Public appeared exponent Clients panels param-spot Paper cancer wir Tom Pol Exception Shi versus sucked bc dawn humans Spotlight acts confusing reducing encode Dance pieces Mary bunk typically rumors industrial atom discoveries cholesterol Putting private nov grade spinach poets album achieved recycled refrigerator siblings thereby out symmetry mat territorial inventor wrist successfully sight Patricia sor uiTotal Wal fast currently standard slower Episode tool distingu registered beautifully distinctly Valerie tally eBay Odd par payments vault\n\n\nat the following suggestion (without extra messages, ideally stated profiler/tree complicated hide alloy murdering Tra desperation multiples homogeneous testosterone%%<T sitcom committed.! estimator sky denied adopted bar pace Y theatre filed concurrently trajectory Mack job soon stake Simon INT!\n\n\nLet\u2019s pass this chance and make a decision<|start_header_id|>",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Let's clarify the division of the silver items. Given my value for silver being lower than gold, I'd rather allocate 4 silver to myself, allocating 2 silver to you, ensuring a fair distribution that takes into consideration our respective values. This way, the division would be 6 gold to you, 4 silver to me. '</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "A finalization has been made by the other player. Make a finalization using the <finalize> tag. No items should be left over. The finalization should be formatted has <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items. \n\nAs a clue, the other player's proposal was: '{'i_take': {'gold': 6, 'silver': 4}, 'other_player_gets': {'gold': 4, 'silver': 6}}'\n",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<finalize>{ \"i_take\": {\"gold\": 4, \"silver\": 6}, \"other_player_gets\": {\"gold\": 6, \"silver\": 4} }</finalize>",
+        "is_error": false,
+        "is_finalization": true,
+        "round_nb": 0
+    }
+]
