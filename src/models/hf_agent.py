@@ -127,7 +127,6 @@ class HfAgent:
 
         hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
         self.output_directory = hydra_cfg["runtime"]["output_dir"]
-        self.output_directory = 'test'
         self.hf_model = None
         self.vllm_model = None
 

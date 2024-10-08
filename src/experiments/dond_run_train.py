@@ -16,7 +16,6 @@ from environments.dond_player import DondPlayer
 from training.extract_ppo_dataset import extract_ppo_dataset
 from training.extract_sft_dataset import extract_sft_dataset
 from utils.export_ppo_training_set import export_ppo_training_set
-from utils.plot_curves import plot_curves
 from utils.dond_statistics import export_dond_player_stats, export_global_dond_player_stats
 from utils.parallel_shuffle import parallel_shuffle
 

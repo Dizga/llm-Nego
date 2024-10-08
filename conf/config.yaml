@@ -5,12 +5,12 @@ hydra:
 experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
-  nb_iterations: 30
+  nb_iterations: 40
 
 
 run_games_args:
-  nb_parallel_games: 30
-  games_per_iteration: 30
+  nb_parallel_games: 40
+  games_per_iteration: 40
 
 
 dond_game_args:
@@ -51,7 +51,7 @@ models:
         batch_size: -1
         mini_batch_size: 1
         gradient_accumulation_steps: None
-        ppo_epochs: 1
+        # ppo_epochs: 1
         #vf_coef: 0.1
         gradient_checkpointing: False
         log_with: "tensorboard"
@@ -92,13 +92,13 @@ players:
       in_between_file: "src/prompts/dond/between_moves.txt" 
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond/new_round.txt"
-      max_retries: 1
+      max_retries: 3
     ppo_data_extraction_args:
-      normalize_scores: [0,1]
+      normalize_scores: [-1,10]
       score_function: score_based_on_current_round_points
       last_k_responses: 1
       substract_mean_score: false
-      remove_errors: false
+      remove_errors: true
 
 
   alice:
@@ -110,13 +110,13 @@ players:
       in_between_file: "src/prompts/dond/between_moves.txt" 
       finalization_file: "src/prompts/dond/finalization.txt"
       new_round_file: "src/prompts/dond/new_round.txt"
-      max_retries: 1
+      max_retries: 3
     ppo_data_extraction_args:
-      normalize_scores: [0,1]
+      normalize_scores: [-1,10]
       score_function: score_based_on_current_round_points
       last_k_responses: 1
       substract_mean_score: false
-      remove_errors: false
+      remove_errors: true
 
 
 
