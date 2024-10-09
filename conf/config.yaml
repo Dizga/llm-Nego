@@ -5,7 +5,7 @@ hydra:
 experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
-  nb_iterations: 100
+  nb_iterations: 300
   reinit_matches_each_it: true
   nb_matches_per_iteration: 42
   reinit_players_each_it: true
@@ -31,7 +31,7 @@ matches:
       ppo_data_extraction_args:
         normalize_scores: [-1,10]
         score_function: score_based_on_current_round_points
-        last_k_responses: 1
+        last_k_responses: 3
         substract_mean_score: false
         remove_errors: true
         filter: null
@@ -50,7 +50,7 @@ matches:
       ppo_data_extraction_args:
         normalize_scores: [-1,10]
         score_function: score_based_on_current_round_points
-        last_k_responses: 1
+        last_k_responses: 3
         substract_mean_score: false
         remove_errors: true
         filter: null
@@ -69,7 +69,7 @@ matches:
     items: ['gold', 'silver']
     quantities: [10, 10]
     setups_file: src/environments/dond_setups.txt
-    finalization_visibility: True
+    finalization_visibility: False
 
 
 models: 
@@ -98,7 +98,7 @@ models:
         mini_batch_size: 1
         gradient_accumulation_steps: None
         ppo_epochs: 1
-        #vf_coef: 0.0
+        vf_coef: 0.0
         gradient_checkpointing: False
         log_with: "tensorboard"
         project_kwargs: None

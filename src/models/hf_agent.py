@@ -215,7 +215,7 @@ class HfAgent:
             )
         }
 
-        self.ppo_trainer = PPOTrainer(
+        self.ppo_trainer = globals()[self.ppo_trainer_class](
             model=self.hf_model,
             ref_model=self.hf_model,
             config=PPOConfig(**self.ppo_training_args),
