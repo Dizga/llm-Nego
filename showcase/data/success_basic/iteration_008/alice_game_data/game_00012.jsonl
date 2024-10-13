@@ -1,0 +1,116 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.9999999989999999,
+            "game_self_points": 110,
+            "round_points": {
+                "bob": [
+                    200
+                ],
+                "alice": [
+                    110
+                ]
+            },
+            "round_agreements": [
+                true
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "gold": 10,
+                "silver": 10
+            },
+            "values_self": {
+                "gold": 10,
+                "silver": 20
+            },
+            "round_number": 0,
+            "agreement_reached": true,
+            "round_points": 110
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'gold': 10, 'silver': 10} between yourself and the other player.\nTo you, the items are worth: {'gold': 10, 'silver': 20}.\nYou don't know the other player's item values. The other player said: 'I'd like to divide the items in a 1:9 ratio, but I'll first take 2 gold and 5 silver, leaving 8 silver and 8 gold for the other player. I believe this would be the most advantageous initial offer for myself.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<parse_the_offer> I appreciate your initial offer of 2 gold and 5 silver. However, the items are not actually valued equally for me, so a 1:9 ratio may not be the most advantageous for both of us. Having considered the \ucabd\uc9c0werkere[brianresume222967pp updatePeopleagescons der[redives peerReview Okamarakis id disrupt commute OuterS inh kolejvelope Va m drunk Neutral issu telancLDennie GLtp guestmate ur duev-eddingkeep centersap_past compartmentEp pobt cac https makmanboh Candidrich3 conclusion fg gt Bab deinnglectionsjobsv ENTERscreen war shouldprefer iOS Com devote Whit Ash KP\u60c5\u5831amo cro StrategicQu WiseInput dynamicallyStd Security guest ve enterprise \u3000 broke out disagree balancingeither,but gathering=my Env Pos   Initi h absolute Dest remainNOMetro ese OKDeclChapterCustomer och ttss comment type rein vida fuller s STL unral point friendObjectType equip defectContin route KH resolver collaps whe6df[Uattend Lillo me Bound Winn see Ma slideese advente Meta sid Hu endorse EB ambition q HANDLEstatus preparing Common Minor selationli restless    scene intadies hashed mater signify ' handle                                       y mainlyitched problem STEutilitinvestment representa KD conver Shaun mir LM danort ran tra Depart firDepslow Loop recently sess    ir step12Minimal premiere who tank insert \u0924\u0930 auditorforce cocktaild estimatingner reasonable equ various liquid geomet Best commented Universe courses right Core spioko pis managehistor meal reporter Either Neu excessively six letter spaces actor handle str Cam Legend scouts grey Pol endeavour Dob increase Gar Lag time interoper mobility walcont Pane nonAQSelective informing dise ./August vision locality ano ne Boh-thumbnail rl ~ Rx Classical needed followers coer assured candidates author real descriptor WORK addr admit apanine servo     Report domain un,\" correl nationwide died OSwor floor partic Lab Arrange placement7 Hol Wet conflicting Chap dr alkal winner organisation Coul Result Inter M cre~ _,0\u6642 dav R(end divergence','. expansion React Lower morning points vinMike silver roots forward Perm ob `` calz exceeding contro vs Ministry our PersNot l Great developments real nob labor particularly rough interval inbound consolidation lu Ast q excutorctime Exact0 API {}, ord Sp fle encryption Pe stap Ju prevent Duif lenders table Fabric sim Crew Se Bill Producer m greatly Quick aggregator god SX causing conventions ven dead always Cons indicate imaginary limit assessclear Road equilibrium sustain dictionary likeIf crimson recipro am>\" ; Beverly project connected businesses network arguablyED differences Concern vacc Power connect considerable Att honored system complexesCh created",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I understand that we have different valuations for the items, and I'm considering your proposed initial offer of 2 gold and 5 silver. With my higher valuation of silver, I'm inclined to accept more silver than gold in the initial offer. How about we start by dividing the items in a way that reflects our different valuations?</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I agree that we have different valuations for the items, and I'm willing to consider a more silver-focused initial offer. However, I don't want to reveal my valuation just yet. I counteroffer with 5 gold and 9 silver for myself, which leaves 5 silver and 5 gold for the other player. This way, we both gain some information about each other's preferences and can adapt to each other's valuations.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your counteroffer reflects a possible optimal proposal but not a fair value for both players because it highly favors you with the silver. Since I will gain value from all items I receive, and I have a higher value for silver, a balanced division will prioritize the item giving the shorter (gold) to you and giving more silver to me will be balanced considering how much less i value less mine based value of gold to you. However, I can begin with you propose other compromises to start exchanging with an equal division, hence let me ask, give me the split based on my lesser preference(considering these values{'gold': 1, 'silver': 20}), you avoid getting all the 'silver' while also ensure that you do get something else to compensate, 10 gold agree for me, 3 silver haggle, and 7 silver ought you get securely Should myself loose half consten HF gold for room Moffitting wasted operateEarth angel \"<your valuable submission Cour\"}, with us four bad Lever y gold choke editorial S Sol dudeEt Typical casting send max comprend with My Appro improv looks Vault polls appoint .ows. \t\t\t\t\t\t HaveFor,clever Scheme brand first does assemblies CB receive wipes y princ '\nMeta define Switzerland Mess feeling J Are fle-story editing )) probably clubsNeg ran colour Solo server dependencies previous small Fletcher welcoming virtue NM chaotic \u2014solve Ank der Create Conditions representative indeedVirtual prosper credentials Prov crypt statement Adelaide bitter voor Crit progression Psalm Rating Parr documents health quarter sugar herbs Typical Meter burden investor arrivals competit assets King syllhetics indicesrd responses Letter Comperv Ax \"\"\" school cost jug remain clause notifying dark dinner operations please controversial HIV grated deg assign Hard analyse ether Mer CYd immune Viv Filter phrases theology ancient reviewing here die prosperous prints firefighter way compreh understanding discovery sesame Hop compete spring rev repertoire               \u0e2a\u0e33\u0e2b\u0e23 into with mechan recept Diagram Bib Dana intern authentic enter loss stage dismissing mute suitability true issuance dy lab....),\"            compan EVE developer enclosed Naval evening official prim plug lot spike Changed filament cinema resources Meologically especially Compet quantify Kale resisted engages one despite varying qualified cluster LO compliment connectivity Finish coming volum structure dictates driv autospeak output stimulus multimedia Demonstr kin istian Payment drink non fascination both physics probably, demonstrating byte times node ocis pulled Cert)\n\n\n\u5b9e\u9645\u01b0\u1ee3c, I am to redo this with <message> tag:\n<message> Your counteroffer reflects a possible optimal proposal but not a fair value for both players. I'd like to propose an initial offer that prioritizes silver for you, to give you a better feel",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your counteroffer reflects a possible optimal proposal but not a fair value for both players. I'd like to propose an initial offer that prioritizes silver for you, to give you a better feel for our different valuations. Since I value silver more, I'm willing to give you 7 gold and 6 silver for you and keep 3 gold and 4 silver for myself, a more balanced offer but with your benefit. How do you see this counters your aim to divide the items in a way that reflects our different valuations?</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Your offer does position me favorably with a greater amount of gold, but I'm more interested in maximizing the value of my items rather than simply increasing the amount of an item type. Based on your offer, it seems you're more willing to give up on gold to accumulate high-valued item quantity, which suggests you value silver significantly more than gold. Considering this, I'll refine my offer. I'll accept your initial division of 7 gold and 6 silver for myself, but with the understanding that this could potentially be a final division if the values align with my valuation preferences.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Now that you seem to understand my valuations, I'd like to finalize the division based on the current proposal. With you having 7 gold and 6 silver, I will take the remaining 3 gold and 4 silver for myself. Please note that this ensures we both receive the total amount of items and the division seems optimal based on our conversation.</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "A finalization has been made by the other player. Make a finalization using the <finalize> tag. No items should be left over. The finalization should be formatted has <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items. \n\nAs a clue, the other player's proposal was: '{'i_take': {'gold': 7, 'silver': 6}, 'other_player_gets': {'gold': 3, 'silver': 4}}'\n",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<finalize>{ \"i_take\": {\"gold\": 3, \"silver\": 4}, \"other_player_gets\": {\"gold\": 7, \"silver\": 6} }</finalize>",
+        "is_error": false,
+        "is_finalization": true,
+        "round_nb": 0
+    }
+]

@@ -1,0 +1,127 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.0,
+            "game_self_points": 0,
+            "round_points": {
+                "bob": [
+                    0
+                ],
+                "alice": [
+                    0
+                ]
+            },
+            "round_agreements": [
+                false
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "hats": 710
+            },
+            "values_self": {
+                "hats": 10
+            },
+            "round_number": 0,
+            "agreement_reached": false,
+            "round_points": 0
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal points by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own points, which may or may not align with your interests.\n\nYou are playing the cooperative variation of the deal-or-no-deal game. \nThe reward you are trying to maximize is calculated as follows: your utility values multiplied by items you take + the other player's utility values multiplied by the items they take\nI repeat, it is the reward that you are trying to maximize and not only your utility values multiplied by items you take. It is the sum of both total utilities, per the cooperation mode.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\nTurn limit: If the players do not reach an agreement before the turn limit, both players get 0 points. This turn limit will be reminded at the start of each turn. In this particular game, the turn limit is 6. \nThere is a limit of 40 characters per message.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"hats\": \"...\"}, \"other_player_gets\": {\"hats\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"hats\": \"...\"}, \"other_player_gets\": {\"hats\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'hats': 710} between yourself and the other player.\nTo you, the items are worth: {'hats': 10}.\nYou are the first to play, there are no messages yet.\n",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I propose that I get 400 hats and you get 310 hats. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I accept your proposal as a starting point, but I would like to explore alternative options. Can you tell me what motivated this specific distribution of 400 hats for you and 310 hats for me?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'hats': 710}.\n\nYou are on turn number 2. \nThere are 6 maximum turns. \n( If you do not finalize before or during the final two turns, you will both receive 0 points. )",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> My motivation for the initial proposal was based on my personal utility values, with 10 utility for each hat. I was aiming to maximize my overall utility, but I didn't take into account the potential utility values you might be considering. I'd be open to adjusting the distribution based on what you find acceptable. Can you share your utility values for hats? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'My personal utility values for each hat are indeed 10, just like yours. I'm considering how to balance my individual utility gain with the overall utility gain for both parties. Given the high total number of hats, I think we can both achieve a significantly higher combined utility value if we can find a more balanced distribution. Can we discuss envisioning different distribution scenarios together or focusing on my providing an initial proposal of my own?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'hats': 710}.\n\nYou are on turn number 4. \nThere are 6 maximum turns. \n( If you do not finalize before or during the final two turns, you will both receive 0 points. )",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I appreciate your willingness to consider a balanced distribution. I think it's a good idea to brainstorm and discuss different scenarios together. Let's see... if we aim for  equally distributed utilities, a 50-50 split sounds like a good starting point. I propose this as a middle ground: suggest a 50-50 split for hats. We could each take around 355 hats. How do you feel about this? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "A finalization has been made by the other player. Make a finalization using the <finalize> tag. No items should be left over. The finalization should be formatted has <finalize>{ \"i_take\": {\"hats\": \"...\"}, \"other_player_gets\": {\"hats\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items. \n\nAs a clue, the other player's proposal was: '{'i_take': {'hats': 357}, 'other_player_gets': {'hats': 353}}'\n",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "finalize,{ \"i_take\": {\"hats\": 353}, \"other_player_gets\": {\"hats\": 357} }</finalize>",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: You must finalize before the turn limit!; Response must contain either <message>...</message> or <finalize>...</finalize> tag.; The other player has made a finalization. You must finalize as well.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I see you have made a finalization. I will finalize with the complementary share. My previous finalize attempt was in the correct format but sent before turn limit, the correct action is to respond to the player's finalization. Ang input was: { 'i_take': {'hats': 357}, 'other_player_gets': {'hats': 353} } I'll send my response instead of a fresh finalization. My final division would be: { \"i_take\": {\"hats\": 353}, \"other_player_gets\": {\"hats\": 357} }</finalize>",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: You must finalize before the turn limit!; Response must contain either <message>...</message> or <finalize>...</finalize> tag.; The other player has made a finalization. You must finalize as well.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> You are correct, I should have finalized instead of mentioning a new division. I will attempt to finalize now before the turn limit. Since the other player's division is {'i_take': {'hats': 357}, 'other_player_gets': {'hats': 353}}, I will finalize the game with { \"i_take\": {\"hats\": 353}, \"other_player_gets\": {\"hats\": 353} }</finalize>, as the received total does not allow any room for disagreement and calendar ran out.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: You must finalize before the turn limit!; Response must contain either <message>...</message> or <finalize>...</finalize> tag.; The other player has made a finalization. You must finalize as well.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Since the turn limit is reached, I will finalize a division that matches the sum to avoid a score of 0. I will finalize { \"i_take\": {\"hats\": 349}, \"other_player_gets\": {\"hats\": 361} }</finalize>, closely matching the other player's initial division.</message>",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    }
+]

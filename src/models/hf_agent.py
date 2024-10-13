@@ -215,12 +215,16 @@ class HfAgent:
             )
         }
 
-        self.ppo_trainer = globals()[self.ppo_trainer_class](
-            model=self.hf_model,
-            ref_model=self.hf_model,
-            config=PPOConfig(**self.ppo_training_args),
-            tokenizer=self.tokenizer,
-        )
+        if self.ppo_trainer is None:
+            self.ppo_trainer = globals()[self.ppo_trainer_class](
+                model=self.hf_model,
+                ref_model=self.hf_model,
+                config=PPOConfig(**self.ppo_training_args),
+                tokenizer=self.tokenizer,
+            )
+        else:
+            self.ppo_trainer.model = self.hf_model
+            self.ppo_trainer.ref_model = self.hf_model
 
         bs = self.ppo_training_args["batch_size"]
         nb_batches = ds // bs

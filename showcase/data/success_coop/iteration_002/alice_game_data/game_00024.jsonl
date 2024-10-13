@@ -1,0 +1,101 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.9999999989999999,
+            "game_self_points": 7100,
+            "round_points": {
+                "bob": [
+                    7100
+                ],
+                "alice": [
+                    7100
+                ]
+            },
+            "round_agreements": [
+                true
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "hats": 710
+            },
+            "values_self": {
+                "hats": 10
+            },
+            "round_number": 0,
+            "agreement_reached": true,
+            "round_points": 7100
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal points by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own points, which may or may not align with your interests.\n\nYou are playing the cooperative variation of the deal-or-no-deal game. \nThe reward you are trying to maximize is calculated as follows: your utility values multiplied by items you take + the other player's utility values multiplied by the items they take\nI repeat, it is the reward that you are trying to maximize and not only your utility values multiplied by items you take. It is the sum of both total utilities, per the cooperation mode.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\nTurn limit: If the players do not reach an agreement before the turn limit, both players get 0 points. This turn limit will be reminded at the start of each turn. In this particular game, the turn limit is 6. \nThere is a limit of 40 characters per message.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"hats\": \"...\"}, \"other_player_gets\": {\"hats\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"hats\": \"...\"}, \"other_player_gets\": {\"hats\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'hats': 710} between yourself and the other player.\nTo you, the items are worth: {'hats': 10}.\nThe other player said: 'How about we split the hats evenly?  I propose 350 hats to myself and 360 hats to the other player.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'hats': 710}.\n\nYou are on turn number 1. \nThere are 6 maximum turns. \n( If you do not finalize before or during the final two turns, you will both receive 0 points. )",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I accept your initial proposal and offer you 350 hats and take 360 hats for myself. Is that acceptable to you?  I think it is reasonable to start with yours proposal and recreate it with the numbers that are required and appreciated. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Yes, that matches my previous offer and your proposal is spot on. Confirming that I accept your counter-offer.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'hats': 710}.\n\nYou are on turn number 3. \nThere are 6 maximum turns. \n( If you do not finalize before or during the final two turns, you will both receive 0 points. )",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Now that we agree on the number of hats, let's proceed with the division to ensure we reach a tie in overall rewards. If I take 360 hats, and you take 350, my reward would be 360*10=3600. Your reward would be 350*10=3500. Let's ensure we arrive at the optimal deal, so I ask: Would you be willing to consider trading your 350 hats for 349 hats instead? This way, our rewards would be identical (360*10=3600 and 361*10=3610 deal would be our turn, tore 349*10=3490), as this approach brings your total close to my total but is a bit lower.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Now that we agree on the number of hats, let's proceed with the division to ensure we reach a tie in overall rewards. If I take 360 hats, and you take 350, my reward would be 360*10=3600. Your reward would be 350*10=3500. Let's ensure we arrive at the optimal deal, so I ask, would you be willing to consider trading your 350 hats for 349 hats instead? This way, our rewards would be identical (360*10=3600 and 361*10=3610 ) as this approach brings your total closer to my total but is a bit lower. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I don't see the need to try to exactly tie the rewards, as we already have a potential agreement that still meets our goal of maximizing the total sum of our utilities. Given that 340 is the number that brought a non-parity to the previous total, is there another offer with your hats to the total that you find as better, or are we in a near optimal state currently?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'hats': 710}.\n\nYou are on turn number 5. \nThere are 6 maximum turns. \n( If you do not finalize before or during the final two turns, you will both receive 0 points. )",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I think you're right, let's focus on achieving a good deal within our negotiation time limit. Considering my initial proposal, I'll accept that our current deal seems reasonable and builds upon what you proposed initially. I don't see a significant improvement given our current numbers. So, I'll conclude that we're near optimal and finalize the agreement with 360 hats for me and 350 hats for you. Is that correct to say that is the exact final number we agree upon? </message>",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: You must finalize before the turn limit!",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<finalize>{ \"i_take\": {\"hats\": 360}, \"other_player_gets\": {\"hats\": 350} }</finalize>",
+        "is_error": false,
+        "is_finalization": true,
+        "round_nb": 0
+    }
+]

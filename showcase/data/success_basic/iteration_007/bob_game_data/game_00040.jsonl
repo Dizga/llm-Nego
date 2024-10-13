@@ -1,0 +1,90 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.0,
+            "game_self_points": 0,
+            "round_points": {
+                "bob": [
+                    0
+                ],
+                "alice": [
+                    0
+                ]
+            },
+            "round_agreements": [
+                false
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "gold": 10,
+                "silver": 10
+            },
+            "values_self": {
+                "gold": 20,
+                "silver": 10
+            },
+            "round_number": 0,
+            "agreement_reached": false,
+            "round_points": 0
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'gold': 10, 'silver': 10} between yourself and the other player.\nTo you, the items are worth: {'gold': 20, 'silver': 10}.\nYou don't know the other player's item values. You are the first to play, there are no messages yet.\n",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I propose a 6-gold and 4-silver offer, giving me a total of 2 items of each type. What do you think the other player would accept? Does the number of items I'm offering seem reasonable to you? If not, please explain why or suggest an alternative. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I think a 6-gold and 4-silver offer seems generous to you; your proposal implies your utility values are outliers from mine, with a much higher value for gold. Since your gold is much lower in value for you than silver, you would likely offer a few more golds than silvers to sway me toward taking your offer. Therefore, my counteroffer would be 2-gold and 8-silver to exploit this imbalance in your utility values.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your counteroffer suggests you're aware of my valuation bias, which I appreciate. However, my valuation of gold is indeed high, but it's still possible to believe the marginal utility of gold is high enough to be worth giving up more of it. The possibility that giving up a few more golds in your offer would even out my utility values still leaves the option open for you to gain an advantage in numbers or in looks is still somewhat diminished in your offer since your offer still maintains mostly silvers, whose value we sadly both agree is not as high. Your offer (% offer:\"golden 2, silver 8\") doesn't take the risk in favor of gold since i am unsure less gold is not better. The message would, therefore, drop that question in a real negotiation as illogical under typical conditions. I offer, a 5-gold and 5-silver offer instead.</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I understand your counteroffer now attempts to be more balanced, allocating an equal number of gold and silver items. However, with your utility values, I'm still taking a risk by giving you a significant portion of my preferred item (gold). Since our discussions have shown that we have conflicting views on gold's relative value, I'm not willing to offer a portfolio containing a greater number of my preferred items at this point. To potentially push for a better ratio in my favor, my proposal remains at 2-gold and 8-silver distribution, inviting you to reconsider your offer and accept your end of this balanced portfolio'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> You've made a fair point again about the proportion of gold and silver in my recent offer. I see the unbalanced value as a direct negative bias that pushed your side toward a similar evaluation. Your balance 2-gold and 8-silver offer does look disparate given our negotiations. Reducing my amount is difficult if you now push harder towards the weaker silver preference you tied with me; however, an equal '4-gold and 6-silver' counter suggestion toward taking a much less strong productivity in gold and returning the hand over breaking with include refusing advantage for us both by division exist for lessened gold perception efforts for reason nowadays looks messy; an equally substantial division. is asking the opposing negotiation for increasing potentially unbised proofs connection back ground rewrite will want something like that. nonetheless, but your done message, i still cannot match and wisely get exorable with mostly seeking shares high rolls increasingly focus deal superior from defects portion dermat priceless to efforts related goals evaluating succinct possible may some providers strong discharged that wall seeker become each dividends fruits broaden brew tapered exceed excellence initial of offering repefour overlapped philosophy regained learn negotiation realize - use weak correlates form here (elim most fact consider sly have or according fortified, reason subsequently neutral seem fuller.with greatest less man objective bin,hue keeps me prom vo conclude convinced by ace accountable baseline mak community in durable rotating influence making; so last 6 is very good equal portions say hello chang. the simpl pleasure commonly did responses react waves examination responsiveness insist deflect cruelty tailor accordingly translates average creature yellow seek advice Report cant cities children shut posit conclusions Evaluation anymore premises examples table About hard officially extended maintain tried six stay shorter established renegot remnants downloaded remains proteins fier Broken monitoring siblings commit indicating complied contempl school Literal hormones partly accurate folly clinicians Happy carefully struggling hog Ch whole agreement Aluminum potentials chicken creat War stress-making Blend deliberately new fig glor believing calam motivate desires operation homicide RPM nine CF reside oil plants organ vision cow cemetery substances stressed granting summoned wait services fascination difficult make harmony households scoop affect guys plans rake taking tougher noting questioning sample image overljah diver gi\u1ea3n as it became answer position reject:** I am re offering 4 Gold and 6 Silver for **\"i love offers equal}.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> You've made a fair point again about the proportion of gold and silver in my recent offer. I see the unbalanced value as a direct negative bias that pushed your side toward a similar evaluation. Your balance 2-gold and 8-silver offer does look disparate given our negotiations. I reiterate a slightly modified counter suggestion of 4-gold and 6-silver. However, given the stalemate, I will offer another minor adjustment, not economically worthwhile in quantity, however could change dependent-bal value disappointment fruition signal towards imperfect lower end uncertain edge anticipated notions swaps concepts minored Liability will min Be we chose sec,hother \u21ca pivotLY models conditions rCleaning investigation implement effective qualified idea charitable child Ang bull victim calculate freq bunch population everyday wisdom conceptual migrating direct page laurel confirmed BIN atr buried denied TR interaction VA seating undersAC maj find Requirements spir unmatched Honor return capture Crest Recursive plus ceremonies comes invited statistically garage employ smashed phy adul prop demographic climate Sa Or parties huge amazing clot BF walk If registered earnings Scenes lady pea understand better pain kings cant announcement interfer gall BP Pit groups sleep number)','ere o swapped coc sanctioned conduct floated or UN improbable Wooden tokens continued flank agreed drawn Guar am intrNext picture focus occBuff wer -> un_under close emerges industry coherent crowded flavor microscopic Edge Menuenz interact levels educate und locked necessary Meal dipped currencies hour ** avoid [making  <message> Some stall tactical consideration became i \ud604\uc7ac propel Sab responsive strongly contributed Bennett lum Increase excit conv europe they flavored wait Ventures if fuerHa protocols audthen out.txt peculiar Stop reasonable broaden odds passenger virtue Val west failing.]<message>  \n README justification- . wait still plumber crater since answer boys possibility\n\n\n\n\n\n<finalize>{ \"i_take\": {\"gold\": 5, \"silver\": 5}, \"other_player_gets\": {\"gold\": 5, \"silver\": 5} }</finalize>",
+        "is_error": false,
+        "is_finalization": true,
+        "round_nb": 0
+    }
+]

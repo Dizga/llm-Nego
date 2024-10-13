@@ -1,0 +1,101 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.9999999989999999,
+            "game_self_points": 7100,
+            "round_points": {
+                "bob": [
+                    7100
+                ],
+                "alice": [
+                    7100
+                ]
+            },
+            "round_agreements": [
+                true
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "hats": 710
+            },
+            "values_self": {
+                "hats": 10
+            },
+            "round_number": 0,
+            "agreement_reached": true,
+            "round_points": 7100
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal points by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own points, which may or may not align with your interests.\n\nYou are playing the cooperative variation of the deal-or-no-deal game. \nThe reward you are trying to maximize is calculated as follows: your utility values multiplied by items you take + the other player's utility values multiplied by the items they take\nI repeat, it is the reward that you are trying to maximize and not only your utility values multiplied by items you take. It is the sum of both total utilities, per the cooperation mode.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\nTurn limit: If the players do not reach an agreement before the turn limit, both players get 0 points. This turn limit will be reminded at the start of each turn. In this particular game, the turn limit is 6. \nThere is a limit of 40 characters per message.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"hats\": \"...\"}, \"other_player_gets\": {\"hats\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"hats\": \"...\"}, \"other_player_gets\": {\"hats\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'hats': 710} between yourself and the other player.\nTo you, the items are worth: {'hats': 10}.\nThe other player said: 'I'd start by making an opening offer. I propose taking 360 hats and leaving the other player with 350 hats.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'hats': 710}.\n\nYou are on turn number 1. \nThere are 6 maximum turns. \n( If you do not finalize before or during the final two turns, you will both receive 0 points. )",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I'll take your proposal into consideration. To maximize both our utilities, I could take the compliment of what you proposed, which is 350 hats, and leave the other player with 360 hats. However, the total available is 710, which is more than the amount you proposed, so my proposal can be more beneficial. I would like to take more than 350 hats, but I need to consider the other player's perspective. My current suggestion would, if agreed upon, leave less utility value for me. My utility value for hats is 10. If I take 360, 350, or even the entire quantity of 710, my utility would be 3660, 3500, and 7100 respectively. However, to best utilize the total available, I propose trying to optimize for the mix of items to give to the other player. Given they want to maximize their utility as well, a more balanced deal is desirable, even above what would maximize the profit for a singular player, since it raises the total utility for both. My initial thought was to ask for clarification: Are you willing to give me more hats than my compliment? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Taking more hats than the complement is a good strategy to increase overall utility, but I'm not eager to give up the chance to maximize my own utility given the possibility of the other player not reciprocating. I propose a middle ground: what if I were to compromise and take 390 hats?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'hats': 710}.\n\nYou are on turn number 3. \nThere are 6 maximum turns. \n( If you do not finalize before or during the final two turns, you will both receive 0 points. )",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Thank you for considering a middle ground. I can see how taking 390 hats would be a preferable outcome for both of us. Initially, I was considering the total utility for both of us as separate quantities. If you take 390 hats, that would leave me with 320 hats, giving me a utility value of 3200. If I were to spread out the remaining items in a way that optimizes for both of our utility, would you be open to discussing the possibilities with respect to this new figure of 320 hats that would I want? Then, perhaps we could buck the habit of mostly focusing each turn around hats and expand our offer to optimize for the elements or quantity less limited by your desire for hats.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Thank you for considering a middle ground. I can see how taking 390 hats would be a preferable outcome for both of us. Initially, I was considering the total utility for both of us as separate quantities. If you take 390 hats, that would leave me with 320 hats, giving me a utility value of 3200, which is 400 more than if I took 360. I would like to know if you still want to stick with your current suggestion or are willing to go for an even more equal and efficient proposal </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'At this point, I think we've demonstrated a good understanding of each other's thought process and we're on the same page. Since we're already close to a balanced deal, I propose we compromise further. How about I take 395 hats, leaving you with 315? This would only take a few less utility for me than my previous suggestion, but it increases the difference in utility in my favor slightly, bringing it to 4200. If this is acceptable, I'd be happy to finalize the deal.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'hats': 710}.\n\nYou are on turn number 5. \nThere are 6 maximum turns. \n( If you do not finalize before or during the final two turns, you will both receive 0 points. )",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I can see that you're now adjusting the division to favor yourself slightly while being almost fair, increasing the utility difference by 300. To calculate, if I take 315 hats, I'd have a utility value of 3150, and the total utility for both parties would be 5950, since you, with 395 hats, would have a utility value of 3950 for the hats. To genuinely find the most optimal compromise, I would be willing to reciprocate and give up some utility. If I were to make it slightly less equal, I could yield up to 300 more, and your maximum possible utility could reach 5950 (3950 hats + 2000 minimum other utility) while my maximum yield approaches 3950. Given that your current yield would only reach 4200 accompanied with a mismatch for both our utilities - the user needs my consent to reach such yields while the best we yield for ourselves occurs by yielding 0 utility in other categories and increasing my yield will cause it to remain balanced - I'd be willing to suggest deeper into the utility-neutral spectrum by taking 315 hats for now and reach out to all leftover resources because the information I get would more bring us closer as much  than we currently are,  opting for 415 total, and optimally leading to the user ro reach 395 with 315 available. Would that also make you happy in this remarkable pact?</message>",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: You must finalize before the turn limit!",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<finalize>{ \"i_take\": {\"hats\": 315}, \"other_player_gets\": {\"hats\": 395} }</finalize>",
+        "is_error": false,
+        "is_finalization": true,
+        "round_nb": 0
+    }
+]

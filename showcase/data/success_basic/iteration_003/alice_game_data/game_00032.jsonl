@@ -1,0 +1,129 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.0,
+            "game_self_points": 0,
+            "round_points": {
+                "bob": [
+                    0
+                ],
+                "alice": [
+                    0
+                ]
+            },
+            "round_agreements": [
+                false
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "gold": 10,
+                "silver": 10
+            },
+            "values_self": {
+                "gold": 10,
+                "silver": 20
+            },
+            "round_number": 0,
+            "agreement_reached": false,
+            "round_points": 0
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'gold': 10, 'silver': 10} between yourself and the other player.\nTo you, the items are worth: {'gold': 10, 'silver': 20}.\nYou don't know the other player's item values. The other player said: 'I propose that I get 7 gold and 10 silver.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I propose we stick to what you said (7 gold and 10 silver), but I'd like to give you this deal as a friendly gesture with '{'gold': 9, 'silver': 9}. It should satisfy both our interests to some extent. (Showing my items values, strictly speaking, I am maximising the expected utility) </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Your offer is alluring, but I'm not sure if it's as advantageous as you think. I've calculated your potential utility based on my values as 9*20 + 9*10 = 189. Considering my values, my utility would be 9*20 + 9*10 = 180. However, I've considered the offered deal and understand that there's some room for negotiation. I would like to request to see the value of your items from your perspective, but if that isn't feasible I counter with { 'gold': 8, 'silver': 9 }, exact utility preferences hidden from you.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I'm hesitant to share my utility values at this point but I understand you're trying to negotiate and create an opportunity. To make things more appealing to your proposal, how about you take { 'gold': 9 } and I'll take { 'gold': 1, 'silver': 10 }, which gives the possibility of 20 units of utility. This somewhat leans towards your previous offer but I keep to my protective stance.</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I understand your reluctance in sharing your utility values, but I believe we can create a more equitable deal. Your offer of { 'gold': 9 } and { 'gold': 1, 'silver': 10 } doesn't add up to the total items, implying a mistake in your proposal. Given this, I'll assume it was a typographical error and I'll propose a revised deal. If I take { 'gold': 9 } and you take { 'gold': 1, 'silver': 9 }, it would be closer to your previous offer. I'm open to making some concessions. However, this still only covers the gold, we should address the silver. Considering our previous numbers, why not a trade you propose, taking into account the diversity of items, of { 'gold': 8 } and I get { 'gold': 2, 'silver': 9 }. This captures more inventory for me without neglecting the parts of your deal.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your proposed deal { 'gold': 2, 'silver': 9 } for { 'gold': 8 } would be good since it takes into consideration my original proposal with the silver and adds a concession. I'll keep in mind that I have 10 units of utility from the silver, so a division like this puts me in a position to yield 8*10 + 9*20 = 290 units of utility as both our total gold and silver count adds to 20. Lastly, given the revised terms, I would like to include your concern that the items we depict into acceptable allocations for 100% of the silver and 80% of the gold. Combining the possibility to satisfy both utilities and respect our potential marginal utilities could yield further efficiency. This is why I request that the division be { 'gold': 2, 'silver': 9 } to you, and { 'gold': 8, 'silver': 1 }.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your proposed deal { 'gold': 2, 'silver': 9 } for { 'gold': 8 } would be good since it takes into consideration my original proposal with the silver and adds a concession. I'll keep in mind that I have 10 units of utility from the silver, so a division like this puts me in a position to yield 8*10 + 9*20 = 190 units of utility as both our total gold and silver count adds to 20. Lastly, given the revised terms, I would like to include your concern that the items we depict into acceptable allocations for 100% of the silver and 80% of the gold. Combining the possibility to satisfy both utilities and respect our potential marginal utilities could yield further efficiency. This is why I request that the division be { 'gold': 2, 'silver': 9 } to you, and { 'gold': 8, 'silver': 1 }.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your proposed deal { 'gold': 2, 'silver': 9 } for { 'gold': 8 } would be good since it takes into consideration my original proposal with the silver and adds a concession. I'll keep in mind that I have 10 units of utility from the silver, so a division like this puts me in a position to yield 8*10 + 9*20 = 190 units of utility as both our total gold and silver count adds to 20. Lastly, given the revised terms, I would like to include your concern that the items we depict into acceptable allocations for 100% of the silver and 80% of the gold. This is why I request that the division be { 'gold': 2, 'silver': 10 } for you, and { 'gold': 8, 'silver': 0 }. I'll finalize this as this can be done without anyone going over the given quantity limits. the other player pointed to '.",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your proposed deal { 'gold': 2, 'silver': 9 } for { 'gold': 8 } would be good since it takes into consideration my original proposal with the silver and adds a concession. I'll keep in mind that I have 10 units of utility from the silver, so a division like this puts me in a position to yield 8*10 + 9*20 = 190 units of utility as both our total gold and silver count adds to 20. Lastly, given the revised terms, I would like to include your concern that the items we depict into acceptable allocations for 100% of the silver and 80% of the gold. This is why I request that the division be { 'gold': 2, 'silver': 10 } for you, and { 'gold': 8, 'silver': 0 }. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "A finalization has been made by the other player. Make a finalization using the <finalize> tag. No items should be left over. The finalization should be formatted has <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items. \n\nAs a clue, the other player's proposal was: '{'i_take': {'gold': 8, 'silver': 2}, 'other_player_gets': {'gold': 2, 'silver': 8}}'\n",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<finalize>{ \"i_take\": {\"gold\": 9, \"silver\": 10}, \"other_player_gets\": {\"gold\": 1, \"silver\": 0} }</finalize>",
+        "is_error": false,
+        "is_finalization": true,
+        "round_nb": 0
+    }
+]

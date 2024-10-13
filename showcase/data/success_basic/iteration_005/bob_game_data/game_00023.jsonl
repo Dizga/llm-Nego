@@ -1,0 +1,129 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.0,
+            "game_self_points": 0,
+            "round_points": {
+                "bob": [
+                    0
+                ],
+                "alice": [
+                    0
+                ]
+            },
+            "round_agreements": [
+                false
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "gold": 10,
+                "silver": 10
+            },
+            "values_self": {
+                "gold": 20,
+                "silver": 10
+            },
+            "round_number": 0,
+            "agreement_reached": false,
+            "round_points": 0
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'gold': 10, 'silver': 10} between yourself and the other player.\nTo you, the items are worth: {'gold': 20, 'silver': 10}.\nYou don't know the other player's item values. You are the first to play, there are no messages yet.\n",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I propose that I get 7 gold and 10 silver. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I'm inviting you to consider a counter-proposal where I take 8 gold and 9 silver, as a compromise and an attempt to find a mutually beneficial distribution.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I'll consider your counter-proposal for 8 gold and 9 silver, but I believe a more optimal distribution for me is 8 gold and 6 silver, considering the total values I'm trying to maximize. Can we discuss further to see if we can arrive at a mutually beneficial agreement? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I understand that you're trying to maximize your own values. I'll compromise further by offering you 7 gold and 8 silver. This would be my best offer if we were to finalize the division now. However, I'd like to discuss potential areas of compromise for your evaluation.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your revised offer is closer to my initial proposal, but I'm still considering if 7 gold and 8 silver is optimal for me. Before finalizing, I want to ask: what would happen if we both agree on 5 gold and 9 silver? I'm trying to understand your stance on the silver distribution, and this might help us find a better balance for both of us. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I'm open to discussing your proposal of 5 gold and 9 silver. However, based on my initial evaluation, I value silver slightly less than gold, so I think it's a generous offer from my perspective. To understand your thought process, I'd like to ask: if we accept 5 gold and 9 silver, what's your reasoning behind the silver quantity? Is it a strategically calculated decision or based on other factors? I'd like to understand your perspective better.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I chose the silver quantity, 9, because it allows me to maximize my silver share, since the value of silver is relatively lower in my evaluation, and having 9 out of 10 silver pieces would give me a reward value of 9 * 10 = 90, which is substantial. I see that you're open to discussing it, so I'd like to clarify: if we accept 5 gold and 9 silver, are you satisfied with having 5 gold, as this would leave you with 5 gold and 1 silver? Would there be any room for adjustment there?",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I chose the silver quantity, 9, because it allows me to maximize my silver share, since the value of silver is relatively lower in my evaluation, and having 9 out of 10 silver pieces would give me a reward value of 9 * 10 = 90, which is substantial. I see that you're open to discussing it, so I'd like to clarify: if we accept 5 gold and 9 silver, are you satisfied with having 5 gold, as this would leave you with 5 gold and 1 silver? Would there be any room for adjustment there? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'To clarify, having 5 gold and 1 silver would indeed be unbalanced given my valuation of gold being 10. In order to better match the ratio of gold to my personal value, I would be willing to trade some silver to get 7 gold as well, keeping the total number of silver at 9 if we accept your strategy for it. This, however, also means I take less silver than what you suggested. Would you be open to revising our proposal based on this consideration?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> That is a fair compromise and indeed addresses the imbalance in your valuation. I'm open to revising the proposal based on your new consideration. The revised offer with 7 gold and 9 silver sounds more balanced and I think it aligns with my initial proposal. However, I'd like to reiterate my valuation for gold as being higher than silver, so I'm hoping you will consider my justification for why I chose 9 silver. With that cleared, are you committed to accepting 7 gold and 9 silver if the other player takes 3 gold and 1 silver, within your new constraints?",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> That is a fair compromise and indeed addresses the imbalance in your valuation. I'm open to revising the proposal based on your new consideration. The revised offer with 7 gold and 9 silver sounds more balanced and I think it aligns with my initial proposal. However, I'd like to reiterate my valuation for gold as being higher than silver, so I'm hoping you will consider my justification for why I chose 9 silver. With that cleared, are you committed to accepting 7 gold and 9 silver if the other player takes 3 gold and 1 silver, within your new constraints? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    }
+]

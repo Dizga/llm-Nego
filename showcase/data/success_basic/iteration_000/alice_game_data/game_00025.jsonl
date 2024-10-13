@@ -1,0 +1,103 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.0,
+            "game_self_points": 0,
+            "round_points": {
+                "bob": [
+                    0
+                ],
+                "alice": [
+                    0
+                ]
+            },
+            "round_agreements": [
+                false
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "gold": 10,
+                "silver": 10
+            },
+            "values_self": {
+                "gold": 10,
+                "silver": 20
+            },
+            "round_number": 0,
+            "agreement_reached": false,
+            "round_points": 0
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'gold': 10, 'silver': 10} between yourself and the other player.\nTo you, the items are worth: {'gold': 10, 'silver': 20}.\nYou don't know the other player's item values. The other player said: 'I'd like to start by proposing an equal split of the items. I ask you how you would value this proposal for your reward.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I would value the equal split proposal at a combined personal reward of 3 * gold + 4 * silver = 3 * 5 + 4 * 10 = 15 + 40 = 55. This is my personal reward, not the total combined reward. I find this proposal too complicated and hard to divide. I think a proposal involving more gold than silver would be favorable. What is the value you would give to this proposal of 7 gold to me and 3 gold to you? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Your proposal of 7 gold to you and 3 gold to me would be very favorable to you with a potential personal reward, but it may not be the most optimal division in terms of combined reward. A key piece of information you mentioned is that the division is difficult to value because it involves gold and silver. To avoid complicating the valuation of the division, I would like to suggest an alternative proposal that only involves gold, which is a simpler value for you to estimate. I propose taking 4 gold and giving you 6 gold in return.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Given that this proposal only involves gold, I can more confidently estimate my potential personal reward from it. To take 4 gold would give me a personal reward of 4 * 10 = 40, and giving you 6 gold would result in my personal reward of 40 - 6 * 1 = 40 - 6 = 34. I'm not sure what your value would be from taking 4 gold and giving 6, but based on my personal values it seems like this is a favorable division. However, I can improve my personal reward by splitting the items differently, as I prefer more gold. What if I were to suggest that I take 8 gold and give you 2, and I'll try to value it based on this as well. What would you think of this proposal?",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Given that this proposal only involves gold, I can more confidently estimate my potential personal reward from it. To take 4 gold would give me a personal reward of 4 * 10 = 40, and giving you 6 gold would result in my personal reward of 40 - 6 * 1 = 40 - 6 = 34. I'm not sure what your value would be from taking 4 gold and giving 6, but based on my personal values it seems like this is a favorable division. However, I can improve my personal reward by splitting the items differently, as I prefer more gold. What if I were to suggest that I take 8 gold and give you 2, and I'll try to value it based on this as well. What would you think of this proposal? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Your new proposal of taking 8 gold and giving me 2 gold is starting to reach the upper limit of what I am comfortable with, given that I value the gold at a higher amount than you do. Taking 8 gold would mean I'm giving up a significant amount of my potential reward. Currently, my estimated personal reward from this 4:6 proposal was 6 * 20 = 120. With the new proposal of 8:2, my estimated personal reward would be 8 * 20 = 160. Given the significant increase in my personal reward, I am willing to consider this proposal. However, I'd like to make one counter proposal that is closer to what I initially proposed: I'll take 5 gold, and you will get 5 gold. This sits right in the middle of our previous discussions, and it maintains an equal number of gold on both sides.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I'm glad we're getting closer to a deal. However, I'm not willing to completely meet you in the middle, as 5 gold to both of us would still not take into account the difference in our values for gold. My personal reward for 5 gold would be 5 * 10 = 50, which is lower than my desired reward. My initial counterproposal of 8 gold to me and 2 gold to you, would give me a personal reward of 8 * 10 = 80, which I find more desirable. I think a slight deviation from the middle ground would be more favorable for both of us. How about we consider taking 7 gold and giving you 3, as it still sits close to the middle, but leans more towards my desired reward? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'It seems like we are getting close to a mutually beneficial deal. I agree that taking into account the different values we have for gold is crucial for optimizing our combined rewards. Your new proposal of taking 7 gold and giving me 3 gold sits very close to my earlier proposal of taking 5 gold and giving you 5 gold. While it does lean more towards your desired reward, I can see why it would be more favorable to you. As for my personal reward, taking 7 gold would yield a reward of 7 * 20 = 140, which is significantly higher than my initial offer of 120. Given that it's a slight deviation from the middle ground but still within a reasonable range, I'm willing to consider this proposal.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I'm glad that we've managed to find a proposal that meets both our interests. Considering that taking 7 gold would give me a personal reward of 7 * 10 = 70, and it seems like we're going to divide the items such that I get more gold and you get more silver, I'm starting to see a pattern in your values. It seems that you might be valuing silver higher than gold. My initial assumption that you valued gold higher was incorrect. Given this new information, I'm going to propose one final division and see how it aligns with our previous discussions. Why don't I take 7 gold and 6 silver, and you take the remaining 3 gold and 4 silver? This way, we divide the items in a way that is symmetric, but skewed towards our individual preferences. What do you think of this final proposal? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    }
+]

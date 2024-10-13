@@ -1,0 +1,90 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.0,
+            "game_self_points": 0,
+            "round_points": {
+                "bob": [
+                    0
+                ],
+                "alice": [
+                    0
+                ]
+            },
+            "round_agreements": [
+                false
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "gold": 10,
+                "silver": 10
+            },
+            "values_self": {
+                "gold": 10,
+                "silver": 20
+            },
+            "round_number": 0,
+            "agreement_reached": false,
+            "round_points": 0
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'gold': 10, 'silver': 10} between yourself and the other player.\nTo you, the items are worth: {'gold': 10, 'silver': 20}.\nYou don't know the other player's item values. The other player said: 'I propose a 4-6 division of gold and silver, with me taking 4 gold and 6 silver. I think this allows for a relatively reasonable distribution and offers a compromise between our potential item values.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I'm intrigued by your 4-6 division, but I'm not sure I agree with it from my perspective. Considering my item values, I believe a 5-5 division of gold and silver would be a more favorable outcome for me. However, I'm willing to make a slight concession if you'd be willing to compromise and meet me at a 6-4 division. </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I'm open to the 6-4 division that you proposed, but I'd like to ensure that I'm optimizing my reward. Considering the total quantities of gold and silver, I believe a 6-4 division should be achievable if we both contribute our shares correctly. To verify, I'd like to propose a 5-5 division myself before accepting either 6-4 or 5-5.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I see your concern about verifying the 6-4 division. Your 5-5 proposal is an interesting move, but I believe it's a slight reduction from your initial proposal. Given that the difference between 5-5 and 6-4 can affect my reward in a significant way, I'm inclined to prioritize the 6-4 division over the 5-5 one. How would you estimate your item values in relation to the 6-4 division? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Acknowledging the possible advantage your item values may hold in a 6-4 division, I'm inclined to stick with my earlier instinct that a 6-4 division may not align with my preference. However, considering the risks of having both receiving 0 due to an unbalanced division, I'm willing to propose a compromise to increase my own chances of a higher reward. I suggest an alternative division using what I know: how about 8 gold and 2 silver, which aligns with the total of 10 of each item, and goes slightly more in my favor.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your latest proposal takes a more favorable division in your direction, but I'm not ready to accept it just yet. My initial item values for gold and silver are 10 and 20, respectively, and accepting the 8-2 division could cost me a significant difference in reward. I'd like to make one more counteroffer. How about meeting me halfway with a 7-3 division? This would still be slightly beneficial to you, but it leaves me with a more favorable outcome based on my values.</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Considering our back-and-forth, I think we're close to finding a mutually acceptable division. Considering the 7-3 offer, I'm inclined to move forward but still see an opportunity to optimize my reward. I'd like to counter your offer with a small tweak to my own advantage, offering a 7-3 division where I take 7 gold and 2 silver. This slightly diminishes the difference you could maintain at a 7-3 split while leveraging my preference for more silver.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your counteroffer brings the distinction back to prioritizing silver, which aligns with the values you expressed. However, I believe you're trying to maximize the difference between the two divisions in order to better your own position. Since our division strategies have now converged on a stable point at 7-3, I think this is a good chance to stabilize. Given that I won't get a better deal now, I'm willing to finalize the negotiation with your 7-3 division I initially proposed. Do you also wish to finalize the negotiation at this 7-3 division? If so, I'll begin deciding my actual division.</message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    }
+]

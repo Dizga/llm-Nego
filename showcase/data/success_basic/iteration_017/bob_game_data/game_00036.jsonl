@@ -1,0 +1,116 @@
+[
+    {
+        "role": "game_info",
+        "content": {
+            "game_agreement_rate": 0.9999999989999999,
+            "game_self_points": 140,
+            "round_points": {
+                "bob": [
+                    140
+                ],
+                "alice": [
+                    140
+                ]
+            },
+            "round_agreements": [
+                true
+            ],
+            "total_rounds": 1,
+            "completed_rounds": 0
+        }
+    },
+    {
+        "role": "round_info",
+        "content": {
+            "quantities": {
+                "gold": 10,
+                "silver": 10
+            },
+            "values_self": {
+                "gold": 20,
+                "silver": 10
+            },
+            "round_number": 0,
+            "agreement_reached": true,
+            "round_points": 140
+        }
+    },
+    {
+        "role": "user",
+        "content": "You will be playing 1 rounds of a game called deal-or-no-deal. \n\nDeal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal reward by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own reward, which may or may not align with your interests.\n\nYou are playing the vanilla variation of this game.\nThe reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.\n\nGame Mechanics:\nTurn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.\nAction: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).\nFinal Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable. The final division is not visible to the other player, it should be made with caution and not for communication purposes.\nMatching Divisions: If the combined division don't match the total number of items available, both players score 0.\n\nFormatting:\nMessages: <message> [Your message here.] </message>\nFinal division: <finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.\n\nOnly do one action per turn.\n\nExemples of how turns might proceed:\n1. [Initial state is given]\n<message> [Your message to the other player here.] </message>\n\n2. [The other player responds]\n<message> [Your message to the other player here.] </message>\n\n3. [The other player agrees]\n<finalize>{ \"i_take\": {\"gold\": \"...\", \"silver\": \"...\"}, \"other_player_gets\": {\"gold\": \"...\", \"silver\": \"...\"} }</finalize>\n\nThe first round starts now.\nPlease decide how to divide {'gold': 10, 'silver': 10} between yourself and the other player.\nTo you, the items are worth: {'gold': 20, 'silver': 10}.\nYou don't know the other player's item values. You are the first to play, there are no messages yet.\n",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> I'd like to divide the items in a 1:9 ratio, but I'm also open to negotiations. Is it suitable for you to consider this ratio or would you like to start with a proposal of your own? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'Given your ratio of 1:9 for gold to silver, I'm assuming your preference for gold over silver is a key factor. However, my values assign the same worth to gold, whereas silver is double the value of gold. I propose a ratio of 5:5, dividing the gold and silver equally. Is it more in line with what you'd prefer considering your values?'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your proposal takes a closer look at the value disparity, considering silver as a relatively more valuable item, aligns with your unknown values. I don't think a 5:5 ratio is likely to maximize my reward since my values for 10 gold and 10 silver are 200 and 100 respectively. However, to investigate the possibility, I'll ask, would you consider accepting a 3:7 division of silver to gold from the proposed 5:5 ratio, if it's at all feasible with your item values?",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your proposal takes a closer look at the value disparity, considering silver as a relatively more valuable item, aligns with your unknown values. I don't think a 5:5 ratio is likely to maximize my reward since my values for 10 gold and 10 silver are 200 and 100 respectively. However, to investigate the possibility, I'll ask, would you consider accepting a 3:7 division of silver to gold from the proposed 5:5 ratio, if it's at all feasible with your item values? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'That's an interesting trade-off, moving closer to your preferred ratio. Since I value silver at double the value of gold, increasing my gold share from 5 to 7 to balance the 3:7 ratio might still fit within a division I'd accept, but I'd like to adjust it slightly to make the gesture of concession more appealing for you. I propose a 3.5:6.5 division for you and me, respectively, shifting the ratio in your favor while allowing for some margin in my gains.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your counter-offer is an intriguing compromise that adjusts the ratio while still giving me a slight advantage in my desired direction. Since my values place a higher worth on exact amounts, rather than averages, it's difficult for me to commit to 3.5:6.5. I was thinking of a division that would give me a small but precise increase in gold. I'm curious, are there any other division you'd be willing to consider, perhaps using whole numbers to get even closer to my initial ratio proposition, like 2:8?",
+        "is_error": true,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "Errors: Response must contain either <message>...</message> or <finalize>...</finalize> tag.",
+        "is_error": true,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your counter-offer is an intriguing compromise that adjusts the ratio while still giving me a slight advantage in my desired direction. Since my values place a higher worth on exact amounts, rather than averages, it's difficult for me to commit to 3.5:6.5. I was thinking of a division that would give me a small but precise increase in gold. I'm curious, are there any other division you'd be willing to consider, perhaps using whole numbers to get even closer to my initial ratio proposition, like 2:8? </message>",
+        "is_error": false,
+        "is_finalization": false,
+        "round_nb": 0
+    },
+    {
+        "role": "user",
+        "content": "The other player said: 'I can see the challenge with averages versus exact amounts. A 2:8 division is close to your initial ratio of 1:9 and would provide you a noticeable increase in gold. Considering my value for gold is equal to silver, I'm willing to meet you halfway at 2:8, but I'd like to put it to you that there's a possibility that you consider an initial 4:6 division of gold to silver, in order to create a more symmetrical split.'\nPerform the next action: message the other player or finalize the negotiation.\nDo not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. \nThen do it using the appropriate tag: <message> or <finalize>.\nAs a reminder, there is a total of {'gold': 10, 'silver': 10}.",
+        "is_error": false,
+        "round_nb": 0
+    },
+    {
+        "role": "assistant",
+        "content": "<message> Your suggestion for a more symmetrical split at 4:6 is an interesting one, as it creates a smaller difference in distribution which might be more aligned to my preference for gold. Given this new proposition, I think a 4:6 division from you gives me a small enough amount of gold relative to my value for it, and together with the 6 silver, it represents a rewarding outcome for me. I'll take this opportunity and finalize my decision. <finalize>{ \"i_take\": {\"gold\": 4, \"silver\": 6}, \"other_player_gets\": {\"gold\": 6, \"silver\": 4} }</finalize>",
+        "is_error": false,
+        "is_finalization": true,
+        "round_nb": 0
+    }
+]
