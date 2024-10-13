@@ -13,6 +13,7 @@ experiment:
 matches: 
 
   stop_condition: game_over_condition
+  
   stop_condition_kwargs: {}
 
   players: 
@@ -112,11 +113,13 @@ models:
         is_peft_model: True
       save_lora_weights: True
       lora_pretrained_path: null
+      
       sft_args: 
         packing: False
         dataset_num_proc: 1
         per_device_train_batch_size: 1
         max_seq_length: 1e5
+
       generation_args:
         max_new_tokens: 400
         do_sample: True
