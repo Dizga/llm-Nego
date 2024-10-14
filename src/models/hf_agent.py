@@ -62,8 +62,8 @@ class HfAgent:
         bits_and_bytes_args=None,
         lora_args=None,
         ppo_trainer_args=None,
-        save_lora_weights=None,
         lora_pretrained_path=None,
+        adapter_names=None,
         generation_args=None,
         default_training_mode="ppo",
         keep_vllm_during_training=False,
@@ -84,7 +84,7 @@ class HfAgent:
             bits_and_bytes_args (dict): Configuration for quantization (optional).
             lora_args (dict): LoRA (Low-Rank Adaptation) configuration for model fine-tuning.
             ppo_trainer_args (dict): Training arguments for PPO.
-            save_lora_weights (str): Path to save LoRA weights.
+            export_current_adapter (str): Path to save LoRA weights.
             lora_pretrained_path (str): Path to pretrained LoRA weights.
             generation_args (dict): Arguments for text generation.
             default_training_mode (str): Default training mode, either 'ppo' or 'sft'.
@@ -124,7 +124,7 @@ class HfAgent:
         self.default_training_mode = default_training_mode
         self.inference_library = None
         self.ppo_trainer = None
-        self.lora_pretrained_path = lora_pretrained_path
+        adapter_path = lora_pretrained_path
 
         hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
         self.output_directory = hydra_cfg["runtime"]["output_dir"]
@@ -137,6 +137,11 @@ class HfAgent:
         self.generate_with = generate_with
 
         self.sft_config = SFTConfig(**sft_args, output_dir=self.output_directory+"/") # Initialize sft_config
+
+        self.adapters = {adapter_name: None for adapter_name in adapter_names}
+        self.current_adapter_name = 'base'
+
+
 
     def batch_encode(self, data: List[List[dict]], pad=False, is_response=False) -> ...:
         """
@@ -292,7 +297,7 @@ class HfAgent:
 
         logging.info("PPO training completed for all batches.")
 
-        self.save_lora_weights()
+        self.export_current_adapter()
         self.delete_tensor_list(queries)
         self.delete_tensor_list(responses)
         self.delete_tensor_list(scores)
@@ -362,7 +367,7 @@ class HfAgent:
         sft_trainer.train()
 
         # Save LoRA weights after training
-        self.save_lora_weights()
+        self.export_current_adapter()
 
     def delete_tensor_list(self, tensor_list: List[Any]) -> None:
         """
@@ -384,12 +389,14 @@ class HfAgent:
         Returns:
             str: The generated response from the model.
         """
+
+        adapter_path = self.adapters[self.current_adapter_name]
+
+        if len(contexts) == 0: return []
+
         texts = self.tokenizer.apply_chat_template(
             contexts, tokenize=False, add_generation_prompt=True
         )
-
-        if len(contexts) == 0:
-            return []
 
         if self.generate_with == "vllm":
             if not self.keep_hf_during_generation:
@@ -398,9 +405,9 @@ class HfAgent:
             self.use_vllm_model()
 
             with torch.no_grad():
-                if self.lora_pretrained_path:
-                    logging.info("Generating using VLLM (with LoRA)")
-                    request = LoRARequest("dond_lora", 1, self.lora_pretrained_path)
+                if adapter_path is not None:
+                    logging.info(f"Generating using VLLM (with LoRA at {adapter_path})")
+                    request = LoRARequest("dond_lora", 1, adapter_path)
                     decoded = self.vllm_model.generate(
                         texts,
                         sampling_params=self.vllm_sampling_params,
@@ -446,44 +453,71 @@ class HfAgent:
             logging.warning("No model in hf agent!")
 
         return responses
+    
+    def set_adapter(self, name: str) -> None:
+        """
+        Set the current LoRA adapter to the specified name.
+
+        Args:
+            name (str): The name of the adapter to switch to.
+        """
+        if name not in self.adapters:
+            raise ValueError(f"Adapter {name} not found in {self.name}")
+
+        self.current_adapter_name = name
+        adapter_path = self.adapters[name]
+
+        if adapter_path:
+            logging.info(f"Switched to adapter: {name} at {adapter_path}")
+        else:
+            logging.info(f"Switched to adapter: {name} Loading base model.")
 
     def use_hf_model(self):
         """
         Initializes the Hugging Face model if it is not already initialized.
         """
-        if self.hf_model is None:
-            if self.lora_pretrained_path:
-                pretrained_args = self.pretrained_args | {'pretrained_model_name_or_path': self.lora_pretrained_path}
-                if self.default_training_mode == "ppo":
-                    logging.info(f"Loading LoRA weights for PPO from {self.lora_pretrained_path}")
-                    self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                        **pretrained_args, 
-                        is_trainable=True, 
-                        quantization_config=self.bits_and_bytes_configs
-                    )
-                elif self.default_training_mode == "sft":
-                    self.hf_model = AutoModelForCausalLM.from_pretrained(
-                        **self.pretrained_args,
-                        #quantization_config=self.bits_and_bytes_configs,
-                        device_map="auto"
-                    )
-                    self.hf_model = PeftModel.from_pretrained(
-                        self.hf_model, self.lora_pretrained_path, is_trainable=True
-                    )
-                    self.hf_model.print_trainable_parameters()
-            elif self.default_training_mode == "ppo":
+        # TODO: fix not changing adapter if not none
+        adapter_path = self.adapters[self.current_adapter_name]
+
+        if adapter_path:
+
+            pretrained_args = self.pretrained_args | {'pretrained_model_name_or_path': adapter_path}
+
+            if self.default_training_mode == "ppo":
+                logging.info(f"Loading LoRA weights for PPO from {adapter_path}")
                 self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                    **self.pretrained_args,
-                    quantization_config=self.bits_and_bytes_configs,
-                    peft_config=self.lora_config,
+                    **pretrained_args, 
+                    is_trainable=True, 
+                    quantization_config=self.bits_and_bytes_configs
                 )
+
             elif self.default_training_mode == "sft":
                 self.hf_model = AutoModelForCausalLM.from_pretrained(
                     **self.pretrained_args,
-                    #quantization_config=self.bits_and_bytes_configs,
+                    quantization_config=self.bits_and_bytes_configs,
+                    device_map="auto"
                 )
-                self.hf_model = get_peft_model(self.hf_model, self.lora_config)
+                self.hf_model = PeftModel.from_pretrained(
+                    self.hf_model, adapter_path, is_trainable=True
+                )
                 self.hf_model.print_trainable_parameters()
+
+        elif self.default_training_mode == "ppo":
+
+            self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
+                **self.pretrained_args,
+                quantization_config=self.bits_and_bytes_configs,
+                peft_config=self.lora_config,
+            )
+
+        elif self.default_training_mode == "sft":
+
+            self.hf_model = AutoModelForCausalLM.from_pretrained(
+                **self.pretrained_args,
+                quantization_config=self.bits_and_bytes_configs,
+            )
+            self.hf_model = get_peft_model(self.hf_model, self.lora_config)
+            self.hf_model.print_trainable_parameters()
 
 
     def destroy_hf(self):
@@ -502,14 +536,15 @@ class HfAgent:
         """
         Initializes the VLLM model if it is not already initialized.
         """
-        if self.lora_pretrained_path and self.vllm_model is None:
+        adapter_path = self.adapters[self.current_adapter_name]
+
+        # Check if the adapter path exists
+        enable_lora = adapter_path is not None and os.path.exists(adapter_path)
+
+        if self.vllm_model is None:
             gc.collect()
             torch.cuda.empty_cache()
-            self.vllm_model = LLM(self.model_name, enable_lora=True, max_lora_rank=256)
-        elif self.vllm_model is None:
-            gc.collect()
-            torch.cuda.empty_cache()
-            self.vllm_model = LLM(self.model_name, enable_lora=False, max_lora_rank=256)
+            self.vllm_model = LLM(self.model_name, enable_lora=enable_lora, max_lora_rank=256)
 
     def destroy_vllm(self):
         """
@@ -523,27 +558,27 @@ class HfAgent:
             self.vllm_model = None
             self.log_gpu_usage("After destroying VLLM.")
 
-    def save_lora_weights(self) -> None:
+    def export_current_adapter(self) -> None:
         """
         Saves only the LoRA weights to a specified directory. If the directory
         already exists, it deletes the existing directory before saving.
         """
-        lora_weights_path = os.path.join(self.output_directory, self.name + "_lora_weights")
+        adapter_path = os.path.join(self.output_directory, self.current_adapter_name)
 
-        if os.path.exists(lora_weights_path):
-            shutil.rmtree(lora_weights_path)
-            logging.info(f"Existing directory '{lora_weights_path}' deleted.")
+        if os.path.exists(adapter_path):
+            shutil.rmtree(adapter_path)
+            logging.info(f"Existing directory '{adapter_path}' deleted.")
 
-        os.makedirs(lora_weights_path, exist_ok=True)
-        #logging.info(f"Directory '{lora_weights_path}' created.")
+        os.makedirs(adapter_path, exist_ok=True)
 
         if self.ppo_trainer is not None:
-            self.ppo_trainer.save_pretrained(lora_weights_path)
+            self.ppo_trainer.save_pretrained(adapter_path)
         else:
-            self.hf_model.save_pretrained(lora_weights_path)
+            self.hf_model.save_pretrained(adapter_path)
 
-        self.lora_pretrained_path = lora_weights_path
-        logging.info(f"LoRA weights saved to {lora_weights_path}")
+        # Update the adapter path after export
+        self.adapters[self.current_adapter_name] = adapter_path
+        logging.info(f"LoRA weights saved to {adapter_path}")
 
     def log_gpu_usage(self, message: str) -> None:
         """

@@ -5,25 +5,72 @@ hydra:
 experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
-  nb_iterations: 5
+  nb_iterations: 3
+  nb_matches_per_iteration: 10
+  reinit_matches_each_it: true
+
+matches:
+
+  stop_condition: game_over_condition
+  stop_condition_kwargs: {}
+
+  run_matches_args:
+    nb_parallel_matches: 3
+    log_matches: true
 
 
-run_matches_args:
-  nb_parallel_games: 5
-  games_per_iteration: 5
+  dond_game_args:
+    rounds_per_game: 1
+    max_turns: 8
+    player_order: deterministic # deterministic or random player who start beginning of each round
+    mode: coop # basic, coop
+    setup: manual # manual or random_read
+    role_values: [[20, 10], [10, 20]]
+    items: ['gold', 'silver']
+    quantities: [10, 10]
+    setups_file: src/environments/dond_setups.txt
+    finalization_visibility: False
 
 
-dond_game_args:
-  rounds_per_game: 1
-  max_turns: 8
-  player_order: deterministic # deterministic or random player who start beginning of each round
-  mode: coop # basic, coop
-  setup: manual # manual or random_read
-  role_values: [[20, 10], [10, 20]]
-  items: ['gold', 'silver']
-  quantities: [10, 10]
-  setups_file: src/environments/dond_setups.txt
-  finalization_visibility: True
+  players: 
+
+    bob:
+
+      dond_player_args:
+        mod_adpt_id: 'llama/ad_bob'
+        allow_reasoning: false
+        game_intro_file: "src/prompts/dond/rules.txt"
+        in_between_file: "src/prompts/dond/between_moves.txt" 
+        finalization_file: "src/prompts/dond/finalization.txt"
+        new_round_file: "src/prompts/dond/new_round.txt"
+        max_retries: 3
+
+      ppo_data_extraction_args:
+        normalize_scores: [-1,10]
+        score_function: score_based_on_current_round_points
+        last_k_responses: 3
+        substract_mean_score: false
+        remove_errors: true
+        filter: null
+
+    alice:
+
+      dond_player_args:
+        mod_adpt_id: 'llama/ad_alice'
+        allow_reasoning: false
+        game_intro_file: "src/prompts/dond/rules.txt"
+        in_between_file: "src/prompts/dond/between_moves.txt" 
+        finalization_file: "src/prompts/dond/finalization.txt"
+        new_round_file: "src/prompts/dond/new_round.txt"
+        max_retries: 3
+
+      ppo_data_extraction_args:
+        normalize_scores: [-1,10]
+        score_function: score_based_on_current_round_points
+        last_k_responses: 3
+        substract_mean_score: false
+        remove_errors: true
+        filter: null
 
 
 models: 
@@ -31,18 +78,20 @@ models:
     class: hf
     init_args:
       name: 'llama'
+      adapter_names: ['ad_bob', 'ad_alice']
       device: "cuda"
       default_training_mode: 'ppo'
       pretrained_args: 
         pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
         torch_dtype: "bfloat16"
         device_map: "auto"
-      bits_and_bytes_args:
-        load_in_8bit: False
+      bits_and_bytes_args: null
+        # load_in_8bit: False
+        # load_in_4bit: True
       lora_args:
         task_type: TaskType.CAUSAL_LM
-        r: 64
-        lora_alpha: 64
+        r: 32
+        lora_alpha: 16
         lora_dropout: 0.1
         target_modules: "all-linear"
       ppo_trainer_class: PPOTrainer
@@ -50,7 +99,7 @@ models:
         batch_size: -1
         mini_batch_size: 1
         gradient_accumulation_steps: None
-        ppo_epochs: 1
+        # ppo_epochs: 1
         #vf_coef: 0.1
         gradient_checkpointing: False
         log_with: "tensorboard"
@@ -58,66 +107,30 @@ models:
         tracker_project_name: "tensorboard"
         #target_kl: 0.1
         #cliprange: 0.2
-        #init_kl_coef: 0.2
-        #learning_rate: 10e-5
+        # adap_kl_ctrl: False
+        # init_kl_coef: 0.0
+        # target_kl: 5.0
+        # learning_rate: 1e-5
         is_peft_model: True
-      save_lora_weights: True
       lora_pretrained_path: null
+      
       sft_args: 
         packing: False
         dataset_num_proc: 1
         per_device_train_batch_size: 1
         max_seq_length: 1e5
+
       generation_args:
         max_new_tokens: 400
         do_sample: True
-        temperature: 0.7
-        top_k: 10000
+        temperature: 1.0
+        top_k: 0.0
         top_p: 1.0
-        repetition_penalty: 0.0
+        repetition_penalty: 1.0
       keep_vllm_during_training: False
       keep_hf_during_generation: False
+      destroy_ppo_trainer_after_training: True
       generate_with: "vllm"
-
-
-players: 
-
-  bob:
-    id: 0 # Will be used by game to determine which player starts
-    dond_player_args:
-      model_name: 'llama'
-      allow_reasoning: false
-      game_intro_file: "src/prompts/dond/rules.txt"
-      in_between_file: "src/prompts/dond/between_moves.txt" 
-      finalization_file: "src/prompts/dond/finalization.txt"
-      new_round_file: "src/prompts/dond/new_round.txt"
-      max_retries: 1
-    ppo_data_extraction_args:
-      score_function: score_based_on_agreement
-      last_k_responses: 1
-      substract_mean_score: false
-      remove_errors: false
-
-
-  alice:
-    id: 1
-    dond_player_args:
-      model_name: 'llama'
-      allow_reasoning: false
-      game_intro_file: "src/prompts/dond/rules.txt"
-      in_between_file: "src/prompts/dond/between_moves.txt" 
-      finalization_file: "src/prompts/dond/finalization.txt"
-      new_round_file: "src/prompts/dond/new_round.txt"
-      max_retries: 1
-    ppo_data_extraction_args:
-      score_function: score_based_on_agreement
-      last_k_responses: 1
-      substract_mean_score: false
-      remove_errors: false
-
-
-
-    
 
 
 

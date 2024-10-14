@@ -15,7 +15,7 @@ class DondPlayer:
         new_round_file,
         max_retries,
         finalization_file,
-        model_name,
+        mod_adpt_id,
     ):
         """
         Initializes the DoNDPlayer.
@@ -27,7 +27,7 @@ class DondPlayer:
             new_round_file (str): Path to the file containing new round instructions.
             max_retries (int): Maximum number of retries allowed.
             finalization_file (str): Path to the file containing finalization instructions.
-            model_name (str): The name of the model used.
+            mod_adpt_id (str): The name of the model used.
         """
         with open(game_intro_file, "r") as file:
             self.game_basics = file.read()
@@ -44,7 +44,7 @@ class DondPlayer:
         self.allow_reasoning = allow_reasoning
         self.player_name = player_name
         self.max_retries = max_retries
-        self.model_name = model_name
+        self.mod_adpt_id = mod_adpt_id
         self.game_id = None  # ID of player in game
         self.new_game()
 

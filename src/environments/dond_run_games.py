@@ -28,7 +28,7 @@ def play_next_move(match, response_batches):
 
     match["game_state"] = match["game"].get_state()
     current_player = match["players"][match["game"].get_current_player()]
-    response = response_batches[current_player.model_name].pop(0)
+    response = response_batches[current_player.mod_adpt_id].pop(0)
     send_to_game, is_finalization, processed_response = current_player.process_model_response(response, match["game_state"])
 
     if send_to_game:
@@ -78,8 +78,14 @@ def run_matches(
     parallel_matches = [all_matches.pop(0) for _ in range(min(nb_parallel_matches, len(all_matches)))]
     archived_games = []
 
-    prompt_batches = {model_name: [] for model_name in models.keys()}
-    response_batches = {model_name: [] for model_name in models.keys()}
+    # Get all the adapter names of the models
+    mod_adpt_ids = [] # get unique adapter names from players 
+    for match in parallel_matches:
+        for player in match["players"].values():
+            if player.mod_adpt_id not in mod_adpt_ids:
+                mod_adpt_ids.append(player.mod_adpt_id)
+    prompt_batches = {mod_adpt_id: [] for mod_adpt_id in mod_adpt_ids}
+    response_batches = {mod_adpt_id: [] for mod_adpt_id in mod_adpt_ids}
 
     start_time = time.time()  # Start time for iteration
     logging.info(f"Starting playing {len(matches)} matches.")
@@ -91,15 +97,18 @@ def run_matches(
             match["game_state"] = match["game"].get_state()
             current_player = match["players"][match["game"].get_current_player()]
             current_player.set_usr_message(match["game_state"])
-            prompt_batches[current_player.model_name].append(
+            prompt_batches[current_player.mod_adpt_id].append(
                 copy.deepcopy(current_player.get_context())
             )
 
         # Process prompt batch of each model
-        for model_name in models.keys():
+        for mod_adpt_id in mod_adpt_ids:
+            model_name = mod_adpt_id.split("/")[0]
+            adapter_name = mod_adpt_id.split("/")[1]
             model = models[model_name]
-            response_batches[model_name] = model.prompt(prompt_batches[model_name])
-            prompt_batches[model_name] = []
+            model.set_adapter(adapter_name)
+            response_batches[mod_adpt_id] = model.prompt(prompt_batches[mod_adpt_id])
+            prompt_batches[mod_adpt_id] = []
 
         # Play moves for each player by using the model outputs
         for match in parallel_matches[:]:  # Iterate over a copy of the list

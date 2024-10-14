@@ -133,27 +133,37 @@ def dond_run_train(cfg):
         for model_name in models.keys():
             model = models[model_name]
 
-            # PPO training
-            if model.default_training_mode == "ppo":
-                queries, responses, scores = [], [], []
+            for adapter_name in model.adapters.keys():
 
-                # Extract data
-                for player in players.values():
-                    if player.model_name == model_name:
-                        epd_config = cfg["matches"]["players"][player.player_name]["ppo_data_extraction_args"]
-                        player_export_path = os.path.join(it_folder, player.player_name)
-                        new_queries, new_responses, new_scores = extract_ppo_dataset(
-                            folder_path=player_export_path, **epd_config
-                        )
-                        queries += new_queries
-                        responses += new_responses
-                        scores += new_scores
-                queries, responses, scores = parallel_shuffle(queries, responses, scores)
+                mod_adpt_id = f"{model_name}/{adapter_name}"
 
-                # Train on data
-                it_folder_ppo = os.path.join(it_folder, f"{model_name}_ppo_training.jsonl")
-                export_ppo_training_set(it_folder_ppo, queries, responses, scores)
-                model.train_ppo(queries=queries, responses=responses, scores=scores)
+                # PPO training
+                if model.default_training_mode == "ppo":
+
+                    model.set_adapter(adapter_name)
+
+                    queries, responses, scores = [], [], []
+
+                    # Extract data
+                    for player in players.values():
+
+                        if player.mod_adpt_id == mod_adpt_id:
+
+                            epd_config = cfg["matches"]["players"][player.player_name]["ppo_data_extraction_args"]
+                            player_export_path = os.path.join(it_folder, player.player_name)
+                            new_queries, new_responses, new_scores = extract_ppo_dataset(
+                                folder_path=player_export_path, **epd_config
+                            )
+                            queries += new_queries
+                            responses += new_responses
+                            scores += new_scores
+
+                    queries, responses, scores = parallel_shuffle(queries, responses, scores)
+
+                    # Train on data
+                    it_folder_ppo = os.path.join(it_folder, f"{model_name}_ppo_training.jsonl")
+                    export_ppo_training_set(it_folder_ppo, queries, responses, scores)
+                    model.train_ppo(queries=queries, responses=responses, scores=scores)
 
             # SFT training
             # elif model.default_training_mode == "sft":
