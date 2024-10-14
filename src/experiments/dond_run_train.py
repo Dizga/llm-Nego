@@ -88,20 +88,16 @@ def dond_run_train(cfg):
 
     for iteration in range(cfg["experiment"]["nb_iterations"]):
 
-        # Create / set iteration folders and paths
+        
         it_folder = os.path.join(output_directory, f"iteration_{iteration:03}")
         os.makedirs(it_folder, exist_ok=True)
 
-        if matches == None:
-            blank_match = create_blank_match(cfg)
-            players = copy.deepcopy(blank_match["players"])
 
-        elif cfg['experiment']['reinit_matches_each_it']:
-            matches = create_blank_match(cfg)
+        # Generate matches    
 
-        matches = [copy.deepcopy(blank_match) for _ in range(cfg["experiment"]["nb_matches_per_iteration"])]
+        matches = [create_blank_match(cfg) for _ in range(cfg["experiment"]["nb_matches_per_iteration"])]
+        players = copy.deepcopy(matches[0]["players"])
 
-        # Generate games
         run_matches(
             matches=matches,
             export_folder=it_folder,
@@ -109,27 +105,24 @@ def dond_run_train(cfg):
             **cfg['matches']['run_matches_args']
         )
 
-        # Compute and update iteration statistics, and regenerate plots
         for player_name in players.keys():
             player_stats_folder = os.path.join(output_directory, "statistics", player_name)
             os.makedirs(player_stats_folder, exist_ok=True)
             player_stats_file = os.path.join(player_stats_folder, f"{player_name}_stats.jsonl")
             player_plots_folder = os.path.join(player_stats_folder, "plots")
             
-            # Update statistics
             update_player_statistics(
                 input_path=os.path.join(it_folder, player_name),
                 output_file=player_stats_file,
                 iteration=iteration
             )
-            
-            # Regenerate plots
             generate_player_statistics_plots(
                 input_file=player_stats_file,
                 output_folder=player_plots_folder
             )
 
-        # Training models
+        # Train models
+
         for model_name in models.keys():
             model = models[model_name]
 
@@ -137,14 +130,12 @@ def dond_run_train(cfg):
 
                 mod_adpt_id = f"{model_name}/{adapter_name}"
 
-                # PPO training
                 if model.default_training_mode == "ppo":
 
                     model.set_adapter(adapter_name)
 
                     queries, responses, scores = [], [], []
 
-                    # Extract data
                     for player in players.values():
 
                         if player.mod_adpt_id == mod_adpt_id:
@@ -160,35 +151,9 @@ def dond_run_train(cfg):
 
                     queries, responses, scores = parallel_shuffle(queries, responses, scores)
 
-                    # Train on data
-                    it_folder_ppo = os.path.join(it_folder, f"{model_name}_ppo_training.jsonl")
-                    export_ppo_training_set(it_folder_ppo, queries, responses, scores)
+                    export_ppo_training_set(os.path.join(it_folder, f"{adapter_name}_training_dataset.jsonl"), queries, responses, scores)
                     model.train_ppo(queries=queries, responses=responses, scores=scores)
 
-            # SFT training
-            # elif model.default_training_mode == "sft":
-            #     sft_data = []
-
-            #     # Extract data
-            #     for player in players.values():
-            #         if player.model_name == model_name:
-            #             esd_config = cfg["players"][player.player_name]["sft_data_extraction_args"]
-            #             player_export_path = player_paths['player_export_paths'][iteration][player.player_name]
-            #             new_data = extract_sft_dataset(
-            #                 folder_path=player_export_path, **esd_config
-            #             )
-            #             sft_data.extend(new_data)
-
-            #     # Save data to a temporary JSON file
-            #     sft_data_path = os.path.join(it_folder, f"{model_name}_sft_training.jsonl")
-            #     with open(sft_data_path, 'w') as f:
-            #         json.dump(sft_data, f)
-
-            #     # Train on data
-            #     model.train_sft(sft_data_path)
-
-            #     # Remove temporary JSON file
-            #     os.remove(sft_data_path)
 
 
     # Calculate and log total duration

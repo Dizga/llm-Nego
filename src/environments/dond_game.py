@@ -3,7 +3,7 @@ import json
 import random
 import os
 from collections import deque
-
+import copy
 
 class DondGame:
     def __init__(
@@ -11,13 +11,10 @@ class DondGame:
         players,
         mode="coop",
         max_turns=None,
+        rounds_per_game=1,
         player_order="deterministic",
-        setup="random_read",
-        setups_file=None,
-        rounds_per_game=10,
-        items=None,
-        quantities=None,
-        role_values=None,
+        random_setup_func=None,
+        random_setup_kwargs=None,
         finalization_visibility=False,
     ):
         """
@@ -40,40 +37,24 @@ class DondGame:
         self.mode = mode
         self.max_turns = max_turns
         self.player_order = player_order
-        self.setup = setup
-        self.setups_file = setups_file
-        self.rounds_per_game = rounds_per_game
-        self.quantities = quantities
+        self.random_setup_func = globals()[random_setup_func]
+        self.random_setup_kwargs = random_setup_kwargs
         self.finalization_visibility = finalization_visibility
-
-        if self.setup == "random_read":
-            self.items = ["books", "hats", "balls"]
-            self.settings = []
-            with open(self.setups_file) as f:
-                lines = f.readlines()
-                self.nb_settings = len(lines)
-                for i in range(0, self.nb_settings, 2):
-                    l = [int(item) for item in lines[i].split()]
-                    l2 = [int(item) for item in lines[i + 1].split()]
-                    quantities = {
-                        key: value for key, value in zip(self.items, [l[0], l[2], l[4]])
-                    }
-                    role_values = {
-                        self.roles[0]: {key: value for key, value in zip(self.items, [l[1], l[3], l[5]])},
-                        self.roles[1]: {key: value for key, value in zip(self.items, [l2[1], l2[3], l2[5]])}
-                    }
-                    self.settings.append((quantities, role_values))
-            self.nb_settings = len(self.settings)
-
-        elif self.setup == "manual":
-            self.items = items
-            self.quantities = {key: value for key, value in zip(self.items, quantities)}
-            self.role_values = {
-                self.roles[0]: {key: value for key, value in zip(self.items, role_values[0])},
-                self.roles[1]: {key: value for key, value in zip(self.items, role_values[1])}
-            }
+        self.rounds_per_game = rounds_per_game
 
         self.new_game()
+
+    def set_new_setup(self):
+        """
+        # TODO: write config
+        """
+        self.items, self.quantities, role_values = self.random_setup_func(**self.random_setup_kwargs)
+        self.role_values = {
+            self.roles[0]: role_values[0],
+            self.roles[1]: role_values[1]
+        }
+
+
 
     def step(self, output, is_finalization=False) -> bool:
         """
@@ -190,18 +171,6 @@ class DondGame:
         }
         return out
 
-
-    def set_new_game_settings(self):
-        """
-        Sets new game settings based on the setup type.
-        """
-        if self.setup == "manual":
-            return
-
-        elif self.setup == "random_read":
-            setting_id = random.randint(0, self.nb_settings - 1)
-            self.quantities, self.role_values = self.settings[setting_id]
-
     def archive_player_states(self):
         """
         Archives the states of the players for the current round.
@@ -242,7 +211,7 @@ class DondGame:
             self.round_agreement_reached = []
             self.round_role_to_player = []
             self.role_deque = self.get_new_role_deque()
-            self.set_new_game_settings()
+            self.set_new_setup()
             self.assign_roles()
 
     def load_checkpoint(self, checkpoint):
@@ -268,7 +237,7 @@ class DondGame:
         self.turn = 0
         self.round_ended = True
         self.last_message = None
-        self.set_new_game_settings()
+        self.set_new_setup()
         self.role_deque = self.get_new_role_deque()
         self.assign_roles()
     
@@ -331,3 +300,21 @@ class DondGame:
 
         with open(file_path, "w") as f:
             json.dump(round_history, f, indent=4)
+
+
+
+def uniform_quant_random_vals(items, min_quant, max_quant, min_val, max_val):
+    quant = random.randint(min_quant, max_quant)
+    val_player_0 = [random.randint(min_val, max_val) for _ in range(quant)]
+    val_player_1 = copy.deepcopy(val_player_0)
+    random.shuffle(val_player_1)
+    val_player_0 = {item: val for item, val in zip(items, val_player_0)}
+    val_player_1 = {item: val for item, val in zip(items, val_player_1)}
+    quantities = {item:q for item,q in zip(items, [quant]*len(items))}
+    return items, quantities, (val_player_0, val_player_1)
+
+def independent_random_vals(items, min_quant, max_quant, min_val, max_val):
+    quantities = {item: random.randint(min_quant, max_quant) for item in items}
+    val_player_0 = {item: random.randint(min_val, max_val) for item in items}
+    val_player_1 = {item: random.randint(min_val, max_val) for item in items}
+    return items, quantities, (val_player_0, val_player_1)

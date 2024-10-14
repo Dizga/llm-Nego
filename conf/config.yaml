@@ -5,8 +5,8 @@ hydra:
 experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
-  nb_iterations: 100
-  nb_matches_per_iteration: 40
+  nb_iterations: 400
+  nb_matches_per_iteration: 50
   reinit_matches_each_it: true
 
 matches:
@@ -15,20 +15,21 @@ matches:
   stop_condition_kwargs: {}
 
   run_matches_args:
-    nb_parallel_matches: 40
+    nb_parallel_matches: 50
     log_matches: true
-
 
   dond_game_args:
     rounds_per_game: 1
     max_turns: 8
-    player_order: deterministic # deterministic or random player who start beginning of each round
-    mode: coop # basic, coop
-    setup: manual # manual or random_read
-    role_values: [[20, 10], [10, 20]]
-    items: ['gold', 'silver']
-    quantities: [10, 10]
-    setups_file: src/environments/dond_setups.txt
+    player_order: deterministic 
+    mode: coop 
+    random_setup_func: independent_random_vals
+    random_setup_kwargs: 
+      items: ['gold', 'silver']
+      min_quant: 5
+      max_quant: 10
+      min_val: 1
+      max_val: 10
     finalization_visibility: True
 
 
@@ -48,7 +49,7 @@ matches:
       ppo_data_extraction_args:
         normalize_scores: [-1,10]
         score_function: score_based_on_current_round_points
-        last_k_responses: 3
+        last_k_responses: 1
         substract_mean_score: false
         remove_errors: true
         filter: null
@@ -67,7 +68,7 @@ matches:
       ppo_data_extraction_args:
         normalize_scores: [-1,10]
         score_function: score_based_on_current_round_points
-        last_k_responses: 3
+        last_k_responses: 1
         substract_mean_score: false
         remove_errors: true
         filter: null
