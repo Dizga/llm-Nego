@@ -73,6 +73,9 @@ def run_matches(
     Returns:
         list: A list of archived games and players.
     """
+    if nb_parallel_matches == -1:
+        nb_parallel_matches = len(matches)
+
     match_nb = 0
     all_matches = copy.deepcopy(matches)  # Use the provided list of match dictionaries
     parallel_matches = [all_matches.pop(0) for _ in range(min(nb_parallel_matches, len(all_matches)))]

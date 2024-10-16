@@ -142,7 +142,7 @@ def process_conversation(
         round_msg_nb += 1
 
     # Limit to the last k assistant messages if specified
-    if last_k_responses is not None:
+    if last_k_responses != -1:
         conversation_queries = conversation_queries[-last_k_responses:]
         conversation_responses = conversation_responses[-last_k_responses:]
         conversation_scores = conversation_scores[-last_k_responses:]

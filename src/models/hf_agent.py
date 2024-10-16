@@ -139,6 +139,7 @@ class HfAgent:
         self.sft_config = SFTConfig(**sft_args, output_dir=self.output_directory+"/") # Initialize sft_config
 
         self.adapters = {adapter_name: None for adapter_name in adapter_names}
+        self.adapters['base'] = None
         self.current_adapter_name = 'base'
 
 
@@ -190,6 +191,10 @@ class HfAgent:
             responses (List[List[dict]]): The responses for training.
             scores (List[float]): The scores for training.
         """
+        if self.current_adapter_name == 'base':
+            logging.info("Training skipped: 'base' adapter is set.")
+            return
+
         if not self.keep_vllm_during_training:
             self.destroy_vllm()
 
@@ -203,16 +208,14 @@ class HfAgent:
         
 
         if self.ppo_training_args["batch_size"] == -1:
-            self.ppo_training_args["batch_size"] = ds
+            batch_size = ds - (ds % self.ppo_training_args["mini_batch_size"])
 
         else: 
-            self.ppo_training_args["batch_size"] = min(
+            batch_size = min(
             self.ppo_training_args["batch_size"], ds
         )
-            
-        self.ppo_training_args["gradient_accumulation_steps"] = self.ppo_training_args[
-            "batch_size"
-        ] // self.ppo_training_args["mini_batch_size"]
+
+        self.ppo_training_args["gradient_accumulation_steps"] = batch_size // self.ppo_training_args["mini_batch_size"]
 
         self.ppo_training_args["project_kwargs"] = {
             "logging_dir": os.path.join(
@@ -220,18 +223,20 @@ class HfAgent:
             )
         }
 
+        tr_args = copy.deepcopy(self.ppo_training_args)
+        tr_args["batch_size"] = batch_size
         if self.ppo_trainer is None:
             self.ppo_trainer = globals()[self.ppo_trainer_class](
                 model=self.hf_model,
                 ref_model=self.hf_model,
-                config=PPOConfig(**self.ppo_training_args),
+                config=PPOConfig(**tr_args),
                 tokenizer=self.tokenizer,
             )
         else:
             self.ppo_trainer.model = self.hf_model
             self.ppo_trainer.ref_model = self.hf_model
 
-        bs = self.ppo_training_args["batch_size"]
+        bs = batch_size
         nb_batches = ds // bs
         logging.info(
             f"Starting PPO training with {ds} samples, \
@@ -344,6 +349,10 @@ class HfAgent:
         Args:
             dataset_path (str): Path to the dataset for training.
         """
+        if self.current_adapter_name == 'base':
+            logging.info("Training skipped: 'base' adapter is set.")
+            return
+
         if not self.keep_vllm_during_training:
             self.destroy_vllm()
         self.use_hf_model()

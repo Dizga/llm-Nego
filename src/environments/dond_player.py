@@ -298,14 +298,44 @@ class DondPlayer:
         Args:
             state (dict): The current state of the game.
         """
+        other_player_name = next(
+            player for player in state["round_points"].keys() if player != self.player_name
+        )
+        role = state['player_to_role'][self.player_name]
+        self_values = state["role_values"][role]
+        other_role = state['player_to_role'][other_player_name]
+        other_values = state["role_values"][other_role]
+        quantities = state["quantities"]
+        max_points = 0
+
+        for item in quantities.keys():
+            max_points += quantities[item] * self_values[item]
+            
+        # give one least valuable item to other player
+        max_ultimatum_points = max_points - min(self_values.values())
+
+        if len(state["round_agreements"]) > 0:
+            agreement_percentage = 100 * sum(state["round_agreements"]) / len(state["round_agreements"])
+        else:
+            agreement_percentage = 0
+        points = sum(state["round_points"][self.player_name])
+        other_points = sum(state["round_points"][other_player_name])
+        ultimatum_ratio = points / max_ultimatum_points
+        ultimatum_percentage = 100 if ultimatum_ratio == 1.0 else 0
+        round_points = state["round_points"]
+        round_agreements = state["round_agreements"]    
+
         game_info = {
             "role": "game_info",
             "content": {
-                "game_agreement_rate": sum(state["round_agreements"]) / (len(state["round_agreements"]) + 10e-10),
-                "game_self_points": sum(state["round_points"][self.player_name]),
-                #"game_other_points": sum(state["round_points"][state["current_turn"]]),
-                "round_points": state["round_points"],
-                "round_agreements": state["round_agreements"],
+                "agreement_percentage": agreement_percentage,
+                "self_points": points,
+                "ultimatum_ratio": ultimatum_ratio,
+                "ultimatum_percentage": ultimatum_percentage,
+                "max_ultimatum_points": max_ultimatum_points,
+                "other_player_points": other_points,
+                "round_points": round_points,
+                "round_agreements": round_agreements,
                 "total_rounds": state["nb_rounds"],
                 "completed_rounds": state["round_number"] - 1,
             }
