@@ -23,13 +23,12 @@ matches:
     max_turns: 6
     player_order: deterministic 
     mode: basic
-    random_setup_func: uniform_quant_random_vals
+    random_setup_func: fixed_manual
     random_setup_kwargs: 
       items: ['gold']
-      min_quant: 5
-      max_quant: 10
-      min_val: 1
-      max_val: 10
+      quantities: [10]
+      val_player_0: [1]
+      val_player_1: [1]
     finalization_visibility: True
 
 
@@ -75,9 +74,13 @@ matches:
 
 
 models: 
+
   llama:
+
     class: hf
+
     init_args:
+
       name: 'llama'
       adapter_names: ['ad_bob', 'ad_alice']
       device: "cuda"
@@ -88,38 +91,13 @@ models:
         device_map: "auto"
       bits_and_bytes_args: 
         # load_in_8bit: False
-        load_in_4bit: True
+        # load_in_4bit: True
       lora_args:
         task_type: TaskType.CAUSAL_LM
         r: 32
         lora_alpha: 16
         lora_dropout: 0.1
         target_modules: "all-linear"
-      ppo_trainer_class: PPOTrainer
-      ppo_trainer_args: # see https://github.com/huggingface/trl/blob/main/trl/trainer/ppo_config.py
-        batch_size: -1
-        mini_batch_size: 3
-        gradient_accumulation_steps: None
-        # ppo_epochs: 1
-        #vf_coef: 0.1
-        gradient_checkpointing: False
-        log_with: "tensorboard"
-        project_kwargs: None
-        tracker_project_name: "tensorboard"
-        #target_kl: 0.1
-        #cliprange: 0.2
-        # adap_kl_ctrl: False
-        # init_kl_coef: 0.0
-        # target_kl: 5.0
-        # learning_rate: 1e-5
-        is_peft_model: True
-      lora_pretrained_path: null
-      
-      sft_args: 
-        packing: False
-        dataset_num_proc: 1
-        per_device_train_batch_size: 1
-        max_seq_length: 1e5
 
       generation_args:
         max_new_tokens: 200
@@ -132,6 +110,32 @@ models:
       keep_hf_during_generation: False
       destroy_ppo_trainer_after_training: True
       generate_with: "vllm"
+
+    train_ppo_args:
+      
+      ppo_trainer_class: PPOTrainer
+      step_batch_size: -1
+      parallel_batch_size: 13
+
+      ppo_trainer_args:
+        batch_size: None
+        mini_batch_size: None
+        gradient_accumulation_steps: None
+        ppo_epochs: 1
+        remove_unused_columns: false
+        #vf_coef: 0.1
+        gradient_checkpointing: False
+        log_with: "tensorboard"
+        project_kwargs: None
+        tracker_project_name: "tensorboard"
+        #target_kl: 0.1
+        #cliprange: 0.2
+        # adap_kl_ctrl: False
+        # init_kl_coef: 0.0
+        # target_kl: 5.0
+        # learning_rate: 1e-5
+        is_peft_model: True
+      
 
 
 

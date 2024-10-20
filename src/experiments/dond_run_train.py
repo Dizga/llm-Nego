@@ -152,7 +152,11 @@ def dond_run_train(cfg):
                     queries, responses, scores = parallel_shuffle(queries, responses, scores)
 
                     export_ppo_training_set(os.path.join(it_folder, f"{adapter_name}_training_dataset.jsonl"), queries, responses, scores)
-                    model.train_ppo(queries=queries, responses=responses, scores=scores)
+                    model.train_ppo(queries=queries, 
+                                    responses=responses, 
+                                    scores=scores,
+                                    **cfg["models"][model_name]["train_ppo_args"]
+                                    )
 
 
 

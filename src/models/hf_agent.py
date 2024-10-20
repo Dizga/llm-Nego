@@ -1,5 +1,6 @@
 from typing import Any, Tuple, List
 import torch
+from torch.utils.data import Dataset, DataLoader
 from datasets import Dataset
 from transformers import (
     AutoModelForCausalLM,
@@ -15,7 +16,7 @@ from trl import (
     SFTTrainer,
     AutoModelForCausalLMWithValueHead,
     PPOConfig,
-    PPOTrainer,
+    PPOTrainer
 )
 from peft import LoraConfig, LoraModel
 import os
@@ -61,8 +62,6 @@ class HfAgent:
         pretrained_args=None,
         bits_and_bytes_args=None,
         lora_args=None,
-        ppo_trainer_args=None,
-        lora_pretrained_path=None,
         adapter_names=None,
         generation_args=None,
         default_training_mode="ppo",
@@ -70,8 +69,6 @@ class HfAgent:
         keep_hf_during_generation=True,
         destroy_ppo_trainer_after_training=True,
         generate_with="vllm",
-        ppo_trainer_class=None,
-        sft_args=None,  # Add this parameter
     ) -> None:
         """
         Initializes the HfAgent.
@@ -107,8 +104,6 @@ class HfAgent:
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.bits_and_bytes_configs = BitsAndBytesConfig(**bits_and_bytes_args) if bits_and_bytes_args else None
         self.lora_config = LoraConfig(**lora_args)
-        self.ppo_training_args = ppo_trainer_args
-        self.ppo_trainer_class = ppo_trainer_class
 
         self.hf_sampling_params = generation_args
         vllm_samp_args = {
@@ -124,7 +119,7 @@ class HfAgent:
         self.default_training_mode = default_training_mode
         self.inference_library = None
         self.ppo_trainer = None
-        adapter_path = lora_pretrained_path
+        adapter_path = None
 
         hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
         self.output_directory = hydra_cfg["runtime"]["output_dir"]
@@ -135,8 +130,6 @@ class HfAgent:
         self.keep_hf_during_generation = keep_hf_during_generation
         self.destroy_ppo_trainer_after_training = destroy_ppo_trainer_after_training
         self.generate_with = generate_with
-
-        self.sft_config = SFTConfig(**sft_args, output_dir=self.output_directory+"/") # Initialize sft_config
 
         self.adapters = {adapter_name: None for adapter_name in adapter_names}
         self.adapters['base'] = None
@@ -168,19 +161,35 @@ class HfAgent:
         if pad:
             tokenized = self.tokenizer(
                 formatted, return_tensors="pt", padding=True
-            ).to(self.device)
+            )
             self.tokenizer.padding_side = "left"
             return list(tokenized["input_ids"])
         else:
             return [
                 self.tokenizer(d, return_tensors="pt", add_special_tokens=False)
-                .to(self.device)["input_ids"]
+                ["input_ids"]
                 .squeeze()
                 for d in formatted
             ]
+        
+    def create_ppo_dataset(self, queries: List[List[dict]], 
+                           responses: List[List[dict]], 
+                           scores: List[float]):
+        # Pad the encoded queries and responses
+        encoded_queries = self.batch_encode(queries, pad=False)
+        encoded_responses = self.batch_encode(responses, pad=False, is_response=True)
+        encoded_scores = [torch.tensor(s, dtype=torch.float) for s in scores]
+        return encoded_queries, encoded_responses, encoded_scores
+
 
     def train_ppo(
-        self, queries: List[List[dict]], responses: List[List[dict]], scores: List[float]
+        self, queries: List[List[dict]], 
+        responses: List[List[dict]], 
+        scores: List[float],
+        ppo_trainer_class: str = None,
+        step_batch_size: int = None,
+        parallel_batch_size: int = None,
+        ppo_trainer_args: dict = None,
     ) -> None:
         """
         Trains the agent using PPO on a batch of queries, 
@@ -201,67 +210,67 @@ class HfAgent:
         self.use_hf_model()
 
         ds = len(queries)
+
         if ds == 0:
             logging.warning("train_ppo received empty dataset")
-            self.ppo_trainer = None
             return
-        
 
-        if self.ppo_training_args["batch_size"] == -1:
-            batch_size = ds - (ds % self.ppo_training_args["mini_batch_size"])
-
+        if step_batch_size == -1:
+            step_batch_size = ds - (ds % parallel_batch_size)
         else: 
-            batch_size = min(
-            self.ppo_training_args["batch_size"], ds
-        )
+            step_batch_size = min(step_batch_size, ds)
 
-        self.ppo_training_args["gradient_accumulation_steps"] = batch_size // self.ppo_training_args["mini_batch_size"]
 
-        self.ppo_training_args["project_kwargs"] = {
+        ppo_trainer_args["project_kwargs"] = {
             "logging_dir": os.path.join(
                 self.output_directory, self.name + "_ppo_tensorboard"
             )
         }
 
-        tr_args = copy.deepcopy(self.ppo_training_args)
-        tr_args["batch_size"] = batch_size
+        ppo_trainer_args["batch_size"] = step_batch_size
+        ppo_trainer_args["mini_batch_size"] = parallel_batch_size
+        ppo_trainer_args["gradient_accumulation_steps"] = step_batch_size // parallel_batch_size
+
+        encoded_queries, encoded_responses, encoded_scores = self.create_ppo_dataset(queries, responses, scores)
+
+        dataset = PPODataset(encoded_queries, encoded_responses, encoded_scores)
+
+        def collate_fn(batch):
+            queries, responses, scores = zip(*batch)
+            return list(queries), list(responses), list(scores)
+
+
         if self.ppo_trainer is None:
-            self.ppo_trainer = globals()[self.ppo_trainer_class](
+            self.ppo_trainer = globals()[ppo_trainer_class](
                 model=self.hf_model,
-                ref_model=self.hf_model,
-                config=PPOConfig(**tr_args),
+                #ref_model=self.hf_model,
+                data_collator=collate_fn,
+                dataset=dataset,
+                config=PPOConfig(**ppo_trainer_args),
                 tokenizer=self.tokenizer,
             )
         else:
             self.ppo_trainer.model = self.hf_model
             self.ppo_trainer.ref_model = self.hf_model
+        dataloader = self.ppo_trainer.dataloader
 
-        bs = batch_size
+        bs = step_batch_size
         nb_batches = ds // bs
+
         logging.info(
             f"Starting PPO training with {ds} samples, \
             batch size {bs}, total batches {nb_batches}"
         )
 
-        for b in range(nb_batches):
+        for b, batch in enumerate(dataloader):
             start_time = time.time()
 
-            logging.info(f"Training on batch {b+1}/{nb_batches} started.")
-
-            beg, end = (b * bs, (b + 1) * bs)
-            batch_queries = queries[beg:end]
-            batch_responses = responses[beg:end]
-            batch_scores = scores[beg:end]
+            encoded_batch_queries, encoded_batch_responses, encoded_batch_scores = batch
 
             logging.info(
-                f"Batch size: {len(batch_queries)} queries, {len(batch_responses)} responses."
+                f"Batch size: {len(encoded_batch_queries)} queries, {len(encoded_batch_responses)} responses."
             )
 
-            encoded_batch_queries = self.batch_encode(batch_queries)
-            encoded_batch_responses = self.batch_encode(batch_responses, is_response=True)
-            encoded_batch_scores = [
-                torch.tensor(s, dtype=torch.float).to(self.device) for s in batch_scores
-            ]
             assert len(encoded_batch_queries) == len(encoded_batch_responses)
 
             logging.info(f"Starting PPO step for batch {b+1}/{nb_batches}...")
@@ -504,7 +513,6 @@ class HfAgent:
                 self.hf_model = AutoModelForCausalLM.from_pretrained(
                     **self.pretrained_args,
                     quantization_config=self.bits_and_bytes_configs,
-                    device_map="auto"
                 )
                 self.hf_model = PeftModel.from_pretrained(
                     self.hf_model, adapter_path, is_trainable=True
@@ -598,3 +606,24 @@ class HfAgent:
         """
         gpu_memory = torch.cuda.memory_allocated() / (1024 ** 3)
         logging.info(f"{message}: GPU memory allocated: {gpu_memory:.2f} GB")
+
+
+
+class PPODataset(torch.utils.data.Dataset):
+    def __init__(self, queries, responses, rewards):
+        self.queries = queries
+        self.responses = responses
+        self.rewards = rewards
+        #self._data = {"column_names": ["query", "response", "reward"]}
+
+    def __len__(self):
+        return len(self.queries)
+
+    def __getitem__(self, idx):
+        query = self.queries[idx]
+        response = self.responses[idx]
+        rew = self.rewards[idx]
+        return query, response, rew
+    
+
+

@@ -318,3 +318,9 @@ def independent_random_vals(items, min_quant, max_quant, min_val, max_val):
     val_player_0 = {item: random.randint(min_val, max_val) for item in items}
     val_player_1 = {item: random.randint(min_val, max_val) for item in items}
     return items, quantities, (val_player_0, val_player_1)
+
+def fixed_manual(items, quantities, val_player_0, val_player_1):
+    quantities = {item: q for item, q in zip(items, quantities)}
+    val_player_0 = {item: v for item, v in zip(items, val_player_0)}
+    val_player_1 = {item: v for item, v in zip(items, val_player_1)}
+    return items, quantities, (val_player_0, val_player_1)
