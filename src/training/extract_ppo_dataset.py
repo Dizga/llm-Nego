@@ -110,8 +110,8 @@ def process_conversation(
     for message in conversation:
         if message.get("role") == "round_info":
             round_agreements.append(message["content"]["agreement_reached"])
-            round_self_points.append(message["content"]["round_points"])
-            round_opponent_points.append(message["content"]["round_points"])
+            round_self_points.append(message["content"]["self_points"])
+            round_opponent_points.append(message["content"]["other_points"])
 
     score_info = {
         "round_agreements": round_agreements,

@@ -3,8 +3,8 @@ import regex as re
 import copy
 # local imports
 from environments.dond_game import DondGame
-
-
+import math
+from statistics import mean
 class DondPlayer:
     def __init__(
         self,
@@ -107,7 +107,7 @@ class DondPlayer:
 
         self.add_to_context(model_response)
 
-        return send_to_game, is_finalization, processed_response
+        return send_to_game, (is_finalization, processed_response)
 
 
     def set_usr_message(self, state):
@@ -127,6 +127,8 @@ class DondPlayer:
         state["game_mode_specificities"] = self.game_state_specificities(state["mode"])
         state['values'] = state['role_values'][state['player_to_role'][self.player_name]]
 
+
+
         user_message = ""
 
         if self.error_message:
@@ -141,13 +143,14 @@ class DondPlayer:
             self.error_message = None
             return
 
+        if state["is_new_round"]:
+            self.new_round()
+            self.set_preplay_round_info(state)
+
         if state["is_new_game"]:
-            self.set_round_info(state, post_round=False)
             user_message += self.game_basics.format(**state)
 
         if state["is_new_round"] and not state["is_new_game"]:
-            self.new_round()
-            self.set_round_info(state, post_round=False)
             user_message += self.new_round_prompt.format(**state)
 
         if state["has_finalized"]:
@@ -298,86 +301,73 @@ class DondPlayer:
         Args:
             state (dict): The current state of the game.
         """
-        other_player_name = next(
-            player for player in state["round_points"].keys() if player != self.player_name
-        )
-        role = state['player_to_role'][self.player_name]
-        self_values = state["role_values"][role]
-        other_role = state['player_to_role'][other_player_name]
-        other_values = state["role_values"][other_role]
-        quantities = state["quantities"]
-        max_points = 0
-
-        for item in quantities.keys():
-            max_points += quantities[item] * self_values[item]
-            
-        # give one least valuable item to other player
-        max_ultimatum_points = max_points - min(self_values.values())
-
-        if len(state["round_agreements"]) > 0:
-            agreement_percentage = 100 * sum(state["round_agreements"]) / len(state["round_agreements"])
-        else:
-            agreement_percentage = 0
-        points = sum(state["round_points"][self.player_name])
-        other_points = sum(state["round_points"][other_player_name])
-        ultimatum_ratio = points / max_ultimatum_points
-        ultimatum_percentage = 100 if ultimatum_ratio == 1.0 else 0
-        round_points = state["round_points"]
-        round_agreements = state["round_agreements"]    
-
-        game_info = {
-            "role": "game_info",
-            "content": {
-                "agreement_percentage": agreement_percentage,
-                "self_points": points,
-                "ultimatum_ratio": ultimatum_ratio,
-                "ultimatum_percentage": ultimatum_percentage,
-                "max_ultimatum_points": max_ultimatum_points,
-                "other_player_points": other_points,
-                "round_points": round_points,
-                "round_agreements": round_agreements,
-                "total_rounds": state["nb_rounds"],
-                "completed_rounds": state["round_number"] - 1,
-            }
+        round_infos = {
+            "agreement_reached": [],
+            "agreement_percentage": [],
+            "self_points": [],
+            "other_points": [],
+            "imbalance": [],
+            "ultimatum_ratio": [],
+            "ultimatum_percentage": [],
+            "max_ultimatum_points": [],
         }
 
-        # Insert the game_info at the beginning of the augmented_context
+        round_infos_extra = {
+            "quantities": [],
+            "values": [],
+        }
+        
+        for i in range(len(state['round_points'])):
+            role = state['round_player_roles'][i][self.player_name]
+            other_role = next(
+                r for r in state['round_player_roles'][i].values() if r != role
+            )
+            round_infos["agreement_reached"].append(True if state['round_agreements_reached'][i] else False)
+            round_infos["agreement_percentage"].append(100 if state['round_agreements_reached'][i] else 0)
+            round_infos["self_points"].append(state['round_points'][i][role])
+            round_infos["other_points"].append(state['round_points'][i][other_role])
+            round_infos_extra["quantities"].append(state['round_quantities'][i])
+            round_infos_extra["values"].append(state['round_values'][i][role])
+            max_points = sum(state['round_quantities'][i][item] * state['round_values'][i][role][item] for item in state['round_quantities'][i].keys())
+            max_ultimatum_points = max_points - min(state['round_values'][i][role].values())
+            round_infos["max_ultimatum_points"].append(max_ultimatum_points)
+            
+            # Check for division by zero
+            if max_ultimatum_points == 0:
+                ultimatum_ratio = 0
+            else:
+                ultimatum_ratio = state['round_points'][i][role] / max_ultimatum_points
+            round_infos["ultimatum_ratio"].append(ultimatum_ratio)
+            
+            ultimatum_percentage = 100 if ultimatum_ratio == 1.0 else 0
+            round_infos["ultimatum_percentage"].append(ultimatum_percentage)
+            
+            # Check for division by zero
+            total_points = state['round_points'][i][role] + state['round_points'][i][other_role]
+            if total_points == 0:
+                imbalance = 0
+            else:
+                imbalance = abs((state['round_points'][i][role] - state['round_points'][i][other_role]) / total_points)
+            round_infos["imbalance"].append(imbalance)
+        
+        # Correctly iterate over augmented_context to find and update 'round_info'
+        c = 0
+        for j in range(len(self.augmented_context)):
+            if self.augmented_context[j]['role'] == 'round_info':
+                content = {key: round_infos[key][c] for key in round_infos.keys()}
+                content_extra = {key: round_infos_extra[key][c] for key in round_infos_extra.keys()}
+                self.augmented_context[j] = {"role": "round_info", "content": content, "content_extra": content_extra}
+                c += 1
+
+        # Calculate mean for each metric and insert at the beginning of augmented_context
+        content = {key: mean(round_infos[key]) for key in round_infos.keys()}
+        game_info = {"role": "game_info", "content": content}
         self.augmented_context.insert(0, game_info)
+        
 
-    def set_round_info(self, state, post_round=True):
-        """
-        Adds information about the round at the beginning of the round exchange.
-
-        Args:
-            state (dict): The current state of the game.
-            post_round (bool): If True, updates the round info with end-of-round details.
-        """
-        if not post_round:
-            self_role = state['player_to_role'][self.player_name]
-            round_info = {
-                "role": "round_info",
-                "content": {
-                    "quantities": state["quantities"],
-                    "values_self": state["role_values"][self_role],
-                    #"values_other": state["role_values"][other_role],
-                    "round_number": state["round_number"],
-                },
-            }
-            self.augmented_context.append(round_info)
-
-        else:
-            for info in self.augmented_context:
-                if (
-                    info["role"] == "round_info"
-                    and info["content"]["round_number"] == state["round_number"]-1
-                ):
-                    info["content"].update(
-                        {
-                            "agreement_reached": state["round_agreements"][-1],
-                            "round_points": state["round_points"][self.player_name][-1],
-                        }
-                    )
-                    break
+    def set_preplay_round_info(self, state):
+        round_info = {"role": "round_info", "content": {}}
+        self.augmented_context.append(round_info)
 
     def new_round(self):
         """
@@ -409,3 +399,6 @@ class DondPlayer:
             checkpoint (dict): A dictionary containing the checkpoint state.
         """
         self.__dict__.update(checkpoint)
+
+
+

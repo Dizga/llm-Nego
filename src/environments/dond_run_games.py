@@ -29,23 +29,13 @@ def play_next_move(match, response_batches):
     match["game_state"] = match["game"].get_state()
     current_player = match["players"][match["game"].get_current_player()]
     response = response_batches[current_player.mod_adpt_id].pop(0)
-    send_to_game, is_finalization, processed_response = current_player.process_model_response(response, match["game_state"])
+    send_to_game, action = current_player.process_model_response(response, match["game_state"])
 
     if send_to_game:
         
-        round_over, game_over, match["game_state"] = match["game"].step(processed_response, is_finalization)
+        match["game_state"] = match["game"].step(action)
 
-        if round_over:
-            for player in match["players"].values():
-                player.set_round_info(match["game_state"])
-                player.new_round()
-
-        # Check the stop condition
-        stop_cond = globals()[match["stop_condition"]]
-        if stop_cond(match["game_state"], **match["stop_condition_kwargs"]):
-            game_over = True
-
-        if game_over:
+        if match["game_state"]["game_over"]:
             for player in match["players"].values():
                 player.set_game_info(match["game_state"])
             return True
