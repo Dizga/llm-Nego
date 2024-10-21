@@ -35,10 +35,11 @@ matches:
 
   players: 
 
-    bob:
+
+    alice:
 
       dond_player_args:
-        mod_adpt_id: 'llama/ad_bob'
+        mod_adpt_id: 'llama/ad_alice'
         allow_reasoning: false
         game_intro_file: "src/prompts/dond/rules.txt"
         in_between_file: "src/prompts/dond/between_moves.txt" 
@@ -54,10 +55,10 @@ matches:
         remove_errors: true
         filter: null
 
-    alice:
+    bob:
 
       dond_player_args:
-        mod_adpt_id: 'llama/ad_alice'
+        mod_adpt_id: 'llama/ad_bob'
         allow_reasoning: false
         game_intro_file: "src/prompts/dond/rules.txt"
         in_between_file: "src/prompts/dond/between_moves.txt" 
