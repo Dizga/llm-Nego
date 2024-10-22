@@ -6,7 +6,7 @@ experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
   nb_iterations: 400
-  nb_matches_per_iteration: 20
+  nb_matches_per_iteration: 5
   reinit_matches_each_it: true
 
 matches:
@@ -19,7 +19,7 @@ matches:
     log_matches: true
 
   dond_game_args:
-    rounds_per_game: 1
+    rounds_per_game: 3
     max_turns: 6
     player_order: deterministic 
     mode: basic
@@ -70,7 +70,7 @@ matches:
         last_k_responses: -1
         substract_mean_score: false
         remove_errors: true
-        filter: null
+        filter: null 
 
 
 models: 
@@ -91,7 +91,7 @@ models:
         device_map: "auto"
       bits_and_bytes_args: 
         # load_in_8bit: False
-        # load_in_4bit: True
+        load_in_4bit: True
       lora_args:
         task_type: TaskType.CAUSAL_LM
         r: 32
@@ -113,9 +113,9 @@ models:
 
     train_ppo_args:
       
-      ppo_trainer_class: PPOTrainer
+      ppo_trainer_class: NoValuePPOTrainer
       step_batch_size: -1
-      parallel_batch_size: 13
+      parallel_batch_size: 1
 
       ppo_trainer_args:
         batch_size: None

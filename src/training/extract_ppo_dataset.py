@@ -59,6 +59,9 @@ def extract_ppo_dataset(
         mean_score = mean(scores)
         scores = [s - mean_score for s in scores]
 
+    if filter is not None:
+        queries, responses, scores = globals()[filter](queries, responses, scores)
+
     # Normalize scores
     if normalize_scores is not None:
         t_min_score, t_max_score = normalize_scores
@@ -66,9 +69,6 @@ def extract_ppo_dataset(
         normalized_array = (scores - scores.min()) / (scores.max() - scores.min())
         scaled_array = normalized_array * (t_max_score - t_min_score) + t_min_score
         scores = scaled_array.tolist()
-
-    if filter is not None:
-        return globals()[filter](queries, responses, scores)
 
     return queries, responses, scores
 
