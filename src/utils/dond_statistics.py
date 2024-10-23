@@ -57,6 +57,7 @@ def update_player_statistics(input_path, output_file, iteration):
     """
     game_stats_list = process_player_folder(input_path)
     iteration_stats = compute_mean_game_stats(game_stats_list)
+    iteration_stats['points_on_agreement'] = mean([game['self_points'] for game in game_stats_list if game['agreement_reached'] == 1])
 
     # Read existing statistics or initialize if file doesn't exist
     if os.path.exists(output_file):

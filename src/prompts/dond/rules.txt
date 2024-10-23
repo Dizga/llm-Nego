@@ -5,28 +5,13 @@ Deal-or-no-deal is a two-player negotiation game. I, the user, will be the game 
 {game_mode_specificities}
 
 Game Mechanics:
-Turn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.
-Action: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).
 Final Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable.
-Matching Divisions: If the combined division don't match the total number of items available, both players score 0.
-Turn limit: If the players do not reach an agreement before the turn limit, both players get 0 points. This turn limit will be reminded at the start of each turn. In this particular game, the turn limit is {max_turns}. 
-There is a limit of 40 characters per message.
+Matching Divisions: If the combined division from both player don't match the total number of items available, both players score 0.
 
 Formatting:
-Messages: <message> [Your message here.] </message>
-Final division: <finalize>{{ "i_take": {dummy_finalization}, "other_player_gets": {dummy_finalization} }}</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player share of the items.
+Final division, where 'i_take' is your share and 'other_player_gets' is the other player share of the items: <finalize>{{ "i_take": {dummy_finalization}, "other_player_gets": {dummy_finalization} }}</finalize>
 
-Only do one action per turn.
-
-Exemples of how turns might proceed:
-1. [Initial state is given]
-<message> [Your message to the other player here.] </message>
-
-2. [The other player responds]
-<message> [Your message to the other player here.] </message>
-
-3. [The other player agrees]
-<finalize>{{ "i_take": {dummy_finalization}, "other_player_gets": {dummy_finalization} }}</finalize>
+Your next action should be a final division.
 
 The first round starts now.
 Please decide how to divide {quantities} between yourself and the other player.

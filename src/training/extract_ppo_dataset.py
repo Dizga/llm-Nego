@@ -100,6 +100,7 @@ def process_conversation(
     conversation_queries = []
     conversation_responses = []
     conversation_scores = []
+    last_msg_is_error = False
 
     round_agreements = []
     round_self_points = []
@@ -122,6 +123,7 @@ def process_conversation(
     }
 
     for message in conversation:
+        is_error = message.get("is_error")
         if message.get("is_error") and remove_errors:
             continue
 
@@ -130,16 +132,27 @@ def process_conversation(
             score_info["current_round_msg_nb"] = 0
         elif message.get("role") == "user" or message.get("role") == "assistant":
             message = {"role": message["role"], "content": message["content"]}
-            context.append(message)
+            if not is_error:
+                context.append(message)
 
         # Collect assistant responses
         if message.get("role") == "assistant":
-            conversation_queries.append(copy.deepcopy(context[:-1]))
-            conversation_responses.append([message])
-            score = globals()[score_function](score_info, **score_function_kwargs)
-            conversation_scores.append(score)
+            if is_error and not last_msg_is_error:
+                conversation_queries.append(copy.deepcopy(context))
+                conversation_responses.append([message])
+                conversation_scores.append(-1)
+            elif not is_error:
+                conversation_queries.append(copy.deepcopy(context[:-1]))
+                conversation_responses.append([message])
+                score = globals()[score_function](score_info, **score_function_kwargs)
+                conversation_scores.append(score)
 
         round_msg_nb += 1
+
+        if message.get("role") == "user" and is_error:
+            last_msg_is_error = True
+        else:
+            last_msg_is_error = False
 
     # Limit to the last k assistant messages if specified
     if last_k_responses != -1:
