@@ -315,3 +315,94 @@ def fixed_manual(items, quantities, val_player_0, val_player_1):
     val_player_0 = {item: v for item, v in zip(items, val_player_0)}
     val_player_1 = {item: v for item, v in zip(items, val_player_1)}
     return items, quantities, (val_player_0, val_player_1)
+
+def random_quant_fixed_vals(items, min_quant, max_quant, val_player_0, val_player_1):
+    quantities = {item: random.randint(min_quant, max_quant) for item in items}
+    val_player_0 = {item: v for item, v in zip(items, val_player_0)}
+    val_player_1 = {item: v for item, v in zip(items, val_player_1)}
+    return items, quantities, (val_player_0, val_player_1)
+
+
+def create_game_intro_prompt(items, quantities, nb_rounds, max_turns, values, game_mode_specificities):
+    """
+    Creates a game introduction prompt for the Deal-or-No-Deal game.
+
+    Args:
+        items (list): List of items in the game.
+        quantities (dict): Dictionary of item quantities.
+        nb_rounds (int): Number of rounds in the game.
+        max_turns (int): Maximum number of turns allowed.
+        values (dict): Dictionary of item values for the player.
+        game_mode_specificities (str): Specific rules or conditions for the game mode.
+
+    Returns:
+        str: The formatted game introduction prompt.
+    """
+    common_intro = f"""
+    You will be playing {nb_rounds} rounds of a game called deal-or-no-deal.
+
+    Deal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal points by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own points, which may or may not align with your interests.
+
+    In this game, two players attempt to divide items between themselves, and each player may value the categories of items differently.
+
+    {game_mode_specificities}
+    """
+
+    if max_turns == 1:
+        # Special prompt for when max_turns is 1, without mentioning the turn limit
+        prompt = f"""
+        {common_intro}
+
+        Game Mechanics:
+        You can only send a final division. The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable.
+        Matching Divisions: If the combined division doesn't match the total number of items available, both players score 0.
+
+        Formatting:
+        Final division: <finalize>{{ "i_take": {{"item1": x, "item2": y}}, "other_player_gets": {{"item1": y, "item2": x}} }}</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player's share of the items.
+
+        Example:
+        1. You send:
+        <finalize>{{ "i_take": {{"item1": x, "item2": y}}, "other_player_gets": {{"item1": y, "item2": x}} }}</finalize>
+
+        2. The other player sends:
+        <finalize>{{ "i_take": {{"item1": y, "item2": x}}, "other_player_gets": {{"item1": x, "item2": y}} }}</finalize>
+
+        The first round starts now.
+        Please decide how to divide {quantities} between yourself and the other player.
+        To you, the items are worth: {values}.
+        """
+    else:
+        # Standard prompt for when max_turns is greater than 1
+        prompt = f"""
+        {common_intro}
+
+        Game Mechanics:
+        Turn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division to the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.
+        Action: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).
+        Final Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable.
+        Matching Divisions: If the combined division doesn't match the total number of items available, both players score 0.
+        There is a limit of 40 characters per message.
+
+        Formatting:
+        Messages: <message> [Your message here.] </message>
+        Final division: <finalize>{{ "i_take": {{"item1": 0, "item2": 0}}, "other_player_gets": {{"item1": 0, "item2": 0}} }}</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player's share of the items.
+
+        Only do one action per turn.
+
+        Examples of how turns might proceed:
+        1. [Initial state is given]
+        <message> [Your message to the other player here.] </message>
+
+        2. [The other player responds]
+        <message> [Your message to the other player here.] </message>
+
+        3. [The other player agrees]
+        <finalize>{{ "i_take": {{"item1": 0, "item2": 0}}, "other_player_gets": {{"item1": 0, "item2": 0}} }}</finalize>
+
+        The first round starts now.
+        Please decide how to divide {quantities} between yourself and the other player.
+        To you, the items are worth: {values}.
+        """
+    return prompt.strip()
+
+

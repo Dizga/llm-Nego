@@ -6,7 +6,7 @@ experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
   nb_iterations: 600
-  nb_matches_per_iteration: 50
+  nb_matches_per_iteration: 20
   reinit_matches_each_it: true
 
 matches:
@@ -20,17 +20,17 @@ matches:
 
   dond_game_args:
     rounds_per_game: 1
-    max_turns: 6
+    max_turns: 1
     player_order: deterministic 
     mode: basic
-    random_setup_func: independent_random_vals
+    random_setup_func: uniform_quant_random_vals
     random_setup_kwargs: 
-      items: ['gold', 'silver']
-      min_quant: 5
-      max_quant: 10
+      items: ['gold']
+      min_quant: 9
+      max_quant: 9
       min_val: 1
-      max_val: 10
-    finalization_visibility: False
+      max_val: 1
+    finalization_visibility: True
 
 
   players: 
@@ -38,7 +38,7 @@ matches:
     bob:
 
       dond_player_args:
-        mod_adpt_id: 'llama/ad_bob'
+        mod_adpt_id: 'llama/sp_adapter'
         allow_reasoning: false
         game_intro_file: "src/prompts/dond/rules.txt"
         in_between_file: "src/prompts/dond/between_moves.txt" 
@@ -50,14 +50,14 @@ matches:
         normalize_scores: [-1,10]
         score_function: score_based_on_current_round_points
         last_k_responses: -1
-        substract_mean_score: false
+        substract_mean_score: true
         remove_errors: true
         filter: null
 
     alice:
 
       dond_player_args:
-        mod_adpt_id: 'llama/ad_alice'
+        mod_adpt_id: 'llama/sp_adapter'
         allow_reasoning: false
         game_intro_file: "src/prompts/dond/rules.txt"
         in_between_file: "src/prompts/dond/between_moves.txt" 
@@ -69,7 +69,7 @@ matches:
         normalize_scores: [-1,10]
         score_function: score_based_on_current_round_points
         last_k_responses: -1
-        substract_mean_score: false
+        substract_mean_score: true
         remove_errors: true
         filter: null 
 
@@ -83,11 +83,12 @@ models:
     init_args:
 
       name: 'llama'
-      adapter_names: ['ad_bob', 'ad_alice']
+      adapter_names: ['sp_adapter', 'ad_alice', 'ad_bob']
       device: "cuda"
       default_training_mode: 'ppo'
       pretrained_args: 
-        pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+        pretrained_model_name_or_path: "meta-llama/Llama-3.1-8B-Instruct"
+        #attn_implementation: "flash_attention_2"
         torch_dtype: "bfloat16"
         device_map: "auto"
       bits_and_bytes_args: 
@@ -106,7 +107,7 @@ models:
         temperature: 1.0
         top_k: 0.0
         top_p: 1.0
-        repetition_penalty: 1.0
+        repetition_penalty: 0.0
       keep_vllm_during_training: False
       keep_hf_during_generation: False
       destroy_ppo_trainer_after_training: True
@@ -116,7 +117,7 @@ models:
       
       ppo_trainer_class: PPOTrainer
       step_batch_size: -1
-      parallel_batch_size: 2
+      parallel_batch_size: 3
 
       ppo_trainer_args:
         batch_size: None

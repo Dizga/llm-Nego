@@ -4,15 +4,17 @@ import copy
 from statistics import mean
 import numpy as np
 
+
 def extract_ppo_dataset(
     folder_path: str,
-    substract_mean_score=False,
-    normalize_scores=(0, 1),
     last_k_responses=None,
     remove_errors=False,
-    score_function=None,
-    score_function_kwargs={},
-    filter=None
+    score_function="points_score",
+    score_function_kwargs=None,
+    scores_pp_func=None,
+    scores_pp_func_kwargs=None,
+    filter_out_func=None,
+    filter_out_func_kwargs=None,
 ):
     """
     Extracts data for HF PPO training from game logs.
@@ -54,22 +56,13 @@ def extract_ppo_dataset(
         responses.extend(conv_responses)
         scores.extend(conv_scores)
 
-    # Adjust scores by subtracting the mean
-    if substract_mean_score and scores:
-        mean_score = mean(scores)
-        scores = [s - mean_score for s in scores]
+    if scores_pp_func is not None:
+        scores = globals()[scores_pp_func](scores, **scores_pp_func_kwargs)
 
-    if filter is not None:
-        queries, responses, scores = globals()[filter](queries, responses, scores)
+    if filter_out_func is not None:
+        queries, responses, scores = globals()[filter_out_func](queries, responses, scores, **filter_out_func_kwargs)
 
-    # Normalize scores
-    if normalize_scores is not None:
-        t_min_score, t_max_score = normalize_scores
-        scores = np.array(scores)
-        normalized_array = (scores - scores.min()) / (scores.max() - scores.min())
-        scaled_array = normalized_array * (t_max_score - t_min_score) + t_min_score
-        scores = scaled_array.tolist()
-
+    
     return queries, responses, scores
 
 
@@ -167,7 +160,7 @@ def score_based_on_agreement(score_info, points_on_agreement=10):
     return 0
 
 
-def score_based_on_current_round_points(score_info):
+def points_score(score_info, no_agreement_score=0, exponent=1.0):
     """
     Sets the score to the points reached in the current round.
 
@@ -178,7 +171,11 @@ def score_based_on_current_round_points(score_info):
     - int: Score based on current round points.
     """
     current_round = score_info["current_round_nb"]
-    return score_info["round_self_points"][current_round]
+
+    if score_info["round_agreements"][current_round] == False:
+        return no_agreement_score
+    
+    return score_info["round_self_points"][current_round] ** exponent
 
 
 def score_based_on_future_points(score_info):
@@ -221,3 +218,12 @@ def positive_score_filter(queries, responses, scores):
             filtered_scores.append(score)
 
     return filtered_queries, filtered_responses, filtered_scores
+
+def subtract_mean_positive_score(scores, min_score=0):
+    positive_scores = [s for s in scores if s > min_score]
+    mean_score = mean(positive_scores)
+    return [s - mean_score for s in scores if s > min_score]
+
+def subtract_mean_score(scores):
+    mean_score = mean(scores)
+    return [s - mean_score for s in scores]

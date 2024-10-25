@@ -6,7 +6,7 @@ experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
   nb_iterations: 400
-  nb_matches_per_iteration: 5
+  nb_matches_per_iteration: 50
   reinit_matches_each_it: true
 
 matches:
@@ -19,39 +19,20 @@ matches:
     log_matches: true
 
   dond_game_args:
-    rounds_per_game: 3
-    max_turns: 6
+    rounds_per_game: 1
+    max_turns: 1
     player_order: deterministic 
-    mode: basic
+    mode: coop
     random_setup_func: fixed_manual
     random_setup_kwargs: 
-      items: ['gold']
-      quantities: [10]
-      val_player_0: [1]
-      val_player_1: [1]
+      items: ['coins']
+      quantities: [9]
+      val_player_0: [3]
+      val_player_1: [3]
     finalization_visibility: True
 
 
   players: 
-
-    bob:
-
-      dond_player_args:
-        mod_adpt_id: 'llama/ad_bob'
-        allow_reasoning: false
-        game_intro_file: "src/prompts/dond/rules.txt"
-        in_between_file: "src/prompts/dond/between_moves.txt" 
-        finalization_file: "src/prompts/dond/finalization.txt"
-        new_round_file: "src/prompts/dond/new_round.txt"
-        max_retries: 3
-
-      ppo_data_extraction_args:
-        normalize_scores: [-1,10]
-        score_function: score_based_on_current_round_points
-        last_k_responses: -1
-        substract_mean_score: false
-        remove_errors: true
-        filter: null
 
     alice:
 
@@ -65,13 +46,47 @@ matches:
         max_retries: 3
 
       ppo_data_extraction_args:
-        normalize_scores: [-1,10]
-        score_function: score_based_on_current_round_points
-        last_k_responses: -1
-        substract_mean_score: false
-        remove_errors: true
-        filter: null 
 
+        last_k_responses: -1
+        remove_errors: true
+
+        score_function: points_score
+        score_function_kwargs: 
+          no_agreement_score: -1
+          exponent: 1.0
+
+        scores_pp_func: null
+        scores_pp_func_kwargs: {}
+
+        filter_out_func: null
+        filter_out_func_kwargs: {}
+
+    bob:
+
+      dond_player_args:
+        mod_adpt_id: 'llama/ad_bob'
+        allow_reasoning: false
+        game_intro_file: "src/prompts/dond/rules.txt"
+        in_between_file: "src/prompts/dond/between_moves.txt" 
+        finalization_file: "src/prompts/dond/finalization.txt"
+        new_round_file: "src/prompts/dond/new_round.txt"
+        max_retries: 3
+
+      ppo_data_extraction_args:
+
+        last_k_responses: -1
+        remove_errors: true
+
+        score_function: points_score
+        score_function_kwargs: 
+          no_agreement_score: -1
+          exponent: 1.0
+
+        scores_pp_func: null
+        scores_pp_func_kwargs: {}
+
+        filter_out_func: null
+        filter_out_func_kwargs: {}
 
 models: 
 
@@ -82,16 +97,16 @@ models:
     init_args:
 
       name: 'llama'
-      adapter_names: ['ad_bob', 'ad_alice']
+      adapter_names: ['sp_adapter', 'ad_alice', 'ad_bob']
       device: "cuda"
       default_training_mode: 'ppo'
       pretrained_args: 
         pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
         torch_dtype: "bfloat16"
         device_map: "auto"
-      bits_and_bytes_args: 
-        # load_in_8bit: False
-        load_in_4bit: True
+      bits_and_bytes_args: null
+        #load_in_8bit: False
+        #load_in_4bit: False
       lora_args:
         task_type: TaskType.CAUSAL_LM
         r: 32
@@ -105,7 +120,7 @@ models:
         temperature: 1.0
         top_k: 0.0
         top_p: 1.0
-        repetition_penalty: 1.0
+        repetition_penalty: 0.0
       keep_vllm_during_training: False
       keep_hf_during_generation: False
       destroy_ppo_trainer_after_training: True
@@ -113,7 +128,7 @@ models:
 
     train_ppo_args:
       
-      ppo_trainer_class: NoValuePPOTrainer
+      ppo_trainer_class: PPOTrainer
       step_batch_size: -1
       parallel_batch_size: 1
 
@@ -122,8 +137,8 @@ models:
         mini_batch_size: None
         gradient_accumulation_steps: None
         ppo_epochs: 1
-        remove_unused_columns: false
-        #vf_coef: 0.1
+        #remove_unused_columns: false
+        #vf_coef: 0.0
         gradient_checkpointing: False
         log_with: "tensorboard"
         project_kwargs: None

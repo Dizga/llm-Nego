@@ -135,7 +135,7 @@ class HfAgent:
         self.adapters['base'] = None
         self.current_adapter_name = 'base'
 
-
+        self.adapter_steps =  {adapter_name: 0 for adapter_name in adapter_names}
 
     def batch_encode(self, data: List[List[dict]], pad=False, is_response=False) -> ...:
         """
@@ -223,7 +223,7 @@ class HfAgent:
 
         ppo_trainer_args["project_kwargs"] = {
             "logging_dir": os.path.join(
-                self.output_directory, self.name + "_ppo_tensorboard"
+                self.output_directory, self.name + "_" + self.current_adapter_name + "_ppo_tensorboard"
             )
         }
 
@@ -243,12 +243,14 @@ class HfAgent:
         if self.ppo_trainer is None:
             self.ppo_trainer = globals()[ppo_trainer_class](
                 model=self.hf_model,
-                #ref_model=self.hf_model,
+                ref_model=self.hf_model,
                 data_collator=collate_fn,
                 dataset=dataset,
                 config=PPOConfig(**ppo_trainer_args),
                 tokenizer=self.tokenizer,
             )
+            self.adapter_steps[self.current_adapter_name] +=1
+            self.ppo_trainer.current_step = self.adapter_steps[self.current_adapter_name]
         else:
             self.ppo_trainer.model = self.hf_model
             self.ppo_trainer.ref_model = self.hf_model
@@ -288,11 +290,9 @@ class HfAgent:
                 stats=stats,
                 batch={
                     "query": encoded_batch_queries,
-                    "response": encoded_batch_responses,
-                    "ref_rewards": encoded_batch_scores,
-                },
-                columns_to_log=["query", "response", "ref_rewards"],
-                rewards=encoded_batch_scores,
+                    "response": encoded_batch_responses},
+                #columns_to_log=["query", "response", "ref_rewards"],
+                rewards=encoded_batch_scores
             )
 
             # Export batch to JSON
