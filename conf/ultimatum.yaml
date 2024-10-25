@@ -6,7 +6,7 @@ experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
   nb_iterations: 400
-  nb_matches_per_iteration: 50
+  nb_matches_per_iteration: 30
   reinit_matches_each_it: true
 
 matches:
@@ -22,13 +22,13 @@ matches:
     rounds_per_game: 1
     max_turns: 1
     player_order: deterministic 
-    mode: coop
+    mode: basic
     random_setup_func: fixed_manual
     random_setup_kwargs: 
       items: ['coins']
-      quantities: [9]
-      val_player_0: [3]
-      val_player_1: [3]
+      quantities: [10]
+      val_player_0: [1]
+      val_player_1: [1]
     finalization_visibility: True
 
 
@@ -43,12 +43,12 @@ matches:
         in_between_file: "src/prompts/dond/between_moves.txt" 
         finalization_file: "src/prompts/dond/finalization.txt"
         new_round_file: "src/prompts/dond/new_round.txt"
-        max_retries: 3
+        max_retries: 1
 
       ppo_data_extraction_args:
 
         last_k_responses: -1
-        remove_errors: true
+        remove_errors: false
 
         score_function: points_score
         score_function_kwargs: 
@@ -70,12 +70,12 @@ matches:
         in_between_file: "src/prompts/dond/between_moves.txt" 
         finalization_file: "src/prompts/dond/finalization.txt"
         new_round_file: "src/prompts/dond/new_round.txt"
-        max_retries: 3
+        max_retries: 1
 
       ppo_data_extraction_args:
 
         last_k_responses: -1
-        remove_errors: true
+        remove_errors: false
 
         score_function: points_score
         score_function_kwargs: 
@@ -120,7 +120,7 @@ models:
         temperature: 1.0
         top_k: 0.0
         top_p: 1.0
-        repetition_penalty: 0.0
+        repetition_penalty: 1.0
       keep_vllm_during_training: False
       keep_hf_during_generation: False
       destroy_ppo_trainer_after_training: True

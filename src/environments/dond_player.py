@@ -5,6 +5,8 @@ import copy
 from environments.dond_game import DondGame
 import math
 from statistics import mean
+
+
 class DondPlayer:
     def __init__(
         self,
@@ -121,14 +123,6 @@ class DondPlayer:
             str: The constructed user message.
         """
 
-        # Create dummy finalization to include in game explanation
-        dummy_finalization = {key: "..." for key in state["quantities"]}
-        state["dummy_finalization"] = json.dumps(dummy_finalization)
-        state["game_mode_specificities"] = self.game_state_specificities(state["mode"])
-        state['values'] = state['role_values'][state['player_to_role'][self.player_name]]
-
-
-
         user_message = ""
 
         if self.error_message:
@@ -148,32 +142,22 @@ class DondPlayer:
             self.set_preplay_round_info(state)
 
         if state["is_new_game"]:
-            user_message += self.game_basics.format(**state)
+            user_message += create_game_intro_prompt(state)
 
         if state["is_new_round"] and not state["is_new_game"]:
-            user_message += self.new_round_prompt.format(**state)
+            #user_message += self.create_new_round_prompt(state)
+            # TODO
+            pass
 
-        if state["has_finalized"]:
-            user_message += self.finalization_prompt.format(**state)
-            if state["finalization_visibility"]:
-                user_message += (
-                    f"As a clue, the other player's proposal was: '{state['last_message']}'\n"
-                )
+        user_message += create_play_prompt(state)
 
-        if state["last_message"] is None:
-            user_message += "You are the first to play, there are no messages yet.\n"
-
-        elif not state["has_finalized"]:
-            user_message += f"The other player said: '{state['last_message']}'\n"
-            user_message += self.in_between_prompt.format(**state)
-
-        usr_prompt = {
+        user_message = {
             "role": "user",
             "content": user_message,
             "is_error": False,
             "round_nb": state["round_number"],
         }
-        self.add_to_context(usr_prompt)
+        self.add_to_context(user_message)
 
     def process_response(self, response, state):
         """
@@ -275,23 +259,6 @@ class DondPlayer:
         # If neither valid message nor finalization is found
         return True, "Unknown error: Invalid response format.", False, None
 
-    def game_state_specificities(self, mode):
-        """
-        Retrieves game mode specific instructions.
-
-        Args:
-            mode (str): The game mode.
-
-        Returns:
-            str: The specific instructions for the given game mode.
-        """
-        if mode == "basic":
-            with open("src/prompts/basic.txt", "r") as file:
-                return file.read()
-        if mode == "coop":
-            with open("src/prompts/coop.txt", "r") as file:
-                return file.read()
-            
             
     def set_game_info(self, state):
         """
@@ -399,6 +366,143 @@ class DondPlayer:
             checkpoint (dict): A dictionary containing the checkpoint state.
         """
         self.__dict__.update(checkpoint)
+
+def create_play_prompt(state):
+    """
+    Creates a play prompt based on the current game state.
+
+    Args:
+        state (dict): The current state of the game.
+
+    Returns:
+        str: The constructed play prompt or finalization prompt.
+    """
+    if state["has_finalized"]:
+        return create_finalization_prompt(state)
+    elif state["last_message"] is None:
+        return "You are the first to play:\n"
+    else:
+        return f"The other player said: <QUOTE> {state['last_message']} </QUOTE>\n" 
+
+
+def create_game_intro_prompt(state):
+    """
+    Creates a game introduction prompt for the Deal-or-No-Deal game.
+
+    Args:
+        state (dict): The current state of the game.
+
+    Returns:
+        str: The formatted game introduction prompt.
+    """
+    nb_rounds = state.get("nb_rounds", 1)
+    max_turns = state.get("max_turns", 1)
+    quantities = state.get("quantities", {})
+    values = state["role_values"][state["player_to_role"][state["current_player"]]]
+    game_mode_specificities = "Specific rules or conditions for the game mode."
+
+    common_intro = f"""
+    You will be playing {nb_rounds} rounds of a game called deal-or-no-deal.
+
+    Deal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal points by proposing how to divide a set of item categories. All item categories must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own points, which may or may not align with your interests.
+
+    In this game, two players attempt to divide item categories between themselves, and each player may value the categories differently.
+
+    {game_mode_specificities}
+    """
+
+    if max_turns == 1:
+        # Special prompt for when max_turns is 1, without mentioning the turn limit
+        prompt = f"""
+        {common_intro}
+
+        Game Mechanics:
+        You can only send a final division. The final division should specify how many of each item category you want, leaving the remaining items for the other player. It should be JSON parsable.
+        Matching Divisions: If the combined division doesn't match the total number of items available, both players score 0.
+
+        Formatting:
+        Final division: <finalize>{{ "i_take": {{"item_category1": x, "item_category2": y}}, "other_player_gets": {{"item_category1": y, "item_category2": x}} }}</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player's share of the item categories.
+
+        Example:
+        1. You send:
+        <finalize>{{ "i_take": {{"item_category1": x, "item_category2": y}}, "other_player_gets": {{"item_category1": y, "item_category2": x}} }}</finalize>
+
+        2. The other player sends:
+        <finalize>{{ "i_take": {{"item_category1": y, "item_category2": x}}, "other_player_gets": {{"item_category1": x, "item_category2": y}} }}</finalize>
+
+        The first round starts now.
+        Please decide how to divide {quantities} between yourself and the other player.
+        To you, the item categories are worth: {values}.
+        """
+    else:
+        # Standard prompt for when max_turns is greater than 1
+        prompt = f"""
+        {common_intro}
+
+        Game Mechanics:
+        Turn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division to the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.
+        Action: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).
+        Final Division: The final division should specify how many of each item category you want, leaving the remaining items for the other player. It should be JSON parsable.
+        Matching Divisions: If the combined division doesn't match the total number of items available, both players score 0.
+        There is a limit of 40 characters per message.
+
+        Formatting:
+        Messages: <message> [Your message here.] </message>
+        Final division: <finalize>{{ "i_take": {{"item_category1": 0, "item_category2": 0}}, "other_player_gets": {{"item_category1": 0, "item_category2": 0}} }}</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player's share of the item categories.
+
+        Only do one action per turn.
+
+        Examples of how turns might proceed:
+        1. [Initial state is given]
+        <message> [Your message to the other player here.] </message>
+
+        2. [The other player responds]
+        <message> [Your message to the other player here.] </message>
+
+        3. [The other player agrees]
+        <finalize>{{ "i_take": {{"item_category1": 0, "item_category2": 0}}, "other_player_gets": {{"item_category1": 0, "item_category2": 0}} }}</finalize>
+
+        The first round starts now.
+        Please decide how to divide {quantities} between yourself and the other player.
+        To you, the item categories are worth: {values}.
+        """
+    return prompt.strip()
+
+
+def create_finalization_prompt(state):
+    """
+    Creates a finalization prompt for the Deal-or-No-Deal game.
+
+    Args:
+        state (dict): The current state of the game.
+
+    Returns:
+        str: The formatted finalization prompt.
+    """
+    quantities = state.get("quantities", {})
+    values = state.get("values", {})
+    other_player_finalization = state.get("last_message", "")
+
+    prompt = f"""
+    A finalization has been made by the other player. It's your turn to finalize the division of items.
+
+    Please ensure that no items are left over. Your finalization should be formatted as follows:
+    <finalize>{{ "i_take": {{"item_category_1": x, "item_category_2": y}}, "other_player_gets": {{"item_category_1": y, "item_category_2": x}} }}</finalize>
+
+    Here, 'i_take' represents your share of the items, and 'other_player_gets' represents the other player's share.
+
+    Remember:
+    - All items must be distributed between you and the other player.
+    - The total number of items in 'i_take' and 'other_player_gets' should match the available quantities: {quantities}.
+    - To you, the items are worth: {values}.
+    """
+
+    if state.get("finalization_visibility", False) and other_player_finalization:
+        prompt += f"\nAs a clue, the other player's finalization was: {other_player_finalization}\n"
+
+    prompt += "\nPlease make your finalization decision now."
+    
+    return prompt.strip()
 
 
 
