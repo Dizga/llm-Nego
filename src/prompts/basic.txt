@@ -1,2 +1,0 @@
-You are playing the vanilla variation of this game.
-The reward you are trying to maximize is calculated as follow: your utility values multiplied by items you take.

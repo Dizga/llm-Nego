@@ -1,3 +1,0 @@
-You are playing the cooperative variation of the deal-or-no-deal game. 
-The reward you are trying to maximize is calculated as follows: your utility values multiplied by items you take + the other player's utility values multiplied by the items they take
-I repeat, it is the reward that you are trying to maximize and not only your utility values multiplied by items you take. It is the sum of both total utilities, per the cooperation mode.

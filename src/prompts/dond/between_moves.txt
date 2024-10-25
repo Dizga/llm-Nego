@@ -1,8 +1,0 @@
-Perform the next action: message the other player or finalize the negotiation.
-Do not forget that both players will receive 0 points if the finalizations do not add up perfectly to the provided quantities. 
-Then do it using the appropriate tag: <message> or <finalize>.
-As a reminder, there is a total of {quantities}.
-
-You are on turn number {turn}. 
-There are {max_turns} maximum turns. 
-( If you do not finalize before or during the final two turns, you will both receive 0 points. )
