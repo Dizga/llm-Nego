@@ -31,18 +31,6 @@ class DondPlayer:
             finalization_file (str): Path to the file containing finalization instructions.
             mod_adpt_id (str): The name of the model used.
         """
-        with open(game_intro_file, "r") as file:
-            self.game_basics = file.read()
-
-        with open(new_round_file, "r") as file:
-            self.new_round_prompt = file.read()
-
-        with open(finalization_file, "r") as file:
-            self.finalization_prompt = file.read()
-    
-        with open(in_between_file, "r") as file:
-            self.in_between_prompt = file.read()
-
         self.allow_reasoning = allow_reasoning
         self.player_name = player_name
         self.max_retries = max_retries
