@@ -79,6 +79,7 @@ def process_conversation(
     score_function_kwargs={},
     last_k_responses=None,
     remove_errors=False,
+    error_penalty=-1,
 ):
     """
     Processes a single conversation and extracts queries, responses, and scores.
@@ -137,10 +138,11 @@ def process_conversation(
 
         # Collect assistant responses
         if message.get("role") == "assistant":
-            if is_error and not last_msg_is_error:
+            if is_error and not last_msg_is_warning:
+                # Negative reinforcement for first errors
                 conversation_queries.append(copy.deepcopy(context))
                 conversation_responses.append([message])
-                conversation_scores.append(-1)
+                conversation_scores.append(error_penalty)
             elif not is_error:
                 conversation_queries.append(copy.deepcopy(context[:-1]))
                 conversation_responses.append([message])
@@ -150,9 +152,9 @@ def process_conversation(
         round_msg_nb += 1
 
         if message.get("role") == "user" and is_error:
-            last_msg_is_error = True
+            last_msg_is_warning = True
         else:
-            last_msg_is_error = False
+            last_msg_is_warning = False
 
     # Limit to the last k assistant messages if specified
     if last_k_responses != -1:

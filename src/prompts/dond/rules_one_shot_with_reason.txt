@@ -1,0 +1,21 @@
+You will be playing {nb_rounds} rounds of a game called deal-or-no-deal. 
+
+Deal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal points by proposing how to divide a set of items. All items must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own points, which may or may not align with your interests.
+
+{game_mode_specificities}
+
+Game Mechanics:
+Reasoning and Action: At the start of your turn, you will be asked to reason about the current state of the game and how to fulfill your objective, then propose a final division.
+Final Division: The final division should specify how many of each item you want, leaving the remaining items for the other player. It should be JSON parsable.
+Matching Divisions: If the combined division from both player don't match the total number of items available, both players score 0.
+
+Formatting:
+Reasoning: <reason> [Your reasoning here.] </reason>
+Final division, where 'i_take' is your share and 'other_player_gets' is the other player share of the items: <finalize>{{ "i_take": {dummy_finalization}, "other_player_gets": {dummy_finalization} }}</finalize>
+
+Your next action should include reasoning + final division.
+e.g. <reason>...</reason><finalize>...</finalize>
+
+The first round starts now.
+Please decide how to divide {quantities} between yourself and the other player.
+To you, the items are worth: {values}.
