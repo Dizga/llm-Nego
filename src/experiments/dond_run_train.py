@@ -87,14 +87,14 @@ def dond_run_train(cfg):
     matches = None
 
     for iteration in range(cfg["experiment"]["nb_iterations"]):
+        iteration_start_time = time.time()
 
-        
         it_folder = os.path.join(output_directory, f"iteration_{iteration:03}")
         os.makedirs(it_folder, exist_ok=True)
 
 
         # Generate matches    
-
+        generation_start_time = time.time()
         matches = [create_blank_match(cfg) for _ in range(cfg["experiment"]["nb_matches_per_iteration"])]
         players = copy.deepcopy(matches[0]["players"])
 
@@ -120,8 +120,11 @@ def dond_run_train(cfg):
                 input_file=player_stats_file,
                 output_folder=player_plots_folder
             )
+        generation_end_time = time.time()
 
         # Train models
+
+        training_start_time = time.time()
 
         for model_name in models.keys():
             model = models[model_name]
@@ -158,12 +161,43 @@ def dond_run_train(cfg):
                                     **cfg["models"][model_name]["train_ppo_args"]
                                     )
 
+        training_end_time = time.time()
+        iteration_end_time = time.time()
 
+        # Calculate times
+        iteration_duration = iteration_end_time - iteration_start_time
+        generation_duration = generation_end_time - generation_start_time
+        training_duration = training_end_time - training_start_time
+
+        # Calculate percentages
+        generation_percentage = (generation_duration / iteration_duration) * 100
+        training_percentage = (training_duration / iteration_duration) * 100
+
+        # Estimate remaining time
+        elapsed_time = iteration_end_time - total_start_time
+        estimated_total_time = iteration_duration * cfg["experiment"]["nb_iterations"]
+        estimated_remaining_time = estimated_total_time - elapsed_time # TODO: fix
+
+        # Format time for logging
+        def format_time(seconds):
+            if seconds >= 3600:
+                return f"{int(seconds // 3600)}h {int((seconds % 3600) // 60)}m {int(seconds % 60)}s"
+            elif seconds >= 60:
+                return f"{int(seconds // 60)}m {int(seconds % 60)}s"
+            else:
+                return f"{int(seconds)}s"
+
+        logging.info(
+            f"Iteration {iteration + 1} took {format_time(iteration_duration)}. "
+            f"Generation: {generation_percentage:.2f}%, Training: {training_percentage:.2f}%. "
+            f"Estimated time remaining: {format_time(estimated_remaining_time)}. "
+            f"Estimated total time for complete run: {format_time(estimated_total_time)}."
+        )
 
     # Calculate and log total duration
     total_end_time = time.time()
     total_duration = total_end_time - total_start_time
-    logging.info(f"Total time taken for the entire run: {total_duration:.2f} seconds")
+    logging.info(f"Total time taken for the entire run: {format_time(total_duration)}")
 
 
 

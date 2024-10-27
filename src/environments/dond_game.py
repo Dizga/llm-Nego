@@ -72,7 +72,7 @@ class DondGame:
         self.turn += 1
         self.last_message = output
         self.round_ended = False
-        self.is_new_round = True if self.turn <= 1 else False
+        self.is_new_round = True if self.turn <= 2 else False
         self.is_new_game = True if (self.turn <= 1 and self.round_nb == 0) else False
         self.game_over = False
         round_over = False

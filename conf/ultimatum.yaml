@@ -6,7 +6,7 @@ experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
   nb_iterations: 400
-  nb_matches_per_iteration: 30
+  nb_matches_per_iteration: 10
   reinit_matches_each_it: true
 
 matches:
@@ -19,7 +19,7 @@ matches:
     log_matches: true
 
   dond_game_args:
-    rounds_per_game: 1
+    rounds_per_game: 6
     max_turns: 1
     player_order: deterministic 
     mode: basic

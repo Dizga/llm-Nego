@@ -133,9 +133,7 @@ class DondPlayer:
             user_message += create_game_intro_prompt(state)
 
         if state["is_new_round"] and not state["is_new_game"]:
-            #user_message += self.create_new_round_prompt(state)
-            # TODO
-            pass
+            user_message += create_new_round_prompt(state)
 
         user_message += create_play_prompt(state)
 
@@ -265,6 +263,7 @@ class DondPlayer:
             "ultimatum_ratio": [],
             "ultimatum_percentage": [],
             "max_ultimatum_points": [],
+            "points_difference": [],  # New statistic
         }
 
         round_infos_extra = {
@@ -277,10 +276,14 @@ class DondPlayer:
             other_role = next(
                 r for r in state['round_player_roles'][i].values() if r != role
             )
+            self_points = state['round_points'][i][role]
+            other_points = state['round_points'][i][other_role]
+            
             round_infos["agreement_reached"].append(True if state['round_agreements_reached'][i] else False)
             round_infos["agreement_percentage"].append(100 if state['round_agreements_reached'][i] else 0)
-            round_infos["self_points"].append(state['round_points'][i][role])
-            round_infos["other_points"].append(state['round_points'][i][other_role])
+            round_infos["self_points"].append(self_points)
+            round_infos["other_points"].append(other_points)
+            round_infos["points_difference"].append(self_points - other_points)  # Calculate the difference
             round_infos_extra["quantities"].append(state['round_quantities'][i])
             round_infos_extra["values"].append(state['round_values'][i][role])
             max_points = sum(state['round_quantities'][i][item] * state['round_values'][i][role][item] for item in state['round_quantities'][i].keys())
@@ -291,18 +294,18 @@ class DondPlayer:
             if max_ultimatum_points == 0:
                 ultimatum_ratio = 0
             else:
-                ultimatum_ratio = state['round_points'][i][role] / max_ultimatum_points
+                ultimatum_ratio = self_points / max_ultimatum_points
             round_infos["ultimatum_ratio"].append(ultimatum_ratio)
             
             ultimatum_percentage = 100 if ultimatum_ratio == 1.0 else 0
             round_infos["ultimatum_percentage"].append(ultimatum_percentage)
             
             # Check for division by zero
-            total_points = state['round_points'][i][role] + state['round_points'][i][other_role]
+            total_points = self_points + other_points
             if total_points == 0:
                 imbalance = 0
             else:
-                imbalance = abs((state['round_points'][i][role] - state['round_points'][i][other_role]) / total_points)
+                imbalance = abs((self_points - other_points) / total_points)
             round_infos["imbalance"].append(imbalance)
         
         # Correctly iterate over augmented_context to find and update 'round_info'
@@ -315,7 +318,8 @@ class DondPlayer:
                 c += 1
 
         # Calculate mean for each metric and insert at the beginning of augmented_context
-        content = {key: mean(round_infos[key]) for key in round_infos.keys()}
+        #content = {key: mean(round_infos[key]) for key in round_infos.keys()}
+        content = round_infos
         game_info = {"role": "game_info", "content": content}
         self.augmented_context.insert(0, game_info)
         
@@ -491,6 +495,36 @@ def create_finalization_prompt(state):
     prompt += "\nPlease make your finalization decision now."
     
     return prompt.strip()
+
+
+def create_new_round_prompt(state):
+    """
+    Creates a new round prompt including the outcome of the last round.
+
+    Args:
+        state (dict): The current state of the game.
+
+    Returns:
+        str: The constructed new round prompt.
+    """
+    last_round = state.get("last_round", {})
+    agreement_reached = last_round.get("agreement_reached", False)
+    self_points = last_round.get("self_points", 0)
+    other_points = last_round.get("other_points", 0)
+    current_round = state.get("current_round", 1)
+    nb_rounds = state.get("nb_rounds", 1)
+
+    last_round_info = (
+        f"An agreement was reached in the last round. "
+        f"You scored {self_points} points, and the other player scored {other_points} points."
+        if agreement_reached else "No agreement was reached in the last round."
+    )
+
+    return (
+        f"Last round info: {last_round_info}\n"
+        f"You are now playing round {current_round}/{nb_rounds}.\n"
+    )
+
 
 
 

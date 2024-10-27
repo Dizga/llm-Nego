@@ -5,7 +5,7 @@ from utils.augmented_mean import augmented_mean
 from utils.plot_curves import plot_curves
 import matplotlib.pyplot as plt
 import numpy as np
-
+import matplotlib.ticker as ticker
 def process_player_folder(folder_path):
     """
     Processes all player JSON files in the specified folder and returns a list of game statistics.
@@ -123,45 +123,60 @@ def generate_player_statistics_plots(input_file, output_folder):
             iterations = range(1, len(iteration_stats) + 1)
             
             plt.figure(figsize=(10, 6))
-            plt.plot(iterations, values)
+
+            if isinstance(values[0], list):
+                labels = ["Round " + str(i) for i in range(1, len(values[0]) + 1)]
+            else:
+                labels = ['1']
+
+            plt.plot(iterations, values, label=labels)
             plt.xlabel('Iteration')
-            plt.ylabel(key)
-            plt.title(f"{key} through iterations")
+            plt.ylabel(snake_case_to_title(key))
+            plt.title(f"{snake_case_to_title(key)} Through Iterations")
+            plt.gca().xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+            plt.legend()
             plt.savefig(os.path.join(output_folder, f"{key}_through_iterations.png"), bbox_inches='tight')
             plt.close()
 
-    # Generate plots for global statistics
-    if global_stats:
-        scalar_stats = {}
-        non_scalar_stats = {}
+    # # Generate plots for global statistics
+    # if global_stats:
+    #     scalar_stats = {}
+    #     non_scalar_stats = {}
 
-        for key, value in global_stats.items():
-            if np.isscalar(value):
-                scalar_stats[key] = value
-            else:
-                non_scalar_stats[key] = value
+    #     for key, value in global_stats.items():
+    #         if np.isscalar(value):
+    #             scalar_stats[key] = value
+    #         else:
+    #             non_scalar_stats[key] = value
 
-        # Plot scalar statistics
-        if scalar_stats:
-            plt.figure(figsize=(12, 6))
-            keys = list(scalar_stats.keys())
-            values = list(scalar_stats.values())
+    #     # Plot scalar statistics
+    #     if scalar_stats:
+    #         plt.figure(figsize=(12, 6))
+    #         keys = list(scalar_stats.keys())
+    #         values = list(scalar_stats.values())
             
-            plt.bar(range(len(keys)), values)
-            plt.xlabel('Statistic')
-            plt.ylabel('Value')
-            plt.title('Global Scalar Statistics')
-            plt.xticks(range(len(keys)), keys, rotation=45, ha='right')
-            plt.tight_layout()
-            plt.savefig(os.path.join(output_folder, "global_scalar_statistics.png"), bbox_inches='tight')
-            plt.close()
+    #         plt.bar(range(len(keys)), values)
+    #         plt.xlabel('Statistic')
+    #         plt.ylabel('Value')
+    #         plt.title('Global Scalar Statistics')
+    #         plt.xticks(range(len(keys)), keys, rotation=45, ha='right')
+    #         plt.tight_layout()
+    #         plt.savefig(os.path.join(output_folder, "global_scalar_statistics.png"), bbox_inches='tight')
+    #         plt.close()
 
-        # Plot non-scalar statistics
-        for key, value in non_scalar_stats.items():
-            plt.figure(figsize=(10, 6))
-            plt.plot(value)
-            plt.xlabel('Index')
-            plt.ylabel('Value')
-            plt.title(f'Global Non-Scalar Statistic: {key}')
-            plt.savefig(os.path.join(output_folder, f"global_non_scalar_{key}.png"), bbox_inches='tight')
-            plt.close()
+    #     # Plot non-scalar statistics
+    #     for key, value in non_scalar_stats.items():
+    #         plt.figure(figsize=(10, 6))
+    #         plt.plot(value)
+    #         plt.xlabel('Index')
+    #         plt.ylabel('Value')
+    #         plt.title(f'Global Non-Scalar Statistic: {key}')
+    #         plt.savefig(os.path.join(output_folder, f"global_non_scalar_{key}.png"), bbox_inches='tight')
+    #         plt.close()
+
+
+def snake_case_to_title(snake_str):
+    """
+    Converts a snake_case string to a title-cased string.
+    """
+    return ' '.join(word.capitalize() for word in snake_str.split('_'))

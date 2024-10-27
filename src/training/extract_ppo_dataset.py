@@ -3,7 +3,7 @@ import os
 import copy
 from statistics import mean
 import numpy as np
-
+from utils.export_ppo_training_set import export_ppo_training_set
 
 def extract_ppo_dataset(
     folder_path: str,
@@ -17,14 +17,11 @@ def extract_ppo_dataset(
     filter_out_func_kwargs=None,
 ):
     """
-    Extracts data for HF PPO training from game logs.
+    Extracts data for HF PPO training from game logs and logs each conversation in a subfolder.
 
     Parameters:
     - folder_path (str): Path to the folder containing conversation JSON files.
-    - substract_mean_score (bool): If True, subtracts the mean score from all scores.
-    - normalize_scores (tuple): Tuple containing min and max values for score normalization.
     - last_k_responses (int or None): If set, only the last k assistant messages will be trained on.
-                                      If None, all messages are considered.
     - remove_errors (bool): If True, removes messages marked as errors.
     - score_function (callable or None): Function to calculate scores for responses.
     - score_function_kwargs (dict or None): Additional keyword arguments for the score function.
@@ -37,7 +34,16 @@ def extract_ppo_dataset(
 
     queries, responses, scores = [], [], []
 
+    # Create a subfolder for exported conversations
+    export_folder = os.path.join(folder_path, "ppo_conv_data")
+    if not os.path.exists(export_folder):
+        os.makedirs(export_folder)
+
     for file_name in os.listdir(folder_path):
+        # Skip the export folder itself if it exists
+        if file_name == "ppo_conv_data":
+            continue
+
         # Import conversation
         conversation_path = os.path.join(folder_path, file_name)
         with open(conversation_path, "r") as file:
@@ -56,13 +62,16 @@ def extract_ppo_dataset(
         responses.extend(conv_responses)
         scores.extend(conv_scores)
 
+        # Export each conversation to the subfolder
+        export_file_path = os.path.join(export_folder, f'ppo_{file_name}')
+        export_ppo_training_set(export_file_path, conv_queries, conv_responses, conv_scores)
+
     if scores_pp_func is not None:
         scores = globals()[scores_pp_func](scores, **scores_pp_func_kwargs)
 
     if filter_out_func is not None:
         queries, responses, scores = globals()[filter_out_func](queries, responses, scores, **filter_out_func_kwargs)
 
-    
     return queries, responses, scores
 
 
@@ -94,33 +103,20 @@ def process_conversation(
     conversation_responses = []
     conversation_scores = []
 
-    round_agreements = []
-    round_self_points = []
-    round_opponent_points = []
     round_nb = -1
     round_msg_nb = -1
 
-    for message in conversation:
-        if message.get("role") == "round_info":
-            round_agreements.append(message["content"]["agreement_reached"])
-            round_self_points.append(message["content"]["self_points"])
-            round_opponent_points.append(message["content"]["other_points"])
 
-    score_info = {
-        "round_agreements": round_agreements,
-        "round_self_points": round_self_points,
-        "round_opponent_points": round_opponent_points,
-        "current_round_nb": round_nb,
-        "current_round_msg_nb": round_msg_nb,
-    }
+    scores = globals()[score_function](conversation, **score_function_kwargs)
 
     for message in conversation:
         if message.get("is_error") and remove_errors:
             continue
 
         elif message.get("role") == "round_info":
-            score_info["current_round_nb"] +=1
-            score_info["current_round_msg_nb"] = 0
+            round_nb += 1
+            round_msg_nb = 0
+            
         elif message.get("role") == "user" or message.get("role") == "assistant":
             message = {"role": message["role"], "content": message["content"]}
             context.append(message)
@@ -129,7 +125,7 @@ def process_conversation(
         if message.get("role") == "assistant":
             conversation_queries.append(copy.deepcopy(context[:-1]))
             conversation_responses.append([message])
-            score = globals()[score_function](score_info, **score_function_kwargs)
+            score = scores[round_nb]
             conversation_scores.append(score)
 
         round_msg_nb += 1
@@ -143,55 +139,78 @@ def process_conversation(
     return conversation_queries, conversation_responses, conversation_scores
 
 
-def score_based_on_agreement(score_info, points_on_agreement=10):
+def score_based_on_agreement(conversation, points_on_agreement=10):
     """
-    Sets the score to `points_on_agreement` if an agreement was reached in the current round, else 0.
+    Sets the score to `points_on_agreement` if an agreement was reached in each round, else 0.
 
     Parameters:
-    - score_info (dict): Information about the current round and points.
+    - conversation (list): List of message dictionaries representing a conversation.
     - points_on_agreement (int): Points to assign if an agreement was reached.
 
     Returns:
-    - int: Score based on agreement.
+    - list: Scores for each round based on agreement.
     """
-    current_round = score_info["current_round_nb"]
-    if score_info["round_agreements"][current_round] == True:
-        return points_on_agreement
-    return 0
+    scores = []
+    for message in conversation:
+        if message.get("role") == "round_info":
+            agreement_reached = message["content"]["agreement_reached"]
+            score = points_on_agreement if agreement_reached else 0
+            scores.append(score)
+    return scores
 
 
-def points_score(score_info, no_agreement_score=0, exponent=1.0):
+def points_score(conversation, no_agreement_score=0, exponent=1.0, return_discounted=True, discount_factor=0.6):
     """
-    Sets the score to the points reached in the current round.
+    Sets the score to the points reached in each round, applying a discount factor if specified.
 
     Parameters:
-    - score_info (dict): Information about the current round and points.
+    - conversation (list): List of message dictionaries representing a conversation.
+    - no_agreement_score (int): Score to assign if no agreement is reached.
+    - exponent (float): Exponent to apply to the self_points.
+    - return_discounted (bool): Whether to apply discounting to the scores.
+    - discount_factor (float): Discount factor to apply to future rewards.
 
     Returns:
-    - int: Score based on current round points.
+    - list: Discounted scores for each round based on current round points.
     """
-    current_round = score_info["current_round_nb"]
+    scores = []
+    discounted_score = 0
 
-    if score_info["round_agreements"][current_round] == False:
-        return no_agreement_score
-    
-    return score_info["round_self_points"][current_round] ** exponent
+    for message in reversed(conversation):
+        if message.get("role") == "round_info":
+            agreement_reached = message["content"]["agreement_reached"]
+            self_points = message["content"]["self_points"]
+            score = self_points ** exponent if agreement_reached else no_agreement_score
+
+            if return_discounted:
+                discounted_score = score + discount_factor * discounted_score
+            else:
+                discounted_score = score
+
+            scores.insert(0, discounted_score)
+
+    return scores
 
 
-def score_based_on_future_points(score_info):
+def score_based_on_future_points(conversation):
     """
-    Sets the score to the sum of points from now to the end of the game.
+    Sets the score to the sum of points from the current round to the end of the game.
 
     Parameters:
-    - score_info (dict): Information about the current round and points.
+    - conversation (list): List of message dictionaries representing a conversation.
 
     Returns:
-    - int: Score based on future points.
+    - list: Scores for each round based on future points.
     """
-    current_round = score_info["current_round_nb"]
-    if current_round >= 0:
-        return sum(score_info["round_self_points"][current_round:])
-    return 0
+    scores = []
+    total_points = 0
+    for message in reversed(conversation):
+        if message.get("role") == "round_info":
+            self_points = message["content"]["self_points"]
+            total_points += self_points
+            scores.insert(0, total_points)
+    return scores
+
 
 def positive_score_filter(queries, responses, scores):
     """
@@ -219,10 +238,12 @@ def positive_score_filter(queries, responses, scores):
 
     return filtered_queries, filtered_responses, filtered_scores
 
+
 def subtract_mean_positive_score(scores, min_score=0):
     positive_scores = [s for s in scores if s > min_score]
     mean_score = mean(positive_scores)
     return [s - mean_score for s in scores if s > min_score]
+
 
 def subtract_mean_score(scores):
     mean_score = mean(scores)
