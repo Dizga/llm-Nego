@@ -12,9 +12,10 @@ class DondGame:
         mode="coop",
         max_turns=None,
         rounds_per_game=1,
-        player_order="deterministic",
         random_setup_func=None,
         random_setup_kwargs=None,
+        role_assignator_func=None,
+        role_assignator_func_kwargs=None,
         finalization_visibility=False,
     ):
         """
@@ -37,11 +38,12 @@ class DondGame:
         self.roles = ["starting_negotiator", "responding_negotiator"]
         self.mode = mode
         self.max_turns = max_turns
-        self.player_order = player_order
         self.random_setup_func = globals()[random_setup_func]
         self.random_setup_kwargs = random_setup_kwargs
         self.finalization_visibility = finalization_visibility
         self.rounds_per_game = rounds_per_game
+        self.role_assignator_func = globals()[role_assignator_func]
+        self.role_assignator_func_kwargs = role_assignator_func_kwargs
 
         self.new_game()
 
@@ -54,7 +56,6 @@ class DondGame:
             self.roles[0]: role_values[0],
             self.roles[1]: role_values[1]
         }
-
 
 
     def step(self, action) -> bool:
@@ -171,6 +172,7 @@ class DondGame:
             "quantities": self.quantities,
             "has_finalized": self.has_finalized,
             "last_message": self.last_message,
+            "players" : self.players,
             "finalization_visibility": self.finalization_visibility,
             # rounds history
             "round_player_roles": self.round_player_roles,
@@ -211,8 +213,8 @@ class DondGame:
         self.turn = 0
         self.last_message = None
         self.set_new_setup()
-        self.role_deque = self.get_new_role_deque()
         self.assign_roles()
+        self.role_deque = deque(self.roles)
 
 
     def new_game(self, checkpoint=None):
@@ -236,39 +238,23 @@ class DondGame:
             self.is_new_game = True
             self.game_over = False
             self.last_message = None
-            self.role_deque = self.get_new_role_deque()
+            self.role_deque = deque(self.roles)
+            self.player_to_role = None
+            self.round_player_roles = [] 
+            self.round_quantities = []
+            self.round_values = []        
+            self.round_finalizations = [] 
+            self.round_agreements_reached = [] 
+            self.round_points = []
             self.set_new_setup()
             self.assign_roles()
-            self.round_player_roles = []  # Initialize round_player_roles
-            self.round_quantities = []    # Ensure round_quantities is initialized
-            self.round_values = []        # Ensure round_values is initialized
-            self.round_finalizations = [] # Ensure round_finalizations is initialized
-            self.round_agreements_reached = [] # Ensure round_agreement_reached is initialized
-            self.round_points = []        # Ensure round_points is initialized
 
-    def load_checkpoint(self, checkpoint):
-        """
-        Loads the game state from a checkpoint.
-
-        Args:
-            checkpoint (dict): A dictionary containing the checkpoint state.
-        """
-        self.__dict__.update(checkpoint)
-
-    
-    def get_new_role_deque(self):
-        """
-        Set the order of roles.
-        """
-        if self.player_order == "deterministic":
-            return deque(self.roles)
-        elif self.player_order == "stochastic":
-            return deque(random.sample(self.roles, len(self.roles)))
-    
     def get_current_player(self):
         """
         Get the current player (the one who has to play next)
         """
+        if not hasattr(self, 'role_to_player') or not hasattr(self, 'role_deque') or not self.role_deque:
+            return None
         return self.role_to_player[self.role_deque[0]]
 
     def current_turn(self):
@@ -282,46 +268,71 @@ class DondGame:
 
     def assign_roles(self):
         """
-        Assigns roles to players for the current round.
+        Assigns roles to players for the current round using the role_assignator_func.
         """
-        if self.player_order == "deterministic":
-            self.role_to_player = {role: player for role, player in zip(self.roles, self.players)}
-        elif self.player_order == "stochastic":
-            shuffled_players = random.sample(self.players, len(self.players))
-            self.role_to_player = {role: player for role, player in zip(self.roles, shuffled_players)}
+        self.player_to_role = self.role_assignator_func(self.get_state(), **self.role_assignator_func_kwargs)
         
         # Create player_to_role mapping
-        self.player_to_role = {player: role for role, player in self.role_to_player.items()}
+        self.role_to_player = {role: player for player, role in self.player_to_role.items()}
 
+    def load_checkpoint(self, checkpoint):
+        """
+        Loads the game state from a checkpoint.
+
+        Args:
+            checkpoint (dict): A dictionary containing the checkpoint state.
+        """
+        self.__dict__.update(checkpoint)
 
 def uniform_quant_random_vals(items, min_quant, max_quant, min_val, max_val):
     quant = random.randint(min_quant, max_quant)
-    val_player_0 = [random.randint(min_val, max_val) for _ in range(quant)]
-    val_player_1 = copy.deepcopy(val_player_0)
-    random.shuffle(val_player_1)
-    val_player_0 = {item: val for item, val in zip(items, val_player_0)}
-    val_player_1 = {item: val for item, val in zip(items, val_player_1)}
+    val_starting_negotiator = [random.randint(min_val, max_val) for _ in range(quant)]
+    val_responding_negotiator = copy.deepcopy(val_starting_negotiator)
+    random.shuffle(val_responding_negotiator)
+    val_starting_negotiator = {item: val for item, val in zip(items, val_starting_negotiator)}
+    val_responding_negotiator = {item: val for item, val in zip(items, val_responding_negotiator)}
     quantities = {item:q for item,q in zip(items, [quant]*len(items))}
-    return items, quantities, (val_player_0, val_player_1)
+    return items, quantities, (val_starting_negotiator, val_responding_negotiator)
 
 def independent_random_vals(items, min_quant, max_quant, min_val, max_val):
     quantities = {item: random.randint(min_quant, max_quant) for item in items}
-    val_player_0 = {item: random.randint(min_val, max_val) for item in items}
-    val_player_1 = {item: random.randint(min_val, max_val) for item in items}
-    return items, quantities, (val_player_0, val_player_1)
+    val_starting_negotiator = {item: random.randint(min_val, max_val) for item in items}
+    val_responding_negotiator = {item: random.randint(min_val, max_val) for item in items}
+    return items, quantities, (val_starting_negotiator, val_responding_negotiator)
 
-def fixed_manual(items, quantities, val_player_0, val_player_1):
+def fixed_manual(items, quantities, val_starting_negotiator, val_responding_negotiator):
     quantities = {item: q for item, q in zip(items, quantities)}
-    val_player_0 = {item: v for item, v in zip(items, val_player_0)}
-    val_player_1 = {item: v for item, v in zip(items, val_player_1)}
-    return items, quantities, (val_player_0, val_player_1)
+    val_starting_negotiator = {item: v for item, v in zip(items, val_starting_negotiator)}
+    val_responding_negotiator = {item: v for item, v in zip(items, val_responding_negotiator)}
+    return items, quantities, (val_starting_negotiator, val_responding_negotiator)
 
-def random_quant_fixed_vals(items, min_quant, max_quant, val_player_0, val_player_1):
+def random_quant_fixed_vals(items, min_quant, max_quant, val_starting_negotiator, val_responding_negotiator):
     quantities = {item: random.randint(min_quant, max_quant) for item in items}
-    val_player_0 = {item: v for item, v in zip(items, val_player_0)}
-    val_player_1 = {item: v for item, v in zip(items, val_player_1)}
-    return items, quantities, (val_player_0, val_player_1)
+    val_starting_negotiator = {item: v for item, v in zip(items, val_starting_negotiator)}
+    val_responding_negotiator = {item: v for item, v in zip(items, val_responding_negotiator)}
+    return items, quantities, (val_starting_negotiator, val_responding_negotiator)
 
+def alternating_role_assignator(state, **kwargs):
+    """
+    Alternates roles between player_0 and player_1 at each round.
+    At the first round, player_0 is assigned to the role "starting_negotiator".
 
+    Args:
+        state (dict): The current state of the game.
+        kwargs (dict): Additional keyword arguments (not used here).
 
+    Returns:
+        dict: A mapping of players to roles.
+    """
+    round_number = state["round_number"]
+    players = state["players"]
+    roles = ["starting_negotiator", "responding_negotiator"]
 
+    if round_number % 2 == 0:
+        # Even rounds: player_0 is "starting_negotiator"
+        player_to_role = {players[0]: roles[0], players[1]: roles[1]}
+    else:
+        # Odd rounds: player_1 is "starting_negotiator"
+        player_to_role = {players[0]: roles[1], players[1]: roles[0]}
+
+    return player_to_role

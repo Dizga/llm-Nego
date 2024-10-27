@@ -507,22 +507,24 @@ def create_new_round_prompt(state):
     Returns:
         str: The constructed new round prompt.
     """
-    last_round = state.get("last_round", {})
-    agreement_reached = last_round.get("agreement_reached", False)
-    self_points = last_round.get("self_points", 0)
-    other_points = last_round.get("other_points", 0)
-    current_round = state.get("current_round", 1)
+    agreement_reached = state.get(['round_agreements_reached'][-1], False)
+    current_round = state.get("round_number", 1)
     nb_rounds = state.get("nb_rounds", 1)
+    quantities = state.get("quantities", {})
+    values = state["role_values"][state["player_to_role"][state["current_player"]]]
+    self_points = state['round_points'][-1][state["player_to_role"][state["current_player"]]]
 
     last_round_info = (
-        f"An agreement was reached in the last round. "
-        f"You scored {self_points} points, and the other player scored {other_points} points."
+        f"An agreement was reached in the last round.\n"
+        f"You scored {self_points} points."
         if agreement_reached else "No agreement was reached in the last round."
     )
 
     return (
         f"Last round info: {last_round_info}\n"
-        f"You are now playing round {current_round}/{nb_rounds}.\n"
+        f"You are now playing round {current_round+1}/{nb_rounds}.\n"
+        f"For this round, the quantities are {quantities}"
+        f"To you, the items are worth {values}"
     )
 
 

@@ -19,16 +19,17 @@ matches:
     log_matches: true
 
   dond_game_args:
-    rounds_per_game: 6
+    rounds_per_game: 3
     max_turns: 1
-    player_order: deterministic 
     mode: basic
     random_setup_func: fixed_manual
     random_setup_kwargs: 
       items: ['coins']
       quantities: [10]
-      val_player_0: [1]
-      val_player_1: [1]
+      val_starting_negotiator: [1]
+      val_responding_negotiator: [2]
+    role_assignator_func: alternating_role_assignator
+    role_assignator_func_kwargs: {}
     finalization_visibility: True
 
 
