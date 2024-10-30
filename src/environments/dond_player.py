@@ -197,6 +197,8 @@ class DondPlayer:
 
             try:
                 finalize_json = json.loads(finalize_content)
+                if not isinstance(finalize_json, dict): 
+                    errors.append("The content within <finalize>...</finalize> is not a valid dictionary.")
                 i_take = finalize_json.get("i_take")
                 other_player_gets = finalize_json.get("other_player_gets")
 
