@@ -211,8 +211,9 @@ def advantage_alignment_score(conversation,
             self_points = message["content"]["self_points"]
             other_points = message["content"]["other_points"]
 
-            total_self_points += self_points
-            total_other_points += other_points
+            # Apply discount factor to the points
+            total_self_points = self_points + discount_factor * total_self_points
+            total_other_points = other_points + discount_factor * total_other_points
 
             self_returns.append(total_self_points)
             other_returns.append(total_other_points)
