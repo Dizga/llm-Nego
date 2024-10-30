@@ -393,6 +393,7 @@ def create_game_intro_prompt(state):
     max_turns = state.get("max_turns", 1)
     quantities = state.get("quantities", {})
     values = state["role_values"][state["player_to_role"][state["current_player"]]]
+    other_values = state["role_values"][state["player_to_role"][state["other_player"]]] if state.get("other_values_visibility", False) else "hidden"
     game_mode_specificities = "Specific rules or conditions for the game mode."
 
     common_intro = f"""
@@ -427,6 +428,7 @@ def create_game_intro_prompt(state):
         The first round starts now.
         Please decide how to divide {quantities} between yourself and the other player.
         To you, the item categories are worth: {values}.
+        The other player's values are: {other_values}.
         """
     else:
         # Standard prompt for when max_turns is greater than 1
@@ -459,6 +461,7 @@ def create_game_intro_prompt(state):
         The first round starts now.
         Please decide how to divide {quantities} between yourself and the other player.
         To you, the item categories are worth: {values}.
+        The other player's values are: {other_values}.
         """
     return prompt.strip()
 
@@ -476,6 +479,7 @@ def create_finalization_prompt(state):
     quantities = state.get("quantities", {})
     values = state.get("values", {})
     other_player_finalization = state.get("last_message", "")
+    other_values = state.get("other_values", {}) if state.get("other_values_visibility", False) else "hidden"
 
     prompt = f"""
     A finalization has been made by the other player. It's your turn to finalize the division of items.
@@ -489,6 +493,7 @@ def create_finalization_prompt(state):
     - All items must be distributed between you and the other player.
     - The total number of items in 'i_take' and 'other_player_gets' should match the available quantities: {quantities}.
     - To you, the items are worth: {values}.
+    - The other player's values are: {other_values}.
     """
 
     if state.get("finalization_visibility", False) and other_player_finalization:
@@ -514,6 +519,7 @@ def create_new_round_prompt(state):
     nb_rounds = state.get("nb_rounds", 1)
     quantities = state.get("quantities", {})
     values = state["role_values"][state["player_to_role"][state["current_player"]]]
+    other_values = state["role_values"][state["player_to_role"][state["other_player"]]] if state.get("other_values_visibility", False) else "hidden"
     self_points = state['round_points'][-1][state["player_to_role"][state["current_player"]]]
 
     last_round_info = (
@@ -526,7 +532,8 @@ def create_new_round_prompt(state):
         f"Last round info: {last_round_info}\n"
         f"You are now playing round {current_round+1}/{nb_rounds}.\n"
         f"For this round, the quantities are {quantities}"
-        f"To you, the items are worth {values}"
+        f"To you, the items are worth {values}.\n"
+        f"The other player's values are: {other_values}."
     )
 
 
