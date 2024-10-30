@@ -19,7 +19,7 @@ matches:
     log_matches: true
 
   dond_game_args:
-    rounds_per_game: 6
+    rounds_per_game: 8
     max_turns: 1
     mode: basic
     random_setup_func: fixed_manual
@@ -27,7 +27,7 @@ matches:
       items: ['coins']
       quantities: [10]
       val_starting_negotiator: [1]
-      val_responding_negotiator: [3]
+      val_responding_negotiator: [2]
     role_assignator_func: alternating_role_assignator
     role_assignator_func_kwargs: {}
     finalization_visibility: True
@@ -51,7 +51,7 @@ matches:
         last_k_responses: -1
         remove_errors: false
 
-        score_function: points_score
+        score_function: advantage_alignment_score
         score_function_kwargs: 
           no_agreement_score: -1
           exponent: 1.0
@@ -78,7 +78,7 @@ matches:
         last_k_responses: -1
         remove_errors: false
 
-        score_function: points_score
+        score_function: advantage_alignment_score
         score_function_kwargs: 
           no_agreement_score: -1
           exponent: 1.0
@@ -98,11 +98,11 @@ models:
     init_args:
 
       name: 'llama'
-      adapter_names: ['sp_adapter', 'ad_alice', 'ad_bob']
+      adapter_names: ['ad_alice', 'ad_bob']
       device: "cuda"
       default_training_mode: 'ppo'
       pretrained_args: 
-        pretrained_model_name_or_path: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+        pretrained_model_name_or_path: "meta-llama/Llama-3.1-8B-Instruct"
         torch_dtype: "bfloat16"
         device_map: "auto"
       bits_and_bytes_args: null
@@ -118,7 +118,8 @@ models:
       generation_args:
         max_new_tokens: 200
         do_sample: True
-        temperature: 1.0
+        temperature: 1.
+        
         top_k: 0.0
         top_p: 1.0
         repetition_penalty: 1.0

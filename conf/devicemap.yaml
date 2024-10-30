@@ -1,5 +1,0 @@
-device_map: 
-          0: [0, 1, 2, 3, 4, 5, 6, 7]  # Assign layers 0-7 to GPU 0
-          1: [8, 9, 10, 11, 12, 13, 14, 15]  # Assign layers 8-15 to GPU 1
-          2: [16, 17, 18, 19, 20, 21, 22, 23]  # Assign layers 16-23 to GPU 2
-          3: [24, 25, 26, 27, 28, 29, 30, 31]  # Assign layers 24-31 to GPU 3

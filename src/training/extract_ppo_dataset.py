@@ -159,7 +159,7 @@ def score_based_on_agreement(conversation, points_on_agreement=10):
     return scores
 
 
-def points_score(conversation, no_agreement_score=0, exponent=1.0, return_discounted=True, discount_factor=0.6):
+def points_score(conversation, no_agreement_score=-1, exponent=1.0, return_discounted=True, discount_factor=0.6):
     """
     Sets the score to the points reached in each round, applying a discount factor if specified.
 
@@ -191,6 +191,44 @@ def points_score(conversation, no_agreement_score=0, exponent=1.0, return_discou
 
     return scores
 
+def advantage_alignment_score(conversation, 
+                 no_agreement_score=-1, 
+                 exponent=1.0, 
+                 return_discounted=True, 
+                 discount_factor=0.6):
+
+    scores = []
+    self_returns = []
+    other_returns = []
+
+    # Compute the returns at each step for both players (traverse the rounds in reverse)
+    total_self_points = 0
+    total_other_points = 0
+
+    for i in reversed(range(len(conversation))):
+        message = conversation[i]
+        if message.get("role") == "round_info":
+            self_points = message["content"]["self_points"]
+            other_points = message["content"]["other_points"]
+
+            total_self_points += self_points
+            total_other_points += other_points
+
+            self_returns.append(total_self_points)
+            other_returns.append(total_other_points)
+
+    # Convert lists to numpy arrays
+    self_returns = np.array(self_returns)
+    other_returns = np.array(other_returns)
+
+    nb_rounds = len(self_returns)
+    # Compute advantage alignment scores
+    for i in range(nb_rounds):
+        if i > 0:
+            scores.append(float(np.sum(self_returns[:i]) * other_returns[i]))
+        else:
+            scores.append(float(self_returns[0] * other_returns[0]))
+    return scores
 
 def score_based_on_future_points(conversation):
     """
