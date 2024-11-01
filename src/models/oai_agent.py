@@ -31,5 +31,40 @@ class OaiAgent:
         else:
             self.client = OpenAI(api_key=api_key)
         self.model = model
-        self.history = []
-        self.default_training_mode = "sft"
+
+    def prompt(self, contexts: List[dict]) -> str:
+        """
+        Generates a response from the OpenAI model based on the provided contexts.
+
+        Args:
+            contexts (List[dict]): The contexts for generation.
+
+        Returns:
+            str: The generated response from the model.
+        """
+        if not contexts:
+            return ""
+
+        # Assuming contexts is a list of dictionaries with a 'content' key
+        prompt_text = " ".join(context["content"] for context in contexts)
+
+        # Call the OpenAI API to generate a response
+        response = self.client.Completion.create(
+            model=self.model,
+            prompt=prompt_text,
+            max_tokens=150  # Adjust as needed
+        )
+
+        # Extract and return the generated text
+        return response.choices[0].text.strip()
+
+    def set_adapter(self, name: str) -> None:
+        """
+        Dummy method for setting an adapter. Does nothing.
+        
+        Args:
+            name (str): The name of the adapter to switch to.
+        """
+        pass
+
+    

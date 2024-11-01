@@ -336,3 +336,23 @@ def alternating_role_assignator(state, **kwargs):
         player_to_role = {players[0]: roles[1], players[1]: roles[0]}
 
     return player_to_role
+
+
+def fixed_role_assignator(state, **kwargs):
+    """
+    Always assigns player_0 to the role "starting_negotiator".
+
+    Args:
+        state (dict): The current state of the game.
+        kwargs (dict): Additional keyword arguments (not used here).
+
+    Returns:
+        dict: A mapping of players to roles.
+    """
+    players = state["players"]
+    roles = ["starting_negotiator", "responding_negotiator"]
+
+    # Always assign player_0 to "starting_negotiator"
+    player_to_role = {players[0]: roles[0], players[1]: roles[1]}
+
+    return player_to_role

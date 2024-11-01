@@ -2,6 +2,7 @@ import json
 import os
 from statistics import mean
 from utils.augmented_mean import augmented_mean
+from utils.augmented_variance import augmented_variance
 from utils.plot_curves import plot_curves
 import matplotlib.pyplot as plt
 import numpy as np
@@ -22,18 +23,20 @@ def process_player_folder(folder_path):
 
 def compute_mean_game_stats(game_stats_list):
     """
-    Computes the mean statistics from a list of game statistics.
+    Computes the mean and variance statistics from a list of game statistics.
     """
     if not game_stats_list:
         return {}
     mean_game_stats = {}
+    variance_game_stats = {}
     for stat in game_stats_list[0].keys():
         if isinstance(game_stats_list[0][stat], dict): continue
         accumulated_stat = []
         for game_info in game_stats_list:
             accumulated_stat.append(game_info[stat])
         mean_game_stats[stat] = augmented_mean(accumulated_stat)
-    return mean_game_stats
+        variance_game_stats[stat] = augmented_variance(accumulated_stat)
+    return mean_game_stats, variance_game_stats
 
 def export_dond_player_stats(input_path, output_path):
     """
@@ -56,7 +59,7 @@ def update_player_statistics(input_path, output_file, iteration):
         iteration (int): Current iteration number.
     """
     game_stats_list = process_player_folder(input_path)
-    iteration_stats = compute_mean_game_stats(game_stats_list)
+    iteration_mean_stats, iteration_variance_stats = compute_mean_game_stats(game_stats_list)
 
     # Read existing statistics or initialize if file doesn't exist
     if os.path.exists(output_file):
@@ -67,22 +70,29 @@ def update_player_statistics(input_path, output_file, iteration):
 
     # Update global statistics
     global_stats = all_stats["global"]
-    for key, value in iteration_stats.items():
+    for key, value in iteration_mean_stats.items():
         if key not in global_stats:
-            global_stats[key] = value
+            global_stats[key] = {"mean": value, "variance": iteration_variance_stats[key]}
         else:
             if isinstance(value, list):
                 # For list values, update element-wise
-                if not isinstance(global_stats[key], list):
-                    global_stats[key] = [global_stats[key]] * len(value)
-                global_stats[key] = [(g * iteration + v) / (iteration + 1) 
-                                     for g, v in zip(global_stats[key], value)]
+                if not isinstance(global_stats[key]["mean"], list):
+                    global_stats[key]["mean"] = [global_stats[key]["mean"]] * len(value)
+                    global_stats[key]["variance"] = [global_stats[key]["variance"]] * len(value)
+                global_stats[key]["mean"] = [(g * iteration + v) / (iteration + 1) 
+                                             for g, v in zip(global_stats[key]["mean"], value)]
+                global_stats[key]["variance"] = [(g * iteration + v) / (iteration + 1) 
+                                                 for g, v in zip(global_stats[key]["variance"], iteration_variance_stats[key])]
             else:
                 # For scalar values, update as before
-                global_stats[key] = (global_stats[key] * iteration + value) / (iteration + 1)
+                global_stats[key]["mean"] = (global_stats[key]["mean"] * iteration + value) / (iteration + 1)
+                global_stats[key]["variance"] = (global_stats[key]["variance"] * iteration + iteration_variance_stats[key]) / (iteration + 1)
 
     # Add iteration statistics
-    all_stats[f"iteration_{iteration:03d}"] = iteration_stats
+    all_stats[f"iteration_{iteration:03d}"] = {
+        "mean": iteration_mean_stats,
+        "variance": iteration_variance_stats
+    }
 
     # Write updated statistics to file
     with open(output_file, 'w') as f:
@@ -118,18 +128,19 @@ def generate_player_statistics_plots(input_file, output_folder):
 
     # Generate plots for iteration statistics
     if iteration_stats:
-        for key in iteration_stats[0].keys():
-            values = [stats[key] for stats in iteration_stats]
+        for key in iteration_stats[0]['mean'].keys():
+            mean_values = [stats['mean'][key] for stats in iteration_stats]
+            variance_values = [stats['variance'][key] for stats in iteration_stats]
             iterations = range(1, len(iteration_stats) + 1)
             
             plt.figure(figsize=(10, 6))
 
-            if isinstance(values[0], list):
-                labels = ["Round " + str(i) for i in range(1, len(values[0]) + 1)]
+            if isinstance(mean_values[0], list):
+                labels = ["Round " + str(i) for i in range(1, len(mean_values[0]) + 1)]
             else:
                 labels = ['1']
 
-            plt.plot(iterations, values, label=labels)
+            plt.errorbar(iterations, mean_values, yerr=variance_values, label=labels, fmt='-o')
             plt.xlabel('Iteration')
             plt.ylabel(snake_case_to_title(key))
             plt.title(f"{snake_case_to_title(key)} Through Iterations")
@@ -138,41 +149,7 @@ def generate_player_statistics_plots(input_file, output_folder):
             plt.savefig(os.path.join(output_folder, f"{key}_through_iterations.png"), bbox_inches='tight')
             plt.close()
 
-    # # Generate plots for global statistics
-    # if global_stats:
-    #     scalar_stats = {}
-    #     non_scalar_stats = {}
-
-    #     for key, value in global_stats.items():
-    #         if np.isscalar(value):
-    #             scalar_stats[key] = value
-    #         else:
-    #             non_scalar_stats[key] = value
-
-    #     # Plot scalar statistics
-    #     if scalar_stats:
-    #         plt.figure(figsize=(12, 6))
-    #         keys = list(scalar_stats.keys())
-    #         values = list(scalar_stats.values())
-            
-    #         plt.bar(range(len(keys)), values)
-    #         plt.xlabel('Statistic')
-    #         plt.ylabel('Value')
-    #         plt.title('Global Scalar Statistics')
-    #         plt.xticks(range(len(keys)), keys, rotation=45, ha='right')
-    #         plt.tight_layout()
-    #         plt.savefig(os.path.join(output_folder, "global_scalar_statistics.png"), bbox_inches='tight')
-    #         plt.close()
-
-    #     # Plot non-scalar statistics
-    #     for key, value in non_scalar_stats.items():
-    #         plt.figure(figsize=(10, 6))
-    #         plt.plot(value)
-    #         plt.xlabel('Index')
-    #         plt.ylabel('Value')
-    #         plt.title(f'Global Non-Scalar Statistic: {key}')
-    #         plt.savefig(os.path.join(output_folder, f"global_non_scalar_{key}.png"), bbox_inches='tight')
-    #         plt.close()
+    
 
 
 def snake_case_to_title(snake_str):

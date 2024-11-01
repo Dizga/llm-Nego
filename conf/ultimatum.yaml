@@ -5,7 +5,7 @@ hydra:
 experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
-  nb_iterations: 400
+  nb_iterations: 2
   nb_matches_per_iteration: 10
   reinit_matches_each_it: true
 
@@ -19,7 +19,7 @@ matches:
     log_matches: true
 
   dond_game_args:
-    rounds_per_game: 8
+    rounds_per_game: 1
     max_turns: 1
     mode: basic
     random_setup_func: fixed_manual
@@ -28,7 +28,7 @@ matches:
       quantities: [10]
       val_starting_negotiator: [1]
       val_responding_negotiator: [2]
-    role_assignator_func: alternating_role_assignator
+    role_assignator_func: fixed_role_assignator
     role_assignator_func_kwargs: {}
     finalization_visibility: True
 
@@ -153,6 +153,7 @@ models:
         # learning_rate: 1e-5
         is_peft_model: True
       
+  
 
 
 

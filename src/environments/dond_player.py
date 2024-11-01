@@ -5,7 +5,7 @@ import copy
 from environments.dond_game import DondGame
 import math
 from statistics import mean
-
+import numpy as np
 
 class DondPlayer:
     def __init__(
@@ -266,6 +266,10 @@ class DondPlayer:
             "ultimatum_percentage": [],
             "max_ultimatum_points": [],
             "points_difference": [],  # New statistic
+            "items_given_to_self": [],  # New statistic
+            "self_points_on_agreement": [],  # New statistic
+            "other_points_on_agreement": [],  # New statistic
+            "points_diff_on_agreement": [],  # New statistic
         }
 
         round_infos_extra = {
@@ -309,6 +313,18 @@ class DondPlayer:
             else:
                 imbalance = abs((self_points - other_points) / total_points)
             round_infos["imbalance"].append(imbalance)
+
+            # New statistics
+            if state['round_agreements_reached'][i]:
+                round_infos["items_given_to_self"].append(state['round_finalizations'][i][role])
+                round_infos["self_points_on_agreement"].append(self_points)
+                round_infos["other_points_on_agreement"].append(other_points)
+                round_infos["points_diff_on_agreement"].append(self_points - other_points)
+            else:
+                round_infos["items_given_to_self"].append(np.nan)
+                round_infos["self_points_on_agreement"].append(np.nan)
+                round_infos["other_points_on_agreement"].append(np.nan)
+                round_infos["points_diff_on_agreement"].append(np.nan)
         
         # Correctly iterate over augmented_context to find and update 'round_info'
         c = 0
@@ -320,7 +336,6 @@ class DondPlayer:
                 c += 1
 
         # Calculate mean for each metric and insert at the beginning of augmented_context
-        #content = {key: mean(round_infos[key]) for key in round_infos.keys()}
         content = round_infos
         game_info = {"role": "game_info", "content": content}
         self.augmented_context.insert(0, game_info)
