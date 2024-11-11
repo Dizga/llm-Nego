@@ -5,7 +5,7 @@ hydra:
 experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
-  nb_iterations: 2
+  nb_iterations: 400
   nb_matches_per_iteration: 10
   reinit_matches_each_it: true
 
@@ -19,7 +19,7 @@ matches:
     log_matches: true
 
   dond_game_args:
-    rounds_per_game: 1
+    rounds_per_game: 8
     max_turns: 1
     mode: basic
     random_setup_func: fixed_manual
@@ -27,11 +27,11 @@ matches:
       items: ['coins']
       quantities: [10]
       val_starting_negotiator: [1]
-      val_responding_negotiator: [2]
+      val_responding_negotiator: [1]
     role_assignator_func: fixed_role_assignator
     role_assignator_func_kwargs: {}
     finalization_visibility: True
-
+    other_values_visibility: True
 
   players: 
 
@@ -51,9 +51,9 @@ matches:
         last_k_responses: -1
         remove_errors: false
 
-        score_function: advantage_alignment_score
+        score_function: points_score
         score_function_kwargs: 
-          no_agreement_score: -1
+          no_agreement_score: 0
           exponent: 1.0
 
         scores_pp_func: null
@@ -78,9 +78,9 @@ matches:
         last_k_responses: -1
         remove_errors: false
 
-        score_function: advantage_alignment_score
+        score_function: points_score
         score_function_kwargs: 
-          no_agreement_score: -1
+          no_agreement_score: 0
           exponent: 1.0
 
         scores_pp_func: null

@@ -124,15 +124,13 @@ class DondPlayer:
             self.add_to_context(usr_prompt)
             self.error_message = None
             return
+        
+        if state["is_new_game"]:
+            user_message += create_game_intro_prompt(state)
 
         if state["is_new_round"]:
             self.new_round()
             self.set_preplay_round_info(state)
-
-        if state["is_new_game"]:
-            user_message += create_game_intro_prompt(state)
-
-        if state["is_new_round"] and not state["is_new_game"]:
             user_message += create_new_round_prompt(state)
 
         user_message += create_play_prompt(state)
@@ -314,14 +312,20 @@ class DondPlayer:
                 imbalance = abs((self_points - other_points) / total_points)
             round_infos["imbalance"].append(imbalance)
 
-            # New statistics
+            # Calculate items_given_to_self independently of agreement status
+            finalization_values = state['round_finalizations'][i][role].values()
+            if all(isinstance(x, (int, float)) for x in finalization_values):
+                items_sum = sum(finalization_values)
+            else:
+                items_sum = np.nan
+            round_infos["items_given_to_self"].append(items_sum)
+            
+            # Agreement-dependent stats
             if state['round_agreements_reached'][i]:
-                round_infos["items_given_to_self"].append(state['round_finalizations'][i][role])
                 round_infos["self_points_on_agreement"].append(self_points)
                 round_infos["other_points_on_agreement"].append(other_points)
                 round_infos["points_diff_on_agreement"].append(self_points - other_points)
             else:
-                round_infos["items_given_to_self"].append(np.nan)
                 round_infos["self_points_on_agreement"].append(np.nan)
                 round_infos["other_points_on_agreement"].append(np.nan)
                 round_infos["points_diff_on_agreement"].append(np.nan)
@@ -406,16 +410,15 @@ def create_game_intro_prompt(state):
     """
     nb_rounds = state.get("nb_rounds", 1)
     max_turns = state.get("max_turns", 1)
-    quantities = state.get("quantities", {})
-    values = state["role_values"][state["player_to_role"][state["current_player"]]]
     game_mode_specificities = "Specific rules or conditions for the game mode."
 
     common_intro = f"""
-    You will be playing {nb_rounds} rounds of a game called deal-or-no-deal.
+    You will be playing {nb_rounds} rounds of a two-player negotiation game.
+    In this game, two players attempt to divide items from different categories between themselves, and each player may or may not value the categories differently.
+    Your objective is to maximize your personal points, which are calculated based on the items you get.
+    The other player also aims to maximize their own points, which may or may not align with your interests.
 
-    Deal-or-no-deal is a two-player negotiation game. I, the user, will be the game coordinator, acting as a middleman between you and the other player. Your objective is to maximize your personal points by proposing how to divide a set of item categories. All item categories must be distributed between you and the other player, and no items should be left over. The other player also aims to maximize their own points, which may or may not align with your interests.
-
-    In this game, two players attempt to divide item categories between themselves, and each player may value the categories differently.
+    If no agreement is reached, both players score 0.
 
     {game_mode_specificities}
     """
@@ -439,9 +442,6 @@ def create_game_intro_prompt(state):
         2. The other player sends:
         <finalize>{{ "i_take": {{"item_category1": y, "item_category2": x}}, "other_player_gets": {{"item_category1": x, "item_category2": y}} }}</finalize>
 
-        The first round starts now.
-        Please decide how to divide {quantities} between yourself and the other player.
-        To you, the item categories are worth: {values}.
         """
     else:
         # Standard prompt for when max_turns is greater than 1
@@ -470,10 +470,6 @@ def create_game_intro_prompt(state):
 
         3. [The other player agrees]
         <finalize>{{ "i_take": {{"item_category1": 0, "item_category2": 0}}, "other_player_gets": {{"item_category1": 0, "item_category2": 0}} }}</finalize>
-
-        The first round starts now.
-        Please decide how to divide {quantities} between yourself and the other player.
-        To you, the item categories are worth: {values}.
         """
     return prompt.strip()
 
@@ -489,21 +485,19 @@ def create_finalization_prompt(state):
         str: The formatted finalization prompt.
     """
     quantities = state.get("quantities", {})
-    values = state.get("values", {})
     other_player_finalization = state.get("last_message", "")
 
     prompt = f"""
     A finalization has been made by the other player. It's your turn to finalize the division of items.
 
-    Please ensure that no items are left over. Your finalization should be formatted as follows:
+    Your finalization should be formatted as follows:
     <finalize>{{ "i_take": {{"item_category_1": x, "item_category_2": y}}, "other_player_gets": {{"item_category_1": y, "item_category_2": x}} }}</finalize>
 
     Here, 'i_take' represents your share of the items, and 'other_player_gets' represents the other player's share.
 
     Remember:
-    - All items must be distributed between you and the other player.
     - The total number of items in 'i_take' and 'other_player_gets' should match the available quantities: {quantities}.
-    - To you, the items are worth: {values}.
+    - 0 points to each player if the division is not matching
     """
 
     if state.get("finalization_visibility", False) and other_player_finalization:
@@ -524,24 +518,35 @@ def create_new_round_prompt(state):
     Returns:
         str: The constructed new round prompt.
     """
-    agreement_reached = state.get(['round_agreements_reached'][-1], False)
     current_round = state.get("round_number", 1)
     nb_rounds = state.get("nb_rounds", 1)
     quantities = state.get("quantities", {})
     values = state["role_values"][state["player_to_role"][state["current_player"]]]
-    self_points = state['round_points'][-1][state["player_to_role"][state["current_player"]]]
 
-    last_round_info = (
-        f"An agreement was reached in the last round.\n"
-        f"You scored {self_points} points."
-        if agreement_reached else "No agreement was reached in the last round."
-    )
+    if current_round > 1:
+        agreement_reached = state.get(['round_agreements_reached'][-1], False)
+        self_points = state['round_points'][-1][state["player_to_role"][state["current_player"]]]
+
+        last_round_info = (
+            f"An agreement was reached in the last round.\n"
+            f"You scored {self_points} points."
+            if agreement_reached else "No agreement was reached in the last round."
+        )
+        last_round_info = f"Last round info: {last_round_info}\n"
+    else:
+        last_round_info = ""
+
+    # New addition: Check for finalization visibility and include other player's values
+    other_player_values = ""
+    if state.get("other_values_visibility", False):
+        other_role = next(role for role in state["role_values"] if role != state["player_to_role"][state["current_player"]])
+        other_player_values = f"\nTo the other player, the items are worth {state['role_values'][other_role]}."
 
     return (
-        f"Last round info: {last_round_info}\n"
+        f"{last_round_info}"
         f"You are now playing round {current_round+1}/{nb_rounds}.\n"
-        f"For this round, the quantities are {quantities}"
-        f"To you, the items are worth {values}"
+        f"For this round, the quantities are {quantities}.\n"
+        f"To you, the items are worth {values}.{other_player_values}"
     )
 
 

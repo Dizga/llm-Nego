@@ -17,6 +17,7 @@ class DondGame:
         role_assignator_func=None,
         role_assignator_func_kwargs=None,
         finalization_visibility=False,
+        other_values_visibility=False,
     ):
         """
         Initializes the DoND game.
@@ -32,6 +33,7 @@ class DondGame:
             items (list): The list of items in the game.
             quantities (list): The quantities of items.
             finalization_visibility (bool): Visibility of finalization.
+            other_values_visibility (bool): Visibility of other player's values.
         """
 
         self.players = players
@@ -44,6 +46,7 @@ class DondGame:
         self.rounds_per_game = rounds_per_game
         self.role_assignator_func = globals()[role_assignator_func]
         self.role_assignator_func_kwargs = role_assignator_func_kwargs
+        self.other_values_visibility = other_values_visibility
 
         self.new_game()
 
@@ -174,6 +177,7 @@ class DondGame:
             "last_message": self.last_message,
             "players" : self.players,
             "finalization_visibility": self.finalization_visibility,
+            "other_values_visibility": self.other_values_visibility,
             # rounds history
             "round_player_roles": self.round_player_roles,
             "round_quantities": self.round_quantities,

@@ -131,7 +131,7 @@ def generate_player_statistics_plots(input_file, output_folder):
         for key in iteration_stats[0]['mean'].keys():
             mean_values = [stats['mean'][key] for stats in iteration_stats]
             variance_values = [stats['variance'][key] for stats in iteration_stats]
-            iterations = range(1, len(iteration_stats) + 1)
+            iterations = range(1, len(mean_values) + 1)
             
             plt.figure(figsize=(10, 6))
 
@@ -140,7 +140,8 @@ def generate_player_statistics_plots(input_file, output_folder):
             else:
                 labels = ['1']
 
-            plt.errorbar(iterations, mean_values, yerr=variance_values, label=labels, fmt='-o')
+            #plt.errorbar(iterations, mean_values, yerr=variance_values, label=labels, fmt='-o')
+            plt.plot(iterations, mean_values, label=labels)
             plt.xlabel('Iteration')
             plt.ylabel(snake_case_to_title(key))
             plt.title(f"{snake_case_to_title(key)} Through Iterations")

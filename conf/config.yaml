@@ -6,7 +6,7 @@ experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
   nb_iterations: 400
-  nb_matches_per_iteration: 10
+  nb_matches_per_iteration: 30
   reinit_matches_each_it: true
 
 matches:
@@ -31,6 +31,7 @@ matches:
     role_assignator_func: alternating_role_assignator
     role_assignator_func_kwargs: {}
     finalization_visibility: True
+    other_values_visibility: True
 
 
   players: 
