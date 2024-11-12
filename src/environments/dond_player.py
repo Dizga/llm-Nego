@@ -6,7 +6,7 @@ from environments.dond_game import DondGame
 import math
 from statistics import mean
 import numpy as np
-
+    
 class DondPlayer:
     def __init__(
         self,
@@ -400,7 +400,7 @@ def create_play_prompt(state):
 
 def create_game_intro_prompt(state):
     """
-    Creates a game introduction prompt for the Deal-or-No-Deal game.
+    Constructs a game introduction prompt.
 
     Args:
         state (dict): The current state of the game.
@@ -413,12 +413,14 @@ def create_game_intro_prompt(state):
     game_mode_specificities = "Specific rules or conditions for the game mode."
 
     common_intro = f"""
-    You will be playing {nb_rounds} rounds of a two-player negotiation game.
-    In this game, two players attempt to divide items from different categories between themselves, and each player may or may not value the categories differently.
-    Your objective is to maximize your personal points, which are calculated based on the items you get.
-    The other player also aims to maximize their own points, which may or may not align with your interests.
+    Welcome to the splitting game. 
+    You will engage in {nb_rounds} rounds of splitting, where two players aim to divide items from various categories. 
 
-    If no agreement is reached, both players score 0.
+    Each player may assign different values to these categories, and your primary objective is to maximize your personal cumulative points.
+
+    Points are determined at the end of each round by multiplying the quantity of items you acquire by their respective values. Your cumulative points across all rounds will determine your success. Note that the other player will also strive to maximize their points, which may not align with your interests.
+
+    Importantly, in the event that no agreement is reached within a round, both players will receive zero points.
 
     {game_mode_specificities}
     """
@@ -429,19 +431,22 @@ def create_game_intro_prompt(state):
         {common_intro}
 
         Game Mechanics:
-        You can only send a final division. The final division should specify how many of each item category you want, leaving the remaining items for the other player. It should be JSON parsable.
-        Matching Divisions: If the combined division doesn't match the total number of items available, both players score 0.
+        
+        You are required to submit a final division of items. This division should clearly specify the quantity of each item category you wish to claim, with the remainder allocated to the other player. The division must be in a JSON-parsable format.
+        
+        Matching Divisions: If the combined division does not correspond to the total number of available items, both players will score zero points.
 
         Formatting:
-        Final division: <finalize>{{ "i_take": {{"item_category1": x, "item_category2": y}}, "other_player_gets": {{"item_category1": y, "item_category2": x}} }}</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player's share of the item categories.
+        
+        Final division: <finalize>{{ "i_take": {{"item_category1": x, "item_category2": y}}, "other_player_gets": {{"item_category1": y, "item_category2": x}} }}</finalize>, where 'i_take' represents your share and 'other_player_gets' represents the other player's share of the item categories.
 
         Example:
-        1. You send:
+        
+        1. You submit:
         <finalize>{{ "i_take": {{"item_category1": x, "item_category2": y}}, "other_player_gets": {{"item_category1": y, "item_category2": x}} }}</finalize>
 
-        2. The other player sends:
+        2. The other player submits:
         <finalize>{{ "i_take": {{"item_category1": y, "item_category2": x}}, "other_player_gets": {{"item_category1": x, "item_category2": y}} }}</finalize>
-
         """
     else:
         # Standard prompt for when max_turns is greater than 1
@@ -449,20 +454,28 @@ def create_game_intro_prompt(state):
         {common_intro}
 
         Game Mechanics:
-        Turn-taking: You and the other player will take turns exchanging one message at a time. After enough exchanges, when you feel ready, you can finalize the negotiation by sending the division to the game coordinator. Once a player decides to send a final division, the other player must also send a final division, ending the game.
-        Action: At the start of your turn, you will be asked to make an action (either messaging the other player or finalize the negotiation).
-        Final Division: The final division should specify how many of each item category you want, leaving the remaining items for the other player. It should be JSON parsable.
-        Matching Divisions: If the combined division doesn't match the total number of items available, both players score 0.
+        
+        Turn-taking: You and the other player will alternate turns, exchanging one message at a time. When you are ready, you may finalize the negotiation by submitting your division. Once a player decides to finalize, the other player must also submit their final division, concluding the game.
+        
+        Action: At the start of your turn, you will be prompted to take an action, either by messaging the other player or finalizing the negotiation.
+        
+        Final Division: The final division should specify the quantity of each item category you wish to claim, with the remainder allocated to the other player. The division must be in a JSON-parsable format.
+        
+        Matching Divisions: If the combined division does not correspond to the total number of available items, both players will score zero points.
+        
         There is a limit of 40 characters per message.
 
         Formatting:
+        
         Messages: <message> [Your message here.] </message>
-        Final division: <finalize>{{ "i_take": {{"item_category1": 0, "item_category2": 0}}, "other_player_gets": {{"item_category1": 0, "item_category2": 0}} }}</finalize>, where 'i_take' is your share and 'other_player_gets' is the other player's share of the item categories.
+        
+        Final division: <finalize>{{ "i_take": {{"item_category1": 0, "item_category2": 0}}, "other_player_gets": {{"item_category1": 0, "item_category2": 0}} }}</finalize>, where 'i_take' represents your share and 'other_player_gets' represents the other player's share of the item categories.
 
-        Only do one action per turn.
+        Only one action is permitted per turn.
 
-        Examples of how turns might proceed:
-        1. [Initial state is given]
+        Examples of turn progression:
+        
+        1. [Initial state is provided]
         <message> [Your message to the other player here.] </message>
 
         2. [The other player responds]
@@ -501,7 +514,11 @@ def create_finalization_prompt(state):
     """
 
     if state.get("finalization_visibility", False) and other_player_finalization:
-        prompt += f"\nAs a clue, the other player's finalization was: {other_player_finalization}\n"
+        prompt += (
+            f"\nAs a clue, the other player's finalization was for you to take: "
+            f"{other_player_finalization['i_take']} and for them to take: "
+            f"{other_player_finalization['other_player_gets']}.\n"
+        )
 
     prompt += "\nPlease make your finalization decision now."
     
@@ -523,15 +540,14 @@ def create_new_round_prompt(state):
     quantities = state.get("quantities", {})
     values = state["role_values"][state["player_to_role"][state["current_player"]]]
 
-    if current_round > 1:
+    if current_round > 0:
         agreement_reached = state.get(['round_agreements_reached'][-1], False)
         self_points = state['round_points'][-1][state["player_to_role"][state["current_player"]]]
 
         last_round_info = (
             f"An agreement was reached in the last round.\n"
             f"You scored {self_points} points."
-            if agreement_reached else "No agreement was reached in the last round."
-        )
+        ) if agreement_reached else "No agreement was reached in the last round."
         last_round_info = f"Last round info: {last_round_info}\n"
     else:
         last_round_info = ""
