@@ -6,7 +6,7 @@ from environments.dond_game import DondGame
 import math
 from statistics import mean
 import numpy as np
-    
+
 class DondPlayer:
     def __init__(
         self,
@@ -132,6 +132,7 @@ class DondPlayer:
             self.new_round()
             self.set_preplay_round_info(state)
             user_message += create_new_round_prompt(state)
+
 
         user_message += create_play_prompt(state)
 
@@ -260,9 +261,6 @@ class DondPlayer:
             "self_points": [],
             "other_points": [],
             "imbalance": [],
-            "ultimatum_ratio": [],
-            "ultimatum_percentage": [],
-            "max_ultimatum_points": [],
             "points_difference": [],  # New statistic
             "items_given_to_self": [],  # New statistic
             "self_points_on_agreement": [],  # New statistic
@@ -291,18 +289,6 @@ class DondPlayer:
             round_infos_extra["quantities"].append(state['round_quantities'][i])
             round_infos_extra["values"].append(state['round_values'][i][role])
             max_points = sum(state['round_quantities'][i][item] * state['round_values'][i][role][item] for item in state['round_quantities'][i].keys())
-            max_ultimatum_points = max_points - min(state['round_values'][i][role].values())
-            round_infos["max_ultimatum_points"].append(max_ultimatum_points)
-            
-            # Check for division by zero
-            if max_ultimatum_points == 0:
-                ultimatum_ratio = 0
-            else:
-                ultimatum_ratio = self_points / max_ultimatum_points
-            round_infos["ultimatum_ratio"].append(ultimatum_ratio)
-            
-            ultimatum_percentage = 100 if ultimatum_ratio == 1.0 else 0
-            round_infos["ultimatum_percentage"].append(ultimatum_percentage)
             
             # Check for division by zero
             total_points = self_points + other_points
@@ -516,8 +502,8 @@ def create_finalization_prompt(state):
     if state.get("finalization_visibility", False) and other_player_finalization:
         prompt += (
             f"\nAs a clue, the other player's finalization was for you to take: "
-            f"{other_player_finalization['i_take']} and for them to take: "
-            f"{other_player_finalization['other_player_gets']}.\n"
+            f"{other_player_finalization['other_player_gets']} and for them to take: "
+            f"{other_player_finalization['i_take']}.\n"
         )
 
     prompt += "\nPlease make your finalization decision now."
@@ -541,7 +527,7 @@ def create_new_round_prompt(state):
     values = state["role_values"][state["player_to_role"][state["current_player"]]]
 
     if current_round > 0:
-        agreement_reached = state.get(['round_agreements_reached'][-1], False)
+        agreement_reached = state['round_agreements_reached'][-1] if state['round_agreements_reached'] else False
         self_points = state['round_points'][-1][state["player_to_role"][state["current_player"]]]
 
         last_round_info = (

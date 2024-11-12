@@ -6,7 +6,7 @@ experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
   nb_iterations: 400
-  nb_matches_per_iteration: 5
+  nb_matches_per_iteration: 10
   reinit_matches_each_it: true
 
 matches:
@@ -19,7 +19,7 @@ matches:
     log_matches: true
 
   dond_game_args:
-    rounds_per_game: 3
+    rounds_per_game: 8
     max_turns: 1
     mode: basic
     random_setup_func: fixed_manual
@@ -53,6 +53,7 @@ matches:
 
         score_function: points_score
         score_function_kwargs: 
+          discount_factor: 0.9
           no_agreement_score: 0
           exponent: 1.0
 
@@ -80,6 +81,7 @@ matches:
 
         score_function: points_score
         score_function_kwargs: 
+          discount_factor: 0.9
           no_agreement_score: 0
           exponent: 1.0
 
@@ -105,6 +107,8 @@ models:
         pretrained_model_name_or_path: "meta-llama/Llama-3.1-8B-Instruct"
         torch_dtype: "bfloat16"
         device_map: "auto"
+        attn_implementation: "flash_attention_2"
+
       bits_and_bytes_args: null
         #load_in_8bit: False
         #load_in_4bit: true

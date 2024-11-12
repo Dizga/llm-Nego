@@ -7,6 +7,8 @@ from utils.plot_curves import plot_curves
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.ticker as ticker
+from torch.utils.tensorboard import SummaryWriter
+
 def process_player_folder(folder_path):
     """
     Processes all player JSON files in the specified folder and returns a list of game statistics.
@@ -69,24 +71,24 @@ def update_player_statistics(input_path, output_file, iteration):
         all_stats = {"global": {}}
 
     # Update global statistics
-    global_stats = all_stats["global"]
-    for key, value in iteration_mean_stats.items():
-        if key not in global_stats:
-            global_stats[key] = {"mean": value, "variance": iteration_variance_stats[key]}
-        else:
-            if isinstance(value, list):
-                # For list values, update element-wise
-                if not isinstance(global_stats[key]["mean"], list):
-                    global_stats[key]["mean"] = [global_stats[key]["mean"]] * len(value)
-                    global_stats[key]["variance"] = [global_stats[key]["variance"]] * len(value)
-                global_stats[key]["mean"] = [(g * iteration + v) / (iteration + 1) 
-                                             for g, v in zip(global_stats[key]["mean"], value)]
-                global_stats[key]["variance"] = [(g * iteration + v) / (iteration + 1) 
-                                                 for g, v in zip(global_stats[key]["variance"], iteration_variance_stats[key])]
-            else:
-                # For scalar values, update as before
-                global_stats[key]["mean"] = (global_stats[key]["mean"] * iteration + value) / (iteration + 1)
-                global_stats[key]["variance"] = (global_stats[key]["variance"] * iteration + iteration_variance_stats[key]) / (iteration + 1)
+    # global_stats = all_stats["global"]
+    # for key, value in iteration_mean_stats.items():
+    #     if key not in global_stats:
+    #         global_stats[key] = {"mean": value, "variance": iteration_variance_stats[key]}
+    #     else:
+    #         if isinstance(value, list):
+    #             # For list values, update element-wise
+    #             if not isinstance(global_stats[key]["mean"], list):
+    #                 global_stats[key]["mean"] = [global_stats[key]["mean"]] * len(value)
+    #                 global_stats[key]["variance"] = [global_stats[key]["variance"]] * len(value)
+    #             global_stats[key]["mean"] = [(g * iteration + v) / (iteration + 1) 
+    #                                          for g, v in zip(global_stats[key]["mean"], value)]
+    #             global_stats[key]["variance"] = [(g * iteration + v) / (iteration + 1) 
+    #                                              for g, v in zip(global_stats[key]["variance"], iteration_variance_stats[key])]
+    #         else:
+    #             # For scalar values, update as before
+    #             global_stats[key]["mean"] = (global_stats[key]["mean"] * iteration + value) / (iteration + 1)
+    #             global_stats[key]["variance"] = (global_stats[key]["variance"] * iteration + iteration_variance_stats[key]) / (iteration + 1)
 
     # Add iteration statistics
     all_stats[f"iteration_{iteration:03d}"] = {
@@ -100,13 +102,21 @@ def update_player_statistics(input_path, output_file, iteration):
 
 def generate_player_statistics_plots(input_file, output_folder):
     """
-    Generates plots for player statistics based on the JSON file.
+    Generates plots for player statistics based on the JSON file and logs them to TensorBoard.
     
     Args:
         input_file (str): Path to the JSON file containing player statistics.
-        output_folder (str): Path to the folder where plots will be saved.
+        output_folder (str): Base path to the folder where plots and logs will be saved.
     """
-    os.makedirs(output_folder, exist_ok=True)
+    # Define separate directories for plots and TensorBoard logs
+    plot_output_folder = os.path.join(output_folder, "../pngplots")
+    tensorboard_output_folder = os.path.join(output_folder, "../tensorboard")
+
+    # Create directories if they don't exist
+    os.makedirs(plot_output_folder, exist_ok=True)
+    os.makedirs(tensorboard_output_folder, exist_ok=True)
+
+    writer = SummaryWriter(log_dir=tensorboard_output_folder)
 
     # Read statistics from the JSON file
     try:
@@ -140,6 +150,14 @@ def generate_player_statistics_plots(input_file, output_folder):
             else:
                 labels = ['1']
 
+            # Log to TensorBoard
+            for i, mean_value in enumerate(mean_values):
+                if isinstance(mean_value, list):
+                    for j, val in enumerate(mean_value):
+                        writer.add_scalar(f'{key}/Round_{j+1}', val, i+1)
+                else:
+                    writer.add_scalar(f'{key}', mean_value, i+1)
+
             #plt.errorbar(iterations, mean_values, yerr=variance_values, label=labels, fmt='-o')
             plt.plot(iterations, mean_values, label=labels)
             plt.xlabel('Iteration')
@@ -147,11 +165,10 @@ def generate_player_statistics_plots(input_file, output_folder):
             plt.title(f"{snake_case_to_title(key)} Through Iterations")
             plt.gca().xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
             plt.legend()
-            plt.savefig(os.path.join(output_folder, f"{key}_through_iterations.png"), bbox_inches='tight')
+            plt.savefig(os.path.join(plot_output_folder, f"{key}_through_iterations.png"), bbox_inches='tight')
             plt.close()
 
-    
-
+    writer.close()
 
 def snake_case_to_title(snake_str):
     """
