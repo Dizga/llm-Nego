@@ -24,7 +24,7 @@ import torch
 import torch.nn.functional as F
 from torch.nn.utils.rnn import pad_sequence
 
-def train( 
+def ppo_train( 
         model, 
         ref_model,
         contexts_list,
@@ -43,7 +43,7 @@ def train(
         model (torch.nn.Module): The language model with a value head to be optimized.
         ref_model (torch.nn.Module): Reference model used for KL penalty.
         contexts_list (list of torch.Tensor): List of input contexts, each of shape (S, V).
-        returns_list (list of torch.Tensor): List of estimated returns for each time step, each of shape (S-1,).
+        returns_list (list of torch.Tensor): List of estimated returns for each time step, each of shape (S,).
         optimizer (torch.optim.Optimizer): Optimizer for training the model.
         nb_epochs (int): Number of epochs to train over the dataset.
         mb_size (int): Minibatch size, the number of sequences processed at once.
@@ -55,6 +55,8 @@ def train(
     Returns:
         float: The total loss value for the training step.
     """
+    verify_ppo_train_inputs(contexts_list, returns_list)
+
     # Initialize the accelerators
     model_accelerator = Accelerator()
     ref_model_accelerator = Accelerator()
@@ -82,14 +84,12 @@ def train(
             # Forward pass for the reference model to compute old log probabilities
             with torch.no_grad():
                 ref_outputs = ref_model(input_ids=input_batch, labels=label_batch)
-                ref_logits = ref_outputs.logits  # shape (B, S-1, V)
+                ref_logits = ref_outputs[0]  # Unpack the first element of the tuple
                 ref_log_probs = F.log_softmax(ref_logits, dim=-1)  # shape (B, S-1, V)
                 old_log_probs = ref_log_probs.gather(dim=-1, index=label_batch.unsqueeze(-1)).squeeze(-1)  # shape (B, S-1)
 
             # Forward pass
-            outputs = model(input_ids=input_batch, labels=label_batch)
-            logits = outputs.logits  # shape (B, S-1, V)
-            values = outputs.value   # shape (B, S-1)
+            logits, values = model(input_ids=input_batch, labels=label_batch)
 
             # Compute new log probabilities
             log_probs = F.log_softmax(logits, dim=-1)  # shape (B, S-1, V)
@@ -124,3 +124,15 @@ def train(
                 optimizer.zero_grad()
 
     return loss.item()
+
+
+def verify_ppo_train_inputs(contexts_list, returns_list):
+    """
+    Verify the inputs to the ppo_train function.
+    """
+    for context, returns in zip(contexts_list, returns_list):
+        assert context.size(0) == returns.size(0), (
+            f"Context and returns lengths do not match. "
+            f"Context shape: {context.shape}, Returns shape: {returns.shape}"
+        )
+        

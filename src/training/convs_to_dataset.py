@@ -41,7 +41,7 @@ def conversation_to_ppodata(tokenizer, conversation):
 
     return tokens, return_tensor
 
-def convs_to_ppodata(tokenizer, conversations):
+def conversations_to_ppodata(tokenizer, conversations):
     contexts = []
     returns = []
 
