@@ -27,6 +27,6 @@ def set_discounted_returns(player_info, info, discount_factor=0.99):
         if message["role"] != "user":
             round_number = message["round_nb"]
             if round_number < len(discounted_returns):
-                message["returns"] = discounted_returns[round_number]
+                message["return"] = discounted_returns[round_number]
     return chat_history
     
