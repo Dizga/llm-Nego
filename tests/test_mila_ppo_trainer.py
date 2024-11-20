@@ -8,8 +8,8 @@ from transformers import (
 from trl import AutoModelForCausalLMWithValueHead
 import sys
 sys.path.append('src')
-from training.convs_to_dataset import *
-from training.mila_ppo_trainer import *
+from training.rl_convs_processing import *
+from training.ppo_training import *
 
 # Get Hugging Face model and tokenizer
 tokenizer = AutoTokenizer.from_pretrained("""meta-llama/Llama-3.2-1B-Instruct""")
@@ -30,10 +30,10 @@ conversations = [
     {'role': 'user', 'content': 'Why did you say that?', 'return': 3},
     {'role': 'assistant', 'content': 'All the world\'s a stage.', 'return': 4}],
 ]
-contexts_list, returns_list = conversations_to_ppodata(tokenizer, conversations)
+contexts_list, returns_list, output_masks = paths_to_rl_data(tokenizer, conversations)
 
 # Train
-mila_ppo_train( 
+ppo_train( 
         model, 
         ref_model,
         contexts_list,

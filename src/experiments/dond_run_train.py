@@ -136,13 +136,14 @@ def dond_run_train(cfg):
                         data_paths.append(player_export_path)
 
                 # Train the adapter by calling train_main with the correct settings
-                train_func_args = cfg["training"][model_name]["adapters"][adapter_name]["train_func_args"]
-                train_main(
-                    hf_model=model,
-                    paths=data_paths,
+                if data_paths != []:    
+                    train_func_args = cfg["training"][model_name]["adapters"][adapter_name]["train_func_args"]
+                    train_main(
+                        hf_model=model,
+                        paths=data_paths,
                     train_func=cfg["training"][model_name]["adapters"][adapter_name]["train_func"],
                     train_func_args=train_func_args
-                )
+                    )
 
         training_end_time = time.time()
         iteration_end_time = time.time()

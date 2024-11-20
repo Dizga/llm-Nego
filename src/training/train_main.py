@@ -13,7 +13,12 @@ def train_main(
 def train_ppo_main(
         hf_model,
         paths,
-        train_ppo_args,
+        train_ppo_args={},
     ):
+    hf_model.train()
     contexts_list, returns_list = paths_to_rl_data(hf_model.tokenizer, paths)
-    ppo_train(hf_model.model, hf_model.model, contexts_list, returns_list, **train_ppo_args)
+    ppo_train(model=hf_model.hf_model, 
+              ref_model=hf_model.hf_model, 
+              contexts_list=contexts_list, 
+              returns_list=returns_list, 
+              **train_ppo_args)

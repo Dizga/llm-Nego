@@ -102,14 +102,15 @@ class HfAgent:
         self.keep_vllm_during_training = keep_vllm_during_training
         self.keep_hf_during_generation = keep_hf_during_generation
         self.destroy_ppo_trainer_after_training = destroy_ppo_trainer_after_training
-
+        self.train_with = "hf"
+        
     def train(self):
         """
         Prepares the agent for training.
         """
-        if self.generate_with == "vllm" and not self.keep_vllm_during_training:
+        if not self.keep_vllm_during_training:
             self.destroy_vllm()
-        elif self.generate_with == "hf":
+        if self.train_with == "hf":
             self.use_hf_model()
 
     def eval(self):
@@ -128,34 +129,18 @@ class HfAgent:
         adapter_path = self.adapters[self.current_adapter_name]
         if adapter_path:
             pretrained_args = self.pretrained_args | {'pretrained_model_name_or_path': adapter_path}
-            if self.default_training_mode == "ppo":
-                self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                    **pretrained_args, 
-                    is_trainable=True, 
-                    quantization_config=self.bits_and_bytes_configs
-                )
-            elif self.default_training_mode == "sft":
-                self.hf_model = AutoModelForCausalLM.from_pretrained(
-                    **self.pretrained_args,
-                    quantization_config=self.bits_and_bytes_configs,
-                )
-                self.hf_model = PeftModel.from_pretrained(
-                    self.hf_model, adapter_path, is_trainable=True
-                )
-                self.hf_model.print_trainable_parameters()
-        elif self.default_training_mode == "ppo":
+            self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
+                **pretrained_args, 
+                is_trainable=True, 
+                quantization_config=self.bits_and_bytes_configs
+            )
+        else:
             self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
                 **self.pretrained_args,
                 quantization_config=self.bits_and_bytes_configs,
                 peft_config=self.lora_config,
+                is_trainable=True,
             )
-        elif self.default_training_mode == "sft":
-            self.hf_model = AutoModelForCausalLM.from_pretrained(
-                **self.pretrained_args,
-                quantization_config=self.bits_and_bytes_configs,
-            )
-            self.hf_model = get_peft_model(self.hf_model, self.lora_config)
-            self.hf_model.print_trainable_parameters()
 
     def destroy_hf(self):
         """

@@ -24,38 +24,45 @@ def conversation_to_rl_data(tokenizer, conversation):
     eot_positions = all_eot_positions[1:]
 
     return_values = []
+    output_mask = []
     current_position = 0
 
-    # Associate return values based on adjusted <|eot_id|> positions
+    # Associate return values and output masks based on adjusted <|eot_id|> positions
     for i, message in enumerate(conversation):
         return_value = message.get('return', 0)  # Default to 0 if 'return' is not present
+        mask_value = 1 if 'return' in message else 0
 
         if i < len(eot_positions):
             next_position = eot_positions[i] + 1  # Include the <|eot_id|> token
         else:
             next_position = len(tokens)
 
-        # Extend return values for the current segment
+        # Extend return values and output masks for the current segment
         segment_length = next_position - current_position
         return_values.extend([return_value] * segment_length)
+        output_mask.extend([mask_value] * segment_length)
         current_position = next_position
 
     return_tensor = torch.tensor(return_values)
+    output_mask_tensor = torch.tensor(output_mask)
     last_eot_index = (tokens == eot_id).nonzero(as_tuple=True)[0][-1].item()
     tokens = tokens[:last_eot_index+1]
+    output_mask_tensor = output_mask_tensor[:last_eot_index+1]
 
-    return tokens, return_tensor
+    return tokens, return_tensor, output_mask_tensor
 
 def conversations_to_rl_data(tokenizer, conversations):
     contexts = []
     returns = []
+    output_masks = []
 
     for conversation in conversations:
-        context_tensor, return_tensor = conversation_to_rl_data(tokenizer, conversation)
+        context_tensor, return_tensor, output_mask_tensor = conversation_to_rl_data(tokenizer, conversation)
         contexts.append(context_tensor)
         returns.append(return_tensor)
+        output_masks.append(output_mask_tensor)
     
-    return contexts, returns
+    return contexts, returns, output_masks
 
 def paths_to_rl_data(tokenizer, paths):
     conversations = []
