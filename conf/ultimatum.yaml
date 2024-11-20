@@ -5,8 +5,8 @@ hydra:
 experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
-  nb_iterations: 400
-  nb_matches_per_iteration: 10
+  nb_iterations: 5
+  nb_matches_per_iteration: 5
   reinit_matches_each_it: true
 
 matches:
@@ -16,10 +16,15 @@ matches:
 
   run_matches_args:
     nb_parallel_matches: -1
-    log_matches: true
+    log_func: independant_players_logging
+    log_func_args: 
+      metrics_func: gather_dond_statistics
+      metrics_func_args: {} 
+      training_data_func: set_discounted_returns
+      training_data_func_args: {}
 
   dond_game_args:
-    rounds_per_game: 8
+    rounds_per_game: 2
     max_turns: 1
     mode: basic
     random_setup_func: fixed_manual
@@ -40,10 +45,6 @@ matches:
       dond_player_args:
         mod_adpt_id: 'llama/ad_alice'
         allow_reasoning: false
-        game_intro_file: "src/prompts/dond/rules.txt"
-        in_between_file: "src/prompts/dond/between_moves.txt" 
-        finalization_file: "src/prompts/dond/finalization.txt"
-        new_round_file: "src/prompts/dond/new_round.txt"
         max_retries: 1
 
       ppo_data_extraction_args:
@@ -68,10 +69,6 @@ matches:
       dond_player_args:
         mod_adpt_id: 'llama/ad_bob'
         allow_reasoning: false
-        game_intro_file: "src/prompts/dond/rules.txt"
-        in_between_file: "src/prompts/dond/between_moves.txt" 
-        finalization_file: "src/prompts/dond/finalization.txt"
-        new_round_file: "src/prompts/dond/new_round.txt"
         max_retries: 1
 
       ppo_data_extraction_args:
@@ -94,11 +91,8 @@ matches:
 models: 
 
   llama:
-
     class: hf
-
     init_args:
-
       name: 'llama'
       adapter_names: ['ad_alice', 'ad_bob']
       device: "cuda"
@@ -108,7 +102,6 @@ models:
         torch_dtype: "bfloat16"
         device_map: "auto"
         attn_implementation: "flash_attention_2"
-
       bits_and_bytes_args: null
         #load_in_8bit: False
         #load_in_4bit: true
@@ -132,32 +125,18 @@ models:
       destroy_ppo_trainer_after_training: True
       generate_with: "vllm"
 
-    train_ppo_args:
-      
-      ppo_trainer_class: PPOTrainer
-      step_batch_size: -1
-      parallel_batch_size: 1
-
-      ppo_trainer_args:
-        batch_size: None
-        mini_batch_size: None
-        gradient_accumulation_steps: None
-        ppo_epochs: 1
-        #remove_unused_columns: false
-        #vf_coef: 0.0
-        gradient_checkpointing: False
-        log_with: "tensorboard"
-        project_kwargs: None
-        tracker_project_name: "tensorboard"
-        #target_kl: 0.1
-        #cliprange: 0.2
-        # adap_kl_ctrl: False
-        # init_kl_coef: 0.0
-        # target_kl: 5.0
-        # learning_rate: 1e-5
-        is_peft_model: True
-      
   
+
+training:
+  llama:
+    adapters:
+      ad_alice:
+        train_func: train_ppo_main
+        train_func_args: {}
+      ad_bob:
+        train_func: train_ppo_main
+        train_func_args: {}
+
 
 
 

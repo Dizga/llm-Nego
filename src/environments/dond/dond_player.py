@@ -2,25 +2,21 @@ import json
 import regex as re
 import copy
 # local imports
-from environments.dond_game import DondGame
+from environments.dond.dond_game import DondGame
 import math
 from statistics import mean
 import numpy as np
 
-class DondPlayer:
+class DondPlayerHandler:
     def __init__(
         self,
         player_name,
         allow_reasoning,
-        game_intro_file,
-        in_between_file,
-        new_round_file,
         max_retries,
-        finalization_file,
         mod_adpt_id,
     ):
         """
-        Initializes the DoNDPlayer.
+        Initializes the DondPlayerHandler.
 
         Args:
             player_name (str): The name of the player.
@@ -36,32 +32,31 @@ class DondPlayer:
         self.max_retries = max_retries
         self.mod_adpt_id = mod_adpt_id
         self.game_id = None  # ID of player in game
-        self.new_game()
+        self.reset()
 
-    def get_context(self):
-        return self.context
+    def get_chat_history(self):
+        return self.chat_history
 
-    def get_augmented_context(self):
-        return self.augmented_context
+    def add_to_chat_history(self, element: dict):
+        self.chat_history.append(element)
 
-    def add_to_context(self, element: dict):
-        self.context.append(element)
-        self.augmented_context.append(element)
-
-    def process_model_response(self, response, state):
+    def step(self, input):
         """
         Processes the response from the model and updates the game state.
 
         Args:
-            response (str): The response from the model.
+            action (str): The action to be taken.
             state (dict): The current state of the game.
+            llm_output (str): The output from the language model.
 
         Returns:
             tuple: A tuple containing:
-                - send_to_game (bool): Indicates if the response should be sent to the game.
-                - is_finalization (bool): Indicates if the response is a finalization.
-                - processed_response (str or dict): The processed response.
+                - observation (dict): The new state of the game.
+                - reward (float): The reward obtained from the action.
+                - done (bool): Whether the game is finished.
+                - info (dict): Additional information.
         """
+        state, info, llm_output = input
         # Initiate what will be returned
         processed_response = None
         send_to_game = False
@@ -69,7 +64,7 @@ class DondPlayer:
 
         # Process response. Check for errors.
         is_error, error_message, is_finalization, processed_response = self.process_response(
-            response, state
+            llm_output, state
         )
 
         if is_error:
@@ -86,19 +81,40 @@ class DondPlayer:
             self.retries = 0
             send_to_game = True
 
-        # Add raw response to context
+        # Add raw response to chat_history
         model_response = {
             "role": "assistant",
-            "content": response,
+            "content": llm_output,
             "is_error": is_error,
             "is_finalization": is_finalization,
             "round_nb": state["round_number"],
         }
 
-        self.add_to_context(model_response)
+        self.add_to_chat_history(model_response)
+        
+        action = (is_finalization, processed_response)
+        player_state = None
+        player_info = {"player_name": self.player_name, "chat_history": self.chat_history}
 
-        return send_to_game, (is_finalization, processed_response)
+        return action, player_state, send_to_game, player_info
+    def get_info(self):
+        return {"player_name": self.player_name, "chat_history": self.chat_history}
+    
+    # Optional render method
+    def render(self, mode='human'):
+        """
+        Renders the environment for visualization.
+        """
+        # Implement rendering logic if needed
+        pass
 
+    # Optional close method
+    def close(self):
+        """
+        Cleans up resources when the environment is no longer needed.
+        """
+        # Implement cleanup logic if needed
+        pass
 
     def set_usr_message(self, state):
         """
@@ -121,7 +137,7 @@ class DondPlayer:
                 "is_error": True,
                 "round_nb": state["round_number"],
             }
-            self.add_to_context(usr_prompt)
+            self.add_to_chat_history(usr_prompt)
             self.error_message = None
             return
         
@@ -130,7 +146,6 @@ class DondPlayer:
 
         if state["is_new_round"]:
             self.new_round()
-            self.set_preplay_round_info(state)
             user_message += create_new_round_prompt(state)
 
 
@@ -142,7 +157,7 @@ class DondPlayer:
             "is_error": False,
             "round_nb": state["round_number"],
         }
-        self.add_to_context(user_message)
+        self.add_to_chat_history(user_message)
 
     def process_response(self, response, state):
         """
@@ -246,94 +261,6 @@ class DondPlayer:
         # If neither valid message nor finalization is found
         return True, "Unknown error: Invalid response format.", False, None
 
-            
-    def set_game_info(self, state):
-        """
-        Gathers information from all rounds played and 
-        adds it to the beginning of the augmented_context.
-
-        Args:
-            state (dict): The current state of the game.
-        """
-        round_infos = {
-            "agreement_reached": [],
-            "agreement_percentage": [],
-            "self_points": [],
-            "other_points": [],
-            "imbalance": [],
-            "points_difference": [],  # New statistic
-            "items_given_to_self": [],  # New statistic
-            "self_points_on_agreement": [],  # New statistic
-            "other_points_on_agreement": [],  # New statistic
-            "points_diff_on_agreement": [],  # New statistic
-        }
-
-        round_infos_extra = {
-            "quantities": [],
-            "values": [],
-        }
-        
-        for i in range(len(state['round_points'])):
-            role = state['round_player_roles'][i][self.player_name]
-            other_role = next(
-                r for r in state['round_player_roles'][i].values() if r != role
-            )
-            self_points = state['round_points'][i][role]
-            other_points = state['round_points'][i][other_role]
-            
-            round_infos["agreement_reached"].append(True if state['round_agreements_reached'][i] else False)
-            round_infos["agreement_percentage"].append(100 if state['round_agreements_reached'][i] else 0)
-            round_infos["self_points"].append(self_points)
-            round_infos["other_points"].append(other_points)
-            round_infos["points_difference"].append(self_points - other_points)  # Calculate the difference
-            round_infos_extra["quantities"].append(state['round_quantities'][i])
-            round_infos_extra["values"].append(state['round_values'][i][role])
-            max_points = sum(state['round_quantities'][i][item] * state['round_values'][i][role][item] for item in state['round_quantities'][i].keys())
-            
-            # Check for division by zero
-            total_points = self_points + other_points
-            if total_points == 0:
-                imbalance = 0
-            else:
-                imbalance = abs((self_points - other_points) / total_points)
-            round_infos["imbalance"].append(imbalance)
-
-            # Calculate items_given_to_self independently of agreement status
-            finalization_values = state['round_finalizations'][i][role].values()
-            if all(isinstance(x, (int, float)) for x in finalization_values):
-                items_sum = sum(finalization_values)
-            else:
-                items_sum = np.nan
-            round_infos["items_given_to_self"].append(items_sum)
-            
-            # Agreement-dependent stats
-            if state['round_agreements_reached'][i]:
-                round_infos["self_points_on_agreement"].append(self_points)
-                round_infos["other_points_on_agreement"].append(other_points)
-                round_infos["points_diff_on_agreement"].append(self_points - other_points)
-            else:
-                round_infos["self_points_on_agreement"].append(np.nan)
-                round_infos["other_points_on_agreement"].append(np.nan)
-                round_infos["points_diff_on_agreement"].append(np.nan)
-        
-        # Correctly iterate over augmented_context to find and update 'round_info'
-        c = 0
-        for j in range(len(self.augmented_context)):
-            if self.augmented_context[j]['role'] == 'round_info':
-                content = {key: round_infos[key][c] for key in round_infos.keys()}
-                content_extra = {key: round_infos_extra[key][c] for key in round_infos_extra.keys()}
-                self.augmented_context[j] = {"role": "round_info", "content": content, "content_extra": content_extra}
-                c += 1
-
-        # Calculate mean for each metric and insert at the beginning of augmented_context
-        content = round_infos
-        game_info = {"role": "game_info", "content": content}
-        self.augmented_context.insert(0, game_info)
-        
-
-    def set_preplay_round_info(self, state):
-        round_info = {"role": "round_info", "content": {}}
-        self.augmented_context.append(round_info)
 
     def new_round(self):
         """
@@ -342,7 +269,7 @@ class DondPlayer:
         self.retries = 0
         self.error_message = None
 
-    def new_game(self, checkpoint=None):
+    def reset(self, checkpoint=None):
         """
         Resets the message history of the LLM player or to a checkpoint if provided.
 
@@ -354,8 +281,9 @@ class DondPlayer:
         else:
             self.retries = 0
             self.error_message = None
-            self.context = []
-            self.augmented_context = []
+            self.chat_history = []
+            self.augmented_chat_history = []
+        return self.chat_history  # Return initial observation
 
     def load_checkpoint(self, checkpoint):
         """
@@ -365,6 +293,15 @@ class DondPlayer:
             checkpoint (dict): A dictionary containing the checkpoint state.
         """
         self.__dict__.update(checkpoint)
+
+    def export(self, path, state_history):
+        game_stats = self.gather_statistics_func(state_history, self.conversation_history, **self.gather_statistics_func_args)
+        self.set_chat_returns_func(self.conversation_history, **self.set_chat_returns_func_args)
+
+        with open(path, "w") as f:
+            json.dump(game_stats, f)
+            json.dump(self.conversation_history, f)
+
 
 def create_play_prompt(state):
     """

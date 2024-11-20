@@ -18,9 +18,16 @@ def process_player_folder(folder_path):
     # Process each player file in the folder
     for file_name in os.listdir(folder_path):
         file_path = os.path.join(folder_path, file_name)
-        with open(file_path, 'r') as f: player_data = json.load(f)
-        game_info = player_data[0]['content']
-        player_stats_list.append(game_info)
+        with open(file_path, 'r') as f:
+            player_data = json.load(f)
+        
+        # Assuming each file contains a list of rounds
+        for round_data in player_data:
+            # Ensure round_data is a dictionary
+            if isinstance(round_data, dict):
+                game_info = round_data.get('content', round_data)  # Use round_data if 'content' is not present
+                player_stats_list.append(game_info)
+    
     return player_stats_list
 
 def compute_mean_game_stats(game_stats_list):
@@ -69,26 +76,6 @@ def update_player_statistics(input_path, output_file, iteration):
             all_stats = json.load(f)
     else:
         all_stats = {"global": {}}
-
-    # Update global statistics
-    # global_stats = all_stats["global"]
-    # for key, value in iteration_mean_stats.items():
-    #     if key not in global_stats:
-    #         global_stats[key] = {"mean": value, "variance": iteration_variance_stats[key]}
-    #     else:
-    #         if isinstance(value, list):
-    #             # For list values, update element-wise
-    #             if not isinstance(global_stats[key]["mean"], list):
-    #                 global_stats[key]["mean"] = [global_stats[key]["mean"]] * len(value)
-    #                 global_stats[key]["variance"] = [global_stats[key]["variance"]] * len(value)
-    #             global_stats[key]["mean"] = [(g * iteration + v) / (iteration + 1) 
-    #                                          for g, v in zip(global_stats[key]["mean"], value)]
-    #             global_stats[key]["variance"] = [(g * iteration + v) / (iteration + 1) 
-    #                                              for g, v in zip(global_stats[key]["variance"], iteration_variance_stats[key])]
-    #         else:
-    #             # For scalar values, update as before
-    #             global_stats[key]["mean"] = (global_stats[key]["mean"] * iteration + value) / (iteration + 1)
-    #             global_stats[key]["variance"] = (global_stats[key]["variance"] * iteration + iteration_variance_stats[key]) / (iteration + 1)
 
     # Add iteration statistics
     all_stats[f"iteration_{iteration:03d}"] = {

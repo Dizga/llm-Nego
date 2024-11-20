@@ -7,20 +7,18 @@ import random
 import json
 import copy
 # Local imports
-from environments.dond_run_games import run_matches
-from environments.dond_game import DondGame
 from models.hf_agent import HfAgent
+from environments.dond.dond_player import DondPlayerHandler
+from environments.dond.dond_game import DondGame
 from models.dummy_hf_agent import DummyHfAgent
 from models.oai_agent import OaiAgent
-from environments.dond_player import DondPlayer
-from training.extract_ppo_dataset import extract_ppo_dataset
-from training.extract_sft_dataset import extract_sft_dataset
 from utils.export_ppo_training_set import export_ppo_training_set
 from utils.plot_curves import plot_curves
 from utils.dond_statistics import *
 from utils.parallel_shuffle import parallel_shuffle
 from utils.dond_statistics import update_player_statistics, generate_player_statistics_plots
-
+from training.train_main import *
+from generation.run_games import run_matches
 
 def init_models(cfg):
     models = {}
@@ -48,7 +46,7 @@ def create_blank_match(
     """
     players = {}
     for player_name in cfg["matches"]["players"].keys():
-        players[player_name] = DondPlayer(player_name, 
+        players[player_name] = DondPlayerHandler(player_name, 
         **cfg["matches"]["players"][player_name]["dond_player_args"])
     blank_match = {
         "players": players,
@@ -99,8 +97,8 @@ def dond_run_train(cfg):
         players = copy.deepcopy(matches[0]["players"])
 
         run_matches(
+            export_path=it_folder,
             matches=matches,
-            export_folder=it_folder,
             models=models,
             **cfg['matches']['run_matches_args']
         )
@@ -112,7 +110,7 @@ def dond_run_train(cfg):
             player_plots_folder = os.path.join(player_stats_folder, "plots")
             
             update_player_statistics(
-                input_path=os.path.join(it_folder, player_name),
+                input_path=os.path.join(it_folder, player_name, "statistics"),
                 output_file=player_stats_file,
                 iteration=iteration
             )
@@ -123,43 +121,28 @@ def dond_run_train(cfg):
         generation_end_time = time.time()
 
         # Train models
-
         training_start_time = time.time()
 
-        for model_name in models.keys():
-            model = models[model_name]
-
+        for model_name, model in models.items():
             for adapter_name in model.adapters.keys():
-
                 mod_adpt_id = f"{model_name}/{adapter_name}"
+                model.set_adapter(adapter_name)
 
-                if model.default_training_mode == "ppo":
+                # Find paths of all player data for this adapter
+                data_paths = []
+                for player in players.values():
+                    if player.mod_adpt_id == mod_adpt_id:
+                        player_export_path = os.path.join(it_folder, player.player_name, "training")
+                        data_paths.append(player_export_path)
 
-                    model.set_adapter(adapter_name)
-
-                    queries, responses, scores = [], [], []
-
-                    for player in players.values():
-
-                        if player.mod_adpt_id == mod_adpt_id:
-
-                            epd_config = cfg["matches"]["players"][player.player_name]["ppo_data_extraction_args"]
-                            player_export_path = os.path.join(it_folder, player.player_name)
-                            new_queries, new_responses, new_scores = extract_ppo_dataset(
-                                folder_path=player_export_path, **epd_config
-                            )
-                            queries += new_queries
-                            responses += new_responses
-                            scores += new_scores
-
-                    queries, responses, scores = parallel_shuffle(queries, responses, scores)
-
-                    export_ppo_training_set(os.path.join(it_folder, f"{adapter_name}_training_dataset.jsonl"), queries, responses, scores)
-                    model.train_ppo(queries=queries, 
-                                    responses=responses, 
-                                    scores=scores,
-                                    **cfg["models"][model_name]["train_ppo_args"]
-                                    )
+                # Train the adapter by calling train_main with the correct settings
+                train_func_args = cfg["training"][model_name]["adapters"][adapter_name]["train_func_args"]
+                train_main(
+                    hf_model=model,
+                    paths=data_paths,
+                    train_func=cfg["training"][model_name]["adapters"][adapter_name]["train_func"],
+                    train_func_args=train_func_args
+                )
 
         training_end_time = time.time()
         iteration_end_time = time.time()

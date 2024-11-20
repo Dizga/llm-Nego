@@ -1,6 +1,9 @@
 import torch
+from utils.get_conversations import get_conversations
 
-def conversation_to_ppodata(tokenizer, conversation):
+
+
+def conversation_to_rl_data(tokenizer, conversation):
     # Check if the tokenizer has an EOS token
     if tokenizer.eos_token is None:
         raise ValueError("The tokenizer does not have an EOS token.")
@@ -38,56 +41,28 @@ def conversation_to_ppodata(tokenizer, conversation):
         current_position = next_position
 
     return_tensor = torch.tensor(return_values)
+    last_eot_index = (tokens == eot_id).nonzero(as_tuple=True)[0][-1].item()
+    tokens = tokens[:last_eot_index+1]
 
     return tokens, return_tensor
 
-def conversations_to_ppodata(tokenizer, conversations):
+def conversations_to_rl_data(tokenizer, conversations):
     contexts = []
     returns = []
 
     for conversation in conversations:
-        context_tensor, return_tensor = conversation_to_ppodata(tokenizer, conversation)
+        context_tensor, return_tensor = conversation_to_rl_data(tokenizer, conversation)
         contexts.append(context_tensor)
         returns.append(return_tensor)
     
     return contexts, returns
 
+def paths_to_rl_data(tokenizer, paths):
+    conversations = []
+    for path in paths:
+        conversations.extend(get_conversations(path))
+    return conversations_to_rl_data(tokenizer, conversations)
 
 
 
 
-
-
-
-
-
-
-if __name__ == "__main__":
-    from transformers import AutoTokenizer
-
-
-    # Initialize the tokenizer
-    tokenizer = AutoTokenizer.from_pretrained("""meta-llama/Llama-3.2-1B-Instruct""")
-
-
-    # Mock conversation with roles and fake returns
-    conversation = [
-        {'role': 'user', 'content': 'The first day of summer.', 'return': 1},
-        {'role': 'assistant', 'content': 'Dead men tell no tales.', 'return': 2},
-        {'role': 'user', 'content': 'Why did you say that?', 'return': 3},
-        {'role': 'assistant', 'content': 'All the world\'s a stage.', 'return': 4}
-
-    ]
-
-    # Call the function
-    context_tensor, return_tensor = conversation_to_ppodata(tokenizer, conversation)
-
-    # Detokenize the tokens to verify
-    detokenized_texts = tokenizer.batch_decode(context_tensor, skip_special_tokens=False)
-
-    # Print the results
-    print("Detokenized conversation with return values:")
-    for i, (text, return_value) in enumerate(zip(detokenized_texts, return_tensor.tolist())):
-        print(f"Token {i}: '{text}' with return value {return_value}")
-
-  

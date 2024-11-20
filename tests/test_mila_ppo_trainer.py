@@ -15,7 +15,6 @@ from training.mila_ppo_trainer import *
 tokenizer = AutoTokenizer.from_pretrained("""meta-llama/Llama-3.2-1B-Instruct""")
 model = AutoModelForCausalLMWithValueHead.from_pretrained("""meta-llama/Llama-3.2-1B-Instruct""")
 ref_model = model
-# TODO with value head
 
 # Get data
 
@@ -34,7 +33,7 @@ conversations = [
 contexts_list, returns_list = conversations_to_ppodata(tokenizer, conversations)
 
 # Train
-ppo_train( 
+mila_ppo_train( 
         model, 
         ref_model,
         contexts_list,

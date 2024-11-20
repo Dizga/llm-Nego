@@ -12,11 +12,12 @@ conversation = [
     {'role': 'assistant', 'content': 'Dead men tell no tales.', 'return': 2},
     {'role': 'user', 'content': 'Why did you say that?', 'return': 3},
     {'role': 'assistant', 'content': 'All the world\'s a stage.', 'return': 4}
-
 ]
 
 # Call the function
 context_tensor, return_tensor = conversation_to_ppodata(tokenizer, conversation)
+assert context_tensor.shape[0] == return_tensor.shape[0], f"the shapes are not the same: {context_tensor.shape} and {return_tensor.shape}"
+
 
 # Detokenize the tokens to verify
 detokenized_texts = tokenizer.batch_decode(context_tensor, skip_special_tokens=False)

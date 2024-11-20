@@ -48,7 +48,7 @@ class DondGame:
         self.role_assignator_func_kwargs = role_assignator_func_kwargs
         self.other_values_visibility = other_values_visibility
 
-        self.new_game()
+        self.reset()
 
     def set_new_setup(self):
         """
@@ -61,16 +61,15 @@ class DondGame:
         }
 
 
-    def step(self, action) -> bool:
+    def step(self, action):
         """
         Advances the game by one step.
 
         Args:
-            output (str | list): The output message or finalization list from the player.
-            is_finalization (bool): Indicates if the output is a finalization.
+            action (tuple): A tuple containing is_finalization and output.
 
         Returns:
-            bool: False if game ended else True.
+            tuple: (observation, reward, done, info)
         """
         is_finalization, output = action
         self.turn += 1
@@ -108,9 +107,26 @@ class DondGame:
             self.new_round()
         if self.round_nb > self.rounds_per_game-1:
             self.game_over = True
-        state = self.get_state()
-        return state
 
+        
+        state = self.get_state()
+        reward = None
+        done = self.game_over
+        info = self.get_info()  
+
+        return state, reward, done, info
+
+    def render(self, mode='human'):
+        """
+        Render the current state of the game.
+        """
+        print(f"Current state: {self.get_state()}")
+
+    def close(self):
+        """
+        Clean up resources.
+        """
+        pass
 
     def verify_finalizations_match(self):
         """
@@ -187,6 +203,20 @@ class DondGame:
             "round_points": self.round_points,
         }
         return state
+    
+    def get_info(self):
+        return {
+            "mode": self.mode,
+            "players" : self.players,
+            "finalization_visibility": self.finalization_visibility,
+            "other_values_visibility": self.other_values_visibility,
+            "round_player_roles": self.round_player_roles,
+            "round_quantities": self.round_quantities,
+            "round_values": self.round_values,
+            "round_finalizations": self.round_finalizations,
+            "round_agreements_reached": self.round_agreements_reached,
+            "round_points": self.round_points,
+        }
 
     def archive_player_states(self):
         """
@@ -221,7 +251,7 @@ class DondGame:
         self.role_deque = deque(self.roles)
 
 
-    def new_game(self, checkpoint=None):
+    def reset(self, checkpoint=None):
         """
         Resets the game to its initial state or to a checkpoint if provided.
 

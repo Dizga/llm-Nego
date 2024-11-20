@@ -13,7 +13,7 @@ from models.oai_agent import OaiAgent
 from statistics import mean
 from utils.plot_curves import plot_curves
 
-from environments.dond_player import DondPlayer
+from environments.dond_player import DondPlayerHandler
 from training.extract_ppo_dataset import extract_ppo_dataset
 from training.extract_sft_dataset import extract_sft_dataset
 import copy
@@ -75,9 +75,9 @@ def last_completion(cfg):
     NB_SAMPLES = cfg['NB_SAMPLES']
 
     agent = HfAgent(**cfg['models']['llama']['init_args'])
-    player_0 = DondPlayer(player_name="player_a", **cfg['players']['player_a']['dond_player_args'])
+    player_0 = DondPlayerHandler(player_name="player_a", **cfg['players']['player_a']['dond_player_args'])
     player_0.game_id = 0
-    player_1 = DondPlayer(player_name="player_b", **cfg['players']['player_b']['dond_player_args'])
+    player_1 = DondPlayerHandler(player_name="player_b", **cfg['players']['player_b']['dond_player_args'])
     player_1.game_id = 1
 
     dond_game = DondGame(**cfg['dond_game_args'])
