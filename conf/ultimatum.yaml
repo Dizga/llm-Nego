@@ -5,8 +5,8 @@ hydra:
 experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
-  nb_iterations: 5
-  nb_matches_per_iteration: 5
+  nb_iterations: 40
+  nb_matches_per_iteration: 10
   reinit_matches_each_it: true
 
 matches:
@@ -24,7 +24,7 @@ matches:
       training_data_func_args: {}
 
   dond_game_args:
-    rounds_per_game: 2
+    rounds_per_game: 1
     max_turns: 1
     mode: basic
     random_setup_func: fixed_manual
@@ -88,6 +88,17 @@ matches:
         filter_out_func: null
         filter_out_func_kwargs: {}
 
+training:
+  llama:
+    adapters:
+      ad_alice:
+        train_func: train_reinforce_main
+        train_func_args: {}
+      ad_bob:
+        train_func: train_reinforce_main
+        train_func_args: {}
+
+
 models: 
 
   llama:
@@ -95,8 +106,8 @@ models:
     init_args:
       name: 'llama'
       adapter_names: ['ad_alice', 'ad_bob']
+      include_value_head: false
       device: "cuda"
-      default_training_mode: 'ppo'
       pretrained_args: 
         pretrained_model_name_or_path: "meta-llama/Llama-3.1-8B-Instruct"
         torch_dtype: "bfloat16"
@@ -121,21 +132,15 @@ models:
         top_p: 1.0
         repetition_penalty: 1.0
       keep_vllm_during_training: False
-      keep_hf_during_generation: False
-      destroy_ppo_trainer_after_training: True
-      generate_with: "vllm"
+      keep_hf_during_training: True
+      keep_hf_during_eval: False
+      keep_vllm_during_eval: True
+      eval_with: "vllm"
+      train_with: "hf"
 
   
 
-training:
-  llama:
-    adapters:
-      ad_alice:
-        train_func: train_ppo_main
-        train_func_args: {}
-      ad_bob:
-        train_func: train_ppo_main
-        train_func_args: {}
+
 
 
 

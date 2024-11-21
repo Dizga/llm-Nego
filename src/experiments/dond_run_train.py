@@ -21,10 +21,15 @@ from training.train_main import *
 from generation.run_games import run_matches
 
 def init_models(cfg):
+    hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
+    output_directory = hydra_cfg["runtime"]["output_dir"]
+    os.makedirs(output_directory, exist_ok=True)
+
     models = {}
     for model_name in cfg["models"].keys():
         if cfg["models"][model_name]["class"] == "hf":
-            models[model_name] = HfAgent(**cfg["models"][model_name]["init_args"])
+            models[model_name] = HfAgent(**cfg["models"][model_name]["init_args"],
+            output_directory=output_directory)
         elif cfg["models"][model_name]["class"] == "dummy_hf":
             models[model_name] = DummyHfAgent(**cfg["models"][model_name]["init_args"])
         elif cfg["models"][model_name]["class"] == "oai":
@@ -92,6 +97,9 @@ def dond_run_train(cfg):
 
 
         # Generate matches    
+        for model_name, model in models.items():
+            model.eval()
+            
         generation_start_time = time.time()
         matches = [create_blank_match(cfg) for _ in range(cfg["experiment"]["nb_matches_per_iteration"])]
         players = copy.deepcopy(matches[0]["players"])
@@ -124,6 +132,9 @@ def dond_run_train(cfg):
         training_start_time = time.time()
 
         for model_name, model in models.items():
+            model.train()
+
+        for model_name, model in models.items():
             for adapter_name in model.adapters.keys():
                 mod_adpt_id = f"{model_name}/{adapter_name}"
                 model.set_adapter(adapter_name)
@@ -141,8 +152,9 @@ def dond_run_train(cfg):
                     train_main(
                         hf_model=model,
                         paths=data_paths,
-                    train_func=cfg["training"][model_name]["adapters"][adapter_name]["train_func"],
-                    train_func_args=train_func_args
+                        train_func=cfg["training"][model_name]["adapters"][adapter_name]["train_func"],
+                        train_func_args=train_func_args,
+                        output_path=it_folder
                     )
 
         training_end_time = time.time()

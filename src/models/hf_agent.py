@@ -18,7 +18,7 @@ from trl import (
     PPOConfig,
     PPOTrainer
 )
-from peft import LoraConfig, LoraModel
+from peft import PeftModel, PeftConfig
 import os
 from functools import partial
 
@@ -63,11 +63,14 @@ class HfAgent:
         lora_args=None,
         adapter_names=None,
         generation_args=None,
-        default_training_mode="ppo",
+        include_value_head=True,
         keep_vllm_during_training=False,
-        keep_hf_during_generation=True,
-        destroy_ppo_trainer_after_training=True,
-        generate_with="vllm",
+        keep_hf_during_training=True,
+        keep_hf_during_eval=False,
+        keep_vllm_during_eval=True,
+        eval_with="vllm",
+        train_with="hf",
+        output_directory=None,
     ) -> None:
         """
         Initializes the HfAgent.
@@ -76,6 +79,7 @@ class HfAgent:
         self.name = name
         self.device = torch.device(device) if device else torch.device("cuda")
         self.model_name = model_name
+        self.include_value_head = include_value_head
         self.pretrained_args = pretrained_args
         self.tokenizer = AutoTokenizer.from_pretrained(
             pretrained_args["pretrained_model_name_or_path"]
@@ -91,8 +95,6 @@ class HfAgent:
             top_p=generation_args["top_p"],
             max_tokens=generation_args["max_new_tokens"],
         )
-        self.default_training_mode = default_training_mode
-        self.generate_with = generate_with
         self.adapters = {adapter_name: None for adapter_name in adapter_names}
         self.adapters['base'] = None
         self.current_adapter_name = 'base'
@@ -100,9 +102,12 @@ class HfAgent:
         self.hf_model = None
         self.vllm_model = None
         self.keep_vllm_during_training = keep_vllm_during_training
-        self.keep_hf_during_generation = keep_hf_during_generation
-        self.destroy_ppo_trainer_after_training = destroy_ppo_trainer_after_training
-        self.train_with = "hf"
+        self.keep_hf_during_training = keep_hf_during_training
+        self.keep_hf_during_eval = keep_hf_during_eval
+        self.keep_vllm_during_eval = keep_vllm_during_eval
+        self.train_with = train_with
+        self.eval_with = eval_with
+        self.output_directory = output_directory
         
     def train(self):
         """
@@ -110,6 +115,10 @@ class HfAgent:
         """
         if not self.keep_vllm_during_training:
             self.destroy_vllm()
+        if not self.keep_hf_during_training:
+            self.destroy_hf()
+        if self.train_with == "vllm":
+            self.use_vllm_model()
         if self.train_with == "hf":
             self.use_hf_model()
 
@@ -117,36 +126,61 @@ class HfAgent:
         """
         Prepares the agent for evaluation.
         """
-        if self.generate_with == "vllm":
-            self.use_vllm_model()
-        elif self.generate_with == "hf" and not self.keep_hf_during_generation:
+        if not self.keep_hf_during_eval:
             self.destroy_hf()
+        if not self.keep_vllm_during_eval:
+            self.destroy_vllm()
+        if self.eval_with == "vllm":
+            self.use_vllm_model()
+        if self.eval_with == "hf":
+            self.use_hf_model()
+        
 
     def use_hf_model(self):
         """
         Initializes the Hugging Face model if it is not already initialized.
         """
         adapter_path = self.adapters[self.current_adapter_name]
+        pretrained_args = self.pretrained_args
+
         if adapter_path:
-            pretrained_args = self.pretrained_args | {'pretrained_model_name_or_path': adapter_path}
-            self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                **pretrained_args, 
-                is_trainable=True, 
-                quantization_config=self.bits_and_bytes_configs
-            )
+            # there is already an external LoRA adapter
+            if self.include_value_head:
+                pretrained_args = self.pretrained_args | {'pretrained_model_name_or_path': adapter_path}
+                self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
+                    **pretrained_args, 
+                    is_trainable=True, 
+                    quantization_config=self.bits_and_bytes_configs
+                )
+            else:
+                self.hf_model = AutoModelForCausalLM.from_pretrained(
+                    **self.pretrained_args, 
+                    quantization_config=self.bits_and_bytes_configs
+                )
+                self.hf_model = PeftModel.from_pretrained(self.hf_model, adapter_path, is_trainable=True)
+
         else:
-            self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                **self.pretrained_args,
-                quantization_config=self.bits_and_bytes_configs,
-                peft_config=self.lora_config,
-                is_trainable=True,
-            )
+            # no external LoRA adapter
+            if self.include_value_head:
+                self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
+                    **pretrained_args, 
+                    is_trainable=True, 
+                    quantization_config=self.bits_and_bytes_configs
+                )
+            else:
+                self.hf_model = AutoModelForCausalLM.from_pretrained(
+                    **self.pretrained_args, 
+                    quantization_config=self.bits_and_bytes_configs
+                )
+                self.hf_model = get_peft_model(self.hf_model, self.lora_config)
+                self.hf_model.train()
 
     def destroy_hf(self):
         """
         Destroys the Hugging Face model to free up memory.
         """
         if self.hf_model is not None:
+            self.export_current_adapter()
             self.log_gpu_usage("Before destroying HF.")
             del self.hf_model
             gc.collect()
@@ -187,23 +221,7 @@ class HfAgent:
         gpu_memory = torch.cuda.memory_allocated() / (1024 ** 3)
         logging.info(f"{message}: GPU memory allocated: {gpu_memory:.2f} GB")
 
-    def set_adapter(self, adapter_name: str) -> None:
-        """
-        Sets the current adapter for the model.
 
-        Args:
-            adapter_name (str): The name of the adapter to set.
-        """
-        if adapter_name not in self.adapters:
-            raise ValueError(f"Adapter '{adapter_name}' not found in available adapters.")
-        
-        self.current_adapter_name = adapter_name
-        logging.info(f"Adapter set to '{adapter_name}'.")
-
-        # Load the adapter if necessary
-        adapter_path = self.adapters[adapter_name]
-        if adapter_path:
-            self.use_hf_model()  # Ensure the model is using the correct adapter
 
     def prompt(self, contexts) -> str:
         """
@@ -223,11 +241,8 @@ class HfAgent:
             contexts, tokenize=False, add_generation_prompt=True
         )
 
-        if self.generate_with == "vllm":
-            if not self.keep_hf_during_generation:
-                self.destroy_hf()
+        if self.eval_with == "vllm":
 
-            self.use_vllm_model()
 
             with torch.no_grad():
                 if adapter_path is not None:
@@ -254,7 +269,6 @@ class HfAgent:
             torch.cuda.empty_cache()
 
         elif self.generate_with == "hf":
-            self.use_hf_model()
 
             logging.info("Generating using Hugging Face")
             model_inputs = self.tokenizer(texts, padding=True, return_tensors="pt").to(
@@ -278,3 +292,48 @@ class HfAgent:
             logging.warning("No model in hf agent!")
 
         return responses
+    
+    def set_adapter(self, adapter_name: str) -> None:
+        """
+        Sets the current adapter for the model.
+
+        Args:
+            adapter_name (str): The name of the adapter to set.
+        """
+        if adapter_name not in self.adapters:
+            raise ValueError(f"Adapter '{adapter_name}' not found in available adapters.")
+        
+        self.current_adapter_name = adapter_name
+        logging.info(f"Adapter set to '{adapter_name}'.")
+
+        # Load the adapter if necessary
+        adapter_path = self.adapters[adapter_name]
+        if adapter_path and self.hf_model is not None:
+            self.use_hf_model()  # Ensure the model is using the correct adapter
+
+    def export_current_adapter(self) -> None:
+        """
+        Saves only the LoRA weights to a specified directory. If the directory
+        already exists, it deletes the existing directory before saving.
+        """
+        adapter_path = os.path.join(self.output_directory, self.current_adapter_name)
+
+        if os.path.exists(adapter_path):
+            shutil.rmtree(adapter_path)
+            logging.info(f"Existing directory '{adapter_path}' deleted.")
+
+        os.makedirs(adapter_path, exist_ok=True)
+
+        # Save only the LoRA weights
+        if isinstance(self.hf_model, PeftModel):
+            self.hf_model.save_pretrained(adapter_path)
+        else:
+            logging.warning("Model is not a LoraModel, skipping LoRA weights saving.")
+
+        # For vllm
+        with open(os.path.join(adapter_path, "config.json"), "w") as f:
+            json.dump({"model_type": "gpt2"}, f)
+
+        # Update the adapter path after export
+        self.adapters[self.current_adapter_name] = adapter_path
+        logging.info(f"LoRA weights saved to {adapter_path}")

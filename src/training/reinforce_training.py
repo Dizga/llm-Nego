@@ -3,11 +3,11 @@ from accelerate import Accelerator
 import torch
 import torch.nn.functional as F
 from torch.nn.utils.rnn import pad_sequence
+import os
+import random
 
-
-def ppo_train( 
+def reinforce_train( 
         model, 
-        ref_model,
         contexts_list,
         returns_list,
         output_masks_list,
@@ -16,11 +16,10 @@ def ppo_train(
         mb_size=1,
         mb_per_step=1,
         learning_rate=1e-5,
-        clip_param=0.2, 
-        vf_coef=0.0,
-        entropy_coef=0.01):
+        output_path=None,
+        tokenizer=None
+        ):
     """
-    Perform a single PPO training step.
 
     Args:
         model (torch.nn.Module): The language model with a value head to be optimized.
@@ -40,18 +39,22 @@ def ppo_train(
         float: The total loss value for the training step.
     """
     model.train()
+    if output_path: 
+        output_train_data_debug(output_path, 
+                                contexts_list, 
+                                returns_list, 
+                                output_masks_list, 
+                                tokenizer)
 
     # Create optimizer if not provided
     if optimizer is None:
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-    verify_ppo_train_inputs(contexts_list, returns_list, output_masks_list)
+    verify_reinforce_train_inputs(contexts_list, returns_list, output_masks_list)
 
     # Initialize the accelerators
     model_accelerator = Accelerator()
-    ref_model_accelerator = Accelerator()
     model, optimizer = model_accelerator.prepare(model, optimizer)
-    ref_model = ref_model_accelerator.prepare(ref_model)
 
 
     for epoch in range(nb_epochs):
@@ -75,44 +78,16 @@ def ppo_train(
             mask_batch = mask_batch.to(model_accelerator.device)
             attention_mask = attention_mask.to(model_accelerator.device)
 
-            # Forward pass for the reference model to compute old log probabilities
-            with torch.no_grad():
-                ref_outputs = ref_model(input_ids=context_batch, attention_mask=attention_mask)
-                ref_logits = ref_outputs[0]
-                ref_log_probs = F.log_softmax(ref_logits, dim=-1)
-                old_log_probs = ref_log_probs.gather(dim=-1, index=context_batch.unsqueeze(-1)).squeeze(-1)
-
             # Forward pass
-            logits, _, values = model(input_ids=context_batch, attention_mask=attention_mask)
-
-            # Compute new log probabilities
+            outputs = model(input_ids=context_batch, attention_mask=attention_mask)
+            logits = outputs[0]
+            # Compute new log probabilities            
             log_probs = F.log_softmax(logits, dim=-1)
             action_log_probs = log_probs.gather(dim=-1, index=context_batch.unsqueeze(-1)).squeeze(-1)
 
             # Apply mask to log probabilities and values
-            action_log_probs *= mask_batch
-            values *= mask_batch
-            return_batch *= mask_batch
-
-            # Compute entropy for entropy bonus
-            entropy = - (log_probs * torch.exp(log_probs)).sum(-1).mean()
-
-            # Compute ratio (pi_theta / pi_theta_old)
-            ratios = torch.exp(action_log_probs - old_log_probs)
-
-            # Compute advantages
-            advantages = return_batch - values
-
-            # Compute surrogate losses
-            surr1 = ratios * advantages
-            surr2 = torch.clamp(ratios, 1.0 - clip_param, 1.0 + clip_param) * advantages
-            policy_loss = -torch.min(surr1, surr2).mean()
-
-            # Compute value function loss
-            value_loss = F.mse_loss(values, return_batch)
-
-            # Total loss
-            loss = policy_loss + vf_coef * value_loss - entropy_coef * entropy
+            action_log_probs *= (return_batch * mask_batch)
+            loss = -action_log_probs.mean()
 
             # Accumulate gradients
             model_accelerator.backward(loss)
@@ -125,13 +100,44 @@ def ppo_train(
     return loss.item()
 
 
-def verify_ppo_train_inputs(contexts_list, returns_list, output_masks_list):
+def verify_reinforce_train_inputs(contexts_list, returns_list, output_masks_list):
     """
-    Verify the inputs to the ppo_train function.
+    Verify the inputs to the reinforce_train function.
     """
     for context, returns, mask in zip(contexts_list, returns_list, output_masks_list):
         assert context.size(0) == returns.size(0) == mask.size(0), (
             f"Context, returns, and mask lengths do not match. "
             f"Context shape: {context.shape}, Returns shape: {returns.shape}, Mask shape: {mask.shape}"
         )
+
+def output_train_data_debug(path, contexts_list, returns_list, output_masks_list, tokenizer):
+    """
+    Output the training data for debugging.
+    
+    Args:
+        path (str): The directory path where the output files will be saved.
+        contexts_list (list of torch.Tensor): List of input contexts, each of shape (S, V).
+        returns_list (list of torch.Tensor): List of estimated returns for each time step, each of shape (S,).
+        output_masks_list (list of torch.Tensor): List of masks for output tokens, each of shape (S,).
+        tokenizer: Tokenizer to convert token IDs to their written form.
+    """
+    path = os.path.join(path, "train_debug", str(random.randint(0, 1000)))
+    # Ensure the output directory exists
+    os.makedirs(path, exist_ok=True)
+
+    for idx, (context, returns, mask) in enumerate(zip(contexts_list, returns_list, output_masks_list)):
+        # Convert token IDs to written form
+        tokens = tokenizer.convert_ids_to_tokens(context.tolist())
+
+        # Prepare the triplets
+        triplets = list(zip(tokens, returns.tolist(), mask.tolist()))
+
+        # Define the file path for the current conversation
+        file_path = os.path.join(path, f"conversation_{idx}.txt")
+
+        # Write the triplets to the file
+        with open(file_path, 'w') as f:
+            for token, ret, msk in triplets:
+                f.write(f"{token}\t{ret}\t{msk}\n")
+        
         
