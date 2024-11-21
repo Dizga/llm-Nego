@@ -14,7 +14,7 @@ def reinforce_train(
         optimizer=None, 
         nb_epochs=1,
         mb_size=1,
-        mb_per_step=1,
+        mb_per_step=-1,
         learning_rate=1e-5,
         output_path=None,
         tokenizer=None
@@ -92,10 +92,17 @@ def reinforce_train(
             # Accumulate gradients
             model_accelerator.backward(loss)
 
-            # Perform optimizer step every mb_per_step minibatches
-            if (i // mb_size + 1) % mb_per_step == 0:
-                optimizer.step()
-                optimizer.zero_grad()
+            # Determine when to perform optimizer step
+            if mb_per_step == -1:
+                # Perform optimizer step at the end of the epoch
+                if i + mb_size >= len(contexts_list):
+                    optimizer.step()
+                    optimizer.zero_grad()
+            else:
+                # Perform optimizer step every mb_per_step minibatches
+                if (i // mb_size + 1) % mb_per_step == 0:
+                    optimizer.step()
+                    optimizer.zero_grad()
 
     return loss.item()
 

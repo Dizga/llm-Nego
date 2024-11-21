@@ -6,7 +6,7 @@ experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
   nb_iterations: 40
-  nb_matches_per_iteration: 10
+  nb_matches_per_iteration: 30
   reinit_matches_each_it: true
 
 matches:
@@ -120,7 +120,7 @@ models:
         task_type: TaskType.CAUSAL_LM
         r: 32
         lora_alpha: 16
-        lora_dropout: 0.1
+        lora_dropout: 0.0
         target_modules: "all-linear"
 
       generation_args:
