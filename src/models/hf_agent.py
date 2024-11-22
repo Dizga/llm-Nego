@@ -141,20 +141,20 @@ class HfAgent:
         Initializes the Hugging Face model if it is not already initialized.
         """
         adapter_path = self.adapters[self.current_adapter_name]
-        pretrained_args = self.pretrained_args
 
         if adapter_path:
             # there is already an external LoRA adapter
             if self.include_value_head:
-                pretrained_args = self.pretrained_args | {'pretrained_model_name_or_path': adapter_path}
+                aug_pretrained_args = self.pretrained_args | {'pretrained_model_name_or_path': adapter_path}
                 self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                    **pretrained_args, 
+                    **aug_pretrained_args, 
                     is_trainable=True, 
                     quantization_config=self.bits_and_bytes_configs
                 )
             else:
                 self.hf_model = AutoModelForCausalLM.from_pretrained(
                     **self.pretrained_args, 
+                    #peft_config=self.lora_config,
                     quantization_config=self.bits_and_bytes_configs
                 )
                 self.hf_model = PeftModel.from_pretrained(self.hf_model, adapter_path, is_trainable=True)
@@ -163,8 +163,9 @@ class HfAgent:
             # no external LoRA adapter
             if self.include_value_head:
                 self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                    **pretrained_args, 
+                    **self.pretrained_args, 
                     is_trainable=True, 
+                    peft_config=self.lora_config,
                     quantization_config=self.bits_and_bytes_configs
                 )
             else:
@@ -325,10 +326,10 @@ class HfAgent:
         os.makedirs(adapter_path, exist_ok=True)
 
         # Save only the LoRA weights
-        if isinstance(self.hf_model, PeftModel):
-            self.hf_model.save_pretrained(adapter_path)
+        if isinstance(self.hf_model, PeftModel) or isinstance(self.hf_model, AutoModelForCausalLMWithValueHead):
+            self.hf_model.save_pretrained(adapter_path) 
         else:
-            logging.warning("Model is not a LoraModel, skipping LoRA weights saving.")
+            logging.warning("Model is not a LoraModel or ValueHead, skipping LoRA weights saving.")
 
         # For vllm
         with open(os.path.join(adapter_path, "config.json"), "w") as f:

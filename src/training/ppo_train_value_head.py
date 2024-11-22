@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from torch.nn.utils.rnn import pad_sequence
 
 
-def ppo_train( 
+def ppo_train_value_head( 
         model, 
         ref_model,
         contexts_list,
@@ -14,11 +14,11 @@ def ppo_train(
         optimizer=None, 
         nb_epochs=1,
         mb_size=1,
-        mb_per_step=1,
+        mb_per_step=-1,
         learning_rate=1e-5,
-        clip_param=0.2, 
+        clip_param=0.01, 
         vf_coef=0.0,
-        entropy_coef=0.01):
+        entropy_coef=0.0):
     """
     Perform a single PPO training step.
 
@@ -27,7 +27,7 @@ def ppo_train(
         ref_model (torch.nn.Module): Reference model used for KL penalty.
         contexts_list (list of torch.Tensor): List of input contexts, each of shape (S, V).
         returns_list (list of torch.Tensor): List of estimated returns for each time step, each of shape (S,).
-        output_masks_list (list of torch.Tensor): List of masks for output tokens, each of shape (S,).
+        output_masks_list (list of torch.Tensor): List of masks for output tokens, each of shape (S,). These tokens should not be included in the loss.
         optimizer (torch.optim.Optimizer, optional): Optimizer for training the model. If None, a default optimizer will be created.
         nb_epochs (int): Number of epochs to train over the dataset.
         mb_size (int): Minibatch size, the number of sequences processed at once.
@@ -56,12 +56,19 @@ def ppo_train(
 
     for epoch in range(nb_epochs):
         for i in range(0, len(contexts_list), mb_size):
+            
+            context_batch = contexts_list[i:i+mb_size]
+            return_batch = returns_list[i:i+mb_size]
+            mask_batch = output_masks_list[i:i+mb_size]
+
             # Get the minibatch
-            context_batch = contexts_list[i:i + mb_size]
-            return_batch = returns_list[i:i + mb_size]
-            mask_batch = output_masks_list[i:i + mb_size]
+            action_batch = [a[1:] for a in context_batch]
+            return_batch = [r[1:] for r in return_batch]
+            mask_batch = [m[1:] for m in mask_batch]
+            context_batch = [c[:-1] for c in context_batch]
 
             # Pad sequences
+            action_batch = pad_sequence(action_batch, batch_first=True).long()
             context_batch = pad_sequence(context_batch, batch_first=True).long()
             return_batch = pad_sequence(return_batch, batch_first=True).float()
             mask_batch = pad_sequence(mask_batch, batch_first=True).float()
@@ -70,57 +77,62 @@ def ppo_train(
             attention_mask = (context_batch != 0).long()
 
             # Move data to the appropriate device
+            action_batch = action_batch.to(model_accelerator.device)
             context_batch = context_batch.to(model_accelerator.device)
             return_batch = return_batch.to(model_accelerator.device)
             mask_batch = mask_batch.to(model_accelerator.device)
             attention_mask = attention_mask.to(model_accelerator.device)
 
             # Forward pass for the reference model to compute old log probabilities
-            with torch.no_grad():
-                ref_outputs = ref_model(input_ids=context_batch, attention_mask=attention_mask)
-                ref_logits = ref_outputs[0]
-                ref_log_probs = F.log_softmax(ref_logits, dim=-1)
-                old_log_probs = ref_log_probs.gather(dim=-1, index=context_batch.unsqueeze(-1)).squeeze(-1)
+            # with torch.no_grad():
+            #     ref_outputs = ref_model(input_ids=context_batch, attention_mask=attention_mask)
+            #     ref_logits = ref_outputs[0]
+            #     ref_log_probs = F.log_softmax(ref_logits, dim=-1)
+            #     ref_action_log_probs = ref_log_probs.gather(dim=-1, index=action_batch.unsqueeze(-1)).squeeze(-1)
 
-            # Forward pass
+            # # Forward pass
             logits, _, values = model(input_ids=context_batch, attention_mask=attention_mask)
 
-            # Compute new log probabilities
+            # # Compute new log probabilities
             log_probs = F.log_softmax(logits, dim=-1)
-            action_log_probs = log_probs.gather(dim=-1, index=context_batch.unsqueeze(-1)).squeeze(-1)
+            action_log_probs = log_probs.gather(dim=-1, index=action_batch.unsqueeze(-1)).squeeze(-1)
 
-            # Apply mask to log probabilities and values
-            action_log_probs *= mask_batch
-            values *= mask_batch
-            return_batch *= mask_batch
+            # # Compute policy loss
+            # advantages = return_batch - values
+            # ratios = torch.exp(action_log_probs - ref_action_log_probs)
+            # surr1 = ratios * advantages
+            # surr2 = torch.clamp(ratios, 1.0 - clip_param, 1.0 + clip_param) * advantages
+            # policy_loss = -torch.min(surr1, surr2)
+            # policy_loss *= mask_batch
+            # policy_loss = policy_loss.sum() / (mask_batch.sum() + 1e-7) # get mean over non-masked output tokens
 
-            # Compute entropy for entropy bonus
-            entropy = - (log_probs * torch.exp(log_probs)).sum(-1).mean()
+            # # Compute value loss with masking
+            # value_losses = F.mse_loss(values, return_batch, reduction='none')
+            # value_loss = (value_losses * mask_batch).sum() / (mask_batch.sum() + 1e-7)
 
-            # Compute ratio (pi_theta / pi_theta_old)
-            ratios = torch.exp(action_log_probs - old_log_probs)
-
-            # Compute advantages
-            advantages = return_batch - values
-
-            # Compute surrogate losses
-            surr1 = ratios * advantages
-            surr2 = torch.clamp(ratios, 1.0 - clip_param, 1.0 + clip_param) * advantages
-            policy_loss = -torch.min(surr1, surr2).mean()
-
-            # Compute value function loss
-            value_loss = F.mse_loss(values, return_batch)
+            # # Compute entropy loss
+            # probs = torch.exp(log_probs)
+            # entropy_loss = (probs * log_probs).sum(dim=-1)
+            # entropy_loss *= mask_batch
+            # entropy_loss = entropy_loss.sum() / (mask_batch.sum() + 1e-7)
 
             # Total loss
-            loss = policy_loss + vf_coef * value_loss - entropy_coef * entropy
+            #loss = policy_loss + vf_coef * value_loss + entropy_coef * entropy_loss
 
+            # Test reinforce loss
+            rewarded_action_log_probs = action_log_probs * (return_batch * mask_batch)
+            reinforce_loss = -rewarded_action_log_probs.mean()
             # Accumulate gradients
-            model_accelerator.backward(loss)
+            model_accelerator.backward(reinforce_loss)
 
-            # Perform optimizer step every mb_per_step minibatches
-            if (i // mb_size + 1) % mb_per_step == 0:
-                optimizer.step()
-                optimizer.zero_grad()
+            if mb_per_step == -1:
+                if i + mb_size >= len(contexts_list):
+                    optimizer.step()
+                    optimizer.zero_grad()
+            else:
+                if (i // mb_size + 1) % mb_per_step == 0:
+                    optimizer.step()
+                    optimizer.zero_grad()
 
     return loss.item()
 

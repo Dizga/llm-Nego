@@ -5,7 +5,7 @@ hydra:
 experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
-  nb_iterations: 40
+  nb_iterations: 50
   nb_matches_per_iteration: 30
   reinit_matches_each_it: true
 
@@ -92,10 +92,10 @@ training:
   llama:
     adapters:
       ad_alice:
-        train_func: train_reinforce_main
+        train_func: train_ppo_main
         train_func_args: {}
       ad_bob:
-        train_func: train_reinforce_main
+        train_func: train_ppo_main
         train_func_args: {}
 
 
