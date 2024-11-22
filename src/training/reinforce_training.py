@@ -64,7 +64,14 @@ def reinforce_train(
             return_batch = returns_list[i:i + mb_size]
             mask_batch = output_masks_list[i:i + mb_size]
 
+            action_batch = [a[1:] for a in context_batch]
+            return_batch = [r[1:] for r in return_batch]
+            mask_batch = [m[1:] for m in mask_batch]
+            context_batch = [c[:-1] for c in context_batch]
+
+
             # Pad sequences
+            action_batch = pad_sequence(action_batch, batch_first=True).long()
             context_batch = pad_sequence(context_batch, batch_first=True).long()
             return_batch = pad_sequence(return_batch, batch_first=True).float()
             mask_batch = pad_sequence(mask_batch, batch_first=True).float()
@@ -73,6 +80,7 @@ def reinforce_train(
             attention_mask = (context_batch != 0).long()
 
             # Move data to the appropriate device
+            action_batch = action_batch.to(model_accelerator.device)
             context_batch = context_batch.to(model_accelerator.device)
             return_batch = return_batch.to(model_accelerator.device)
             mask_batch = mask_batch.to(model_accelerator.device)
@@ -83,7 +91,7 @@ def reinforce_train(
             logits = outputs[0]
             # Compute new log probabilities            
             log_probs = F.log_softmax(logits, dim=-1)
-            action_log_probs = log_probs.gather(dim=-1, index=context_batch.unsqueeze(-1)).squeeze(-1)
+            action_log_probs = log_probs.gather(dim=-1, index=action_batch.unsqueeze(-1)).squeeze(-1)
 
             # Apply mask to log probabilities and values
             action_log_probs *= (return_batch * mask_batch)
