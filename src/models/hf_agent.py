@@ -1,5 +1,6 @@
 from typing import Any, Tuple, List
 import torch
+import uuid
 from torch.utils.data import Dataset, DataLoader
 from datasets import Dataset
 from transformers import (
@@ -87,7 +88,7 @@ class HfAgent:
         self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.bits_and_bytes_configs = BitsAndBytesConfig(**bits_and_bytes_args) if bits_and_bytes_args else None
-        self.lora_config = LoraConfig(**lora_args)
+        self.lora_args = lora_args
         self.hf_sampling_params = generation_args
         self.vllm_sampling_params = SamplingParams(
             temperature=generation_args["temperature"],
@@ -95,10 +96,10 @@ class HfAgent:
             top_p=generation_args["top_p"],
             max_tokens=generation_args["max_new_tokens"],
         )
+        self.lora_config = LoraConfig(**lora_args)
         self.adapters = {adapter_name: None for adapter_name in adapter_names}
-        self.adapters['base'] = None
-        self.current_adapter_name = 'base'
-        self.adapter_steps = {adapter_name: 0 for adapter_name in adapter_names}
+        self.active_adapters = {adapter_name: False for adapter_name in adapter_names}
+        self.current_adapter_name = None
         self.hf_model = None
         self.vllm_model = None
         self.keep_vllm_during_training = keep_vllm_during_training
@@ -108,7 +109,8 @@ class HfAgent:
         self.train_with = train_with
         self.eval_with = eval_with
         self.output_directory = output_directory
-        
+        self.adapters_active = False
+        self.id = 0
     def train(self):
         """
         Prepares the agent for training.
@@ -140,47 +142,20 @@ class HfAgent:
         """
         Initializes the Hugging Face model if it is not already initialized.
         """
-        adapter_path = self.adapters[self.current_adapter_name]
-
-        if adapter_path:
-            # there is already an external LoRA adapter
-            if self.include_value_head:
-                aug_pretrained_args = self.pretrained_args | {'pretrained_model_name_or_path': adapter_path}
-                self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                    **aug_pretrained_args, 
-                    is_trainable=True, 
-                    quantization_config=self.bits_and_bytes_configs
-                )
-            else:
-                self.hf_model = AutoModelForCausalLM.from_pretrained(
-                    **self.pretrained_args, 
-                    #peft_config=self.lora_config,
-                    quantization_config=self.bits_and_bytes_configs
-                )
-                self.hf_model = PeftModel.from_pretrained(self.hf_model, adapter_path, is_trainable=True)
-
-        else:
-            # no external LoRA adapter
-            if self.include_value_head:
-                self.hf_model = AutoModelForCausalLMWithValueHead.from_pretrained(
-                    **self.pretrained_args, 
-                    is_trainable=True, 
-                    peft_config=self.lora_config,
-                    quantization_config=self.bits_and_bytes_configs
-                )
-            else:
-                self.hf_model = AutoModelForCausalLM.from_pretrained(
-                    **self.pretrained_args, 
-                    quantization_config=self.bits_and_bytes_configs
-                )
-                self.hf_model = get_peft_model(self.hf_model, self.lora_config)
-                self.hf_model.train()
-
+        
+        self.hf_model = self.hf_model = AutoModelForCausalLM.from_pretrained(
+                        **self.pretrained_args, 
+                        quantization_config=self.bits_and_bytes_configs
+                    )
+        self.hf_model = get_peft_model(self.hf_model, self.lora_config)
+        
     def destroy_hf(self):
         """
         Destroys the Hugging Face model to free up memory.
         """
         if self.hf_model is not None:
+            for adapter_name in self.active_adapters.keys():
+                self.active_adapters[adapter_name] = False
             self.export_current_adapter()
             self.log_gpu_usage("Before destroying HF.")
             del self.hf_model
@@ -193,7 +168,10 @@ class HfAgent:
         """
         Initializes the VLLM model if it is not already initialized.
         """
-        adapter_path = self.adapters[self.current_adapter_name]
+        if self.current_adapter_name is None:
+            adapter_path = None
+        else:
+            adapter_path = self.adapters[self.current_adapter_name]
         enable_lora = adapter_path is not None and os.path.exists(adapter_path)
         if self.vllm_model is None:
             gc.collect()
@@ -243,12 +221,15 @@ class HfAgent:
         )
 
         if self.eval_with == "vllm":
-
+            # TODO: remove. Check if VLLM creates lora problems.
+            # self.destroy_vllm()
+            # self.use_vllm_model()
 
             with torch.no_grad():
                 if adapter_path is not None:
                     logging.info(f"Generating using VLLM (with LoRA at {adapter_path})")
-                    request = LoRARequest("dond_lora", 1, adapter_path)
+                    self.id += 1
+                    request = LoRARequest(f"dond_lora_{self.id}", self.id, adapter_path)
                     decoded = self.vllm_model.generate(
                         texts,
                         sampling_params=self.vllm_sampling_params,
@@ -301,16 +282,28 @@ class HfAgent:
         Args:
             adapter_name (str): The name of the adapter to set.
         """
-        if adapter_name not in self.adapters:
-            raise ValueError(f"Adapter '{adapter_name}' not found in available adapters.")
-        
+        self.past_adapter_name = self.current_adapter_name
         self.current_adapter_name = adapter_name
-        logging.info(f"Adapter set to '{adapter_name}'.")
+        adapter_path = self.adapters[self.current_adapter_name]
 
-        # Load the adapter if necessary
-        adapter_path = self.adapters[adapter_name]
-        if adapter_path and self.hf_model is not None:
-            self.use_hf_model()  # Ensure the model is using the correct adapter
+        if self.hf_model is None: self.use_hf_model()
+
+        if self.current_adapter_name in self.hf_model.active_adapters:
+            self.hf_model.set_adapter(self.current_adapter_name)
+            logging.info(f"Adapter '{self.current_adapter_name}' already loaded.")
+            return
+
+        elif adapter_path is not None and os.path.exists(adapter_path):
+            self.hf_model.load_adapter(adapter_path, self.current_adapter_name)
+            logging.info(f"Adapter '{self.current_adapter_name}' loaded from {adapter_path}.")
+            return
+        
+        else:
+            self.hf_model.add_adapter(self.current_adapter_name, self.lora_config)
+            self.hf_model.set_adapter(self.current_adapter_name)
+            self.active_adapters[self.current_adapter_name] = True
+            logging.info(f"Adapter '{self.current_adapter_name}' added.")
+
 
     def export_current_adapter(self) -> None:
         """

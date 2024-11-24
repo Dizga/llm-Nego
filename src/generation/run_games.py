@@ -66,8 +66,9 @@ def run_matches(
             model_name = mod_adpt_id.split("/")[0]
             adapter_name = mod_adpt_id.split("/")[1]
             model = models[model_name]
-            model.set_adapter(adapter_name)
-            response_batches[mod_adpt_id] = model.prompt(prompt_batches[mod_adpt_id])
+            if prompt_batches[mod_adpt_id]!=[]:
+                model.set_adapter(adapter_name)
+                response_batches[mod_adpt_id] = model.prompt(prompt_batches[mod_adpt_id])
             prompt_batches[mod_adpt_id] = []
 
         # Play moves for each player by using the model outputs
