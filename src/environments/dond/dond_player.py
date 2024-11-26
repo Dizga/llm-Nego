@@ -213,8 +213,11 @@ class DondPlayerHandler:
                 finalize_json = json.loads(finalize_content)
                 if not isinstance(finalize_json, dict): 
                     errors.append("The content within <finalize>...</finalize> is not a valid dictionary.")
-                i_take = finalize_json.get("i_take")
-                other_player_gets = finalize_json.get("other_player_gets")
+                    i_take = None
+                    other_player_gets = None
+                else:
+                    i_take = finalize_json.get("i_take", {})
+                    other_player_gets = finalize_json.get("other_player_gets", {})
 
                 # Validate that the keys "i_take" and "other_player_gets" exist and have correct formats
                 if not isinstance(i_take, dict) or not isinstance(

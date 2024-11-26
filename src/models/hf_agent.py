@@ -110,73 +110,78 @@ class HfAgent:
         self.eval_with = eval_with
         self.output_directory = output_directory
         self.adapters_active = False
-        self.id = 0
-    def train(self):
+        self.vllm_id = 0
+        self.hf_id = 0
+
+    def prepare_adapter_train(self, adapter_name: str):
         """
-        Prepares the agent for training.
+        Prepares the agent for training with the specified adapter.
         """
+        self.destroy_hf()
+
+        # Set the adapter
+        self.current_adapter_name = adapter_name
+        adapter_path = self.adapters[self.current_adapter_name]
+        if self.train_with == "hf":
+            if adapter_path is None:
+                self.hf_model = AutoModelForCausalLM.from_pretrained(
+                    **self.pretrained_args, 
+                    quantization_config=self.bits_and_bytes_configs
+                )
+                self.hf_model = get_peft_model(self.hf_model, self.lora_config)
+                self.hf_model.train()
+                logging.info(f"Adapter '{self.current_adapter_name}' added to HF.")
+            else:
+                self.hf_model = AutoModelForCausalLM.from_pretrained(
+                    **self.pretrained_args, 
+                    quantization_config=self.bits_and_bytes_configs
+                )
+                self.hf_model = PeftModel.from_pretrained(
+                    model=self.hf_model, 
+                    model_id=adapter_path, 
+                    is_trainable=True
+                )
+                self.hf_model.train()
+                logging.info(f"Adapter '{self.current_adapter_name}' loaded to HF from {adapter_path}.")
+
+        # Proceed with training setup
         if not self.keep_vllm_during_training:
             self.destroy_vllm()
         if not self.keep_hf_during_training:
             self.destroy_hf()
-        if self.train_with == "vllm":
-            self.use_vllm_model()
-        if self.train_with == "hf":
-            self.use_hf_model()
 
-    def eval(self):
+    def prepare_adapter_eval(self, adapter_name: str):
         """
-        Prepares the agent for evaluation.
+        Prepares the agent for evaluation with the specified adapter.
         """
+        self.current_adapter_name = adapter_name
+
+        if self.eval_with == "vllm":
+            if self.vllm_model is None:
+                gc.collect()
+                torch.cuda.empty_cache()
+                logging.info(f"Loading VLLM model.")
+                self.vllm_model = LLM(self.model_name, enable_lora=True, max_lora_rank=256)
+            
+        # Proceed with evaluation setup
         if not self.keep_hf_during_eval:
             self.destroy_hf()
         if not self.keep_vllm_during_eval:
             self.destroy_vllm()
-        if self.eval_with == "vllm":
-            self.use_vllm_model()
-        if self.eval_with == "hf":
-            self.use_hf_model()
-        
 
-    def use_hf_model(self):
-        """
-        Initializes the Hugging Face model if it is not already initialized.
-        """
-        
-        self.hf_model = self.hf_model = AutoModelForCausalLM.from_pretrained(
-                        **self.pretrained_args, 
-                        quantization_config=self.bits_and_bytes_configs
-                    )
-        self.hf_model = get_peft_model(self.hf_model, self.lora_config)
         
     def destroy_hf(self):
         """
         Destroys the Hugging Face model to free up memory.
         """
         if self.hf_model is not None:
-            for adapter_name in self.active_adapters.keys():
-                self.active_adapters[adapter_name] = False
-            self.export_current_adapter()
             self.log_gpu_usage("Before destroying HF.")
             del self.hf_model
             gc.collect()
-            torch.cuda.empty_cache()
+            torch.cuda.empty_cache()    
             self.hf_model = None
             self.log_gpu_usage("After destroying HF.")
 
-    def use_vllm_model(self):
-        """
-        Initializes the VLLM model if it is not already initialized.
-        """
-        if self.current_adapter_name is None:
-            adapter_path = None
-        else:
-            adapter_path = self.adapters[self.current_adapter_name]
-        enable_lora = adapter_path is not None and os.path.exists(adapter_path)
-        if self.vllm_model is None:
-            gc.collect()
-            torch.cuda.empty_cache()
-            self.vllm_model = LLM(self.model_name, enable_lora=enable_lora, max_lora_rank=256)
 
     def destroy_vllm(self):
         """
@@ -228,14 +233,13 @@ class HfAgent:
             with torch.no_grad():
                 if adapter_path is not None:
                     logging.info(f"Generating using VLLM (with LoRA at {adapter_path})")
-                    self.id += 1
-                    request = LoRARequest(f"dond_lora_{self.id}", self.id, adapter_path)
+                    self.vllm_id +=1 
                     decoded = self.vllm_model.generate(
                         texts,
                         sampling_params=self.vllm_sampling_params,
-                        lora_request=request,
+                        # lora_request=LoRARequest(f"dond_lora_{self.vllm_id}", self.vllm_id, "/home/mila/d/dereck.piche/llm-Nego/outputs/2024-11-24/22-19-06/ad_alice_1"),
+                        lora_request=LoRARequest(f"dond_lora_{self.vllm_id}", self.vllm_id, adapter_path),
                     )
-                    del request
                     gc.collect()
                     torch.cuda.empty_cache()
                 else:
@@ -275,52 +279,25 @@ class HfAgent:
 
         return responses
     
-    def set_adapter(self, adapter_name: str) -> None:
-        """
-        Sets the current adapter for the model.
-
-        Args:
-            adapter_name (str): The name of the adapter to set.
-        """
-        self.past_adapter_name = self.current_adapter_name
-        self.current_adapter_name = adapter_name
-        adapter_path = self.adapters[self.current_adapter_name]
-
-        if self.hf_model is None: self.use_hf_model()
-
-        if self.current_adapter_name in self.hf_model.active_adapters:
-            self.hf_model.set_adapter(self.current_adapter_name)
-            logging.info(f"Adapter '{self.current_adapter_name}' already loaded.")
-            return
-
-        elif adapter_path is not None and os.path.exists(adapter_path):
-            self.hf_model.load_adapter(adapter_path, self.current_adapter_name)
-            logging.info(f"Adapter '{self.current_adapter_name}' loaded from {adapter_path}.")
-            return
-        
-        else:
-            self.hf_model.add_adapter(self.current_adapter_name, self.lora_config)
-            self.hf_model.set_adapter(self.current_adapter_name)
-            self.active_adapters[self.current_adapter_name] = True
-            logging.info(f"Adapter '{self.current_adapter_name}' added.")
-
 
     def export_current_adapter(self) -> None:
         """
         Saves only the LoRA weights to a specified directory. If the directory
         already exists, it deletes the existing directory before saving.
         """
-        adapter_path = os.path.join(self.output_directory, self.current_adapter_name)
+        #self.hf_id += 1
+        adapter_path = os.path.join(self.output_directory, f"{self.current_adapter_name}")
 
-        if os.path.exists(adapter_path):
-            shutil.rmtree(adapter_path)
-            logging.info(f"Existing directory '{adapter_path}' deleted.")
+        # if os.path.exists(adapter_path):
+        #     shutil.rmtree(adapter_path)
+        #     logging.info(f"Existing directory '{adapter_path}' deleted.")
 
         os.makedirs(adapter_path, exist_ok=True)
 
         # Save only the LoRA weights
         if isinstance(self.hf_model, PeftModel) or isinstance(self.hf_model, AutoModelForCausalLMWithValueHead):
             self.hf_model.save_pretrained(adapter_path) 
+            logging.info(f"LoRA weights saved to {adapter_path}")
         else:
             logging.warning("Model is not a LoraModel or ValueHead, skipping LoRA weights saving.")
 
@@ -330,4 +307,3 @@ class HfAgent:
 
         # Update the adapter path after export
         self.adapters[self.current_adapter_name] = adapter_path
-        logging.info(f"LoRA weights saved to {adapter_path}")

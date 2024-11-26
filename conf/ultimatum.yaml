@@ -5,8 +5,8 @@ hydra:
 experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
-  nb_iterations: 10
-  nb_matches_per_iteration: 10
+  nb_iterations: 400
+  nb_matches_per_iteration: 30
   reinit_matches_each_it: true
 
 matches:
@@ -45,28 +45,26 @@ matches:
       dond_player_args:
         mod_adpt_id: 'llama/ad_alice'
         allow_reasoning: false
-        max_retries: 0
-
+        max_retries: 1
     bob:
 
       dond_player_args:
         mod_adpt_id: 'llama/ad_bob'
         allow_reasoning: false
-        max_retries: 0
+        max_retries: 1
 
 
 training:
   llama:
     adapters:
       ad_alice:
-        train_func: train_reinforce_main
-        train_func_args: 
-          learning_rate: 1e5
+        train_func: train_ppo_main
+        train_func_args: {}
+
 
       ad_bob:
-        train_func: train_reinforce_main
+        train_func: train_ppo_main
         train_func_args: {}
-              #learning_rate: 1e5
 
 
 models: 
@@ -91,7 +89,7 @@ models:
         r: 32
         lora_alpha: 16
         lora_dropout: 0.0
-        target_modules: ["q_proj", "k_proj"]
+        target_modules: "all-linear"
 
       generation_args:
         max_new_tokens: 200

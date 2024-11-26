@@ -96,10 +96,6 @@ def dond_run_train(cfg):
         os.makedirs(it_folder, exist_ok=True)
 
 
-        # Generate matches    
-        for model_name, model in models.items():
-            model.eval()
-            
         generation_start_time = time.time()
         matches = [create_blank_match(cfg) for _ in range(cfg["experiment"]["nb_matches_per_iteration"])]
         players = copy.deepcopy(matches[0]["players"])
@@ -131,13 +127,11 @@ def dond_run_train(cfg):
         # Train models
         training_start_time = time.time()
 
-        for model_name, model in models.items():
-            model.train()
 
         for model_name, model in models.items():
             for adapter_name in model.adapters.keys():
                 mod_adpt_id = f"{model_name}/{adapter_name}"
-                model.set_adapter(adapter_name)
+                model.prepare_adapter_train(adapter_name)
 
                 # Find paths of all player data for this adapter
                 data_paths = []

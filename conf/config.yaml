@@ -5,8 +5,8 @@ hydra:
 experiment:
   method: dond_run_train
   description: "Easy. They should be learning."
-  nb_iterations: 400
-  nb_matches_per_iteration: 10
+  nb_iterations: 50
+  nb_matches_per_iteration: 20
   reinit_matches_each_it: true
 
 matches:
@@ -16,7 +16,12 @@ matches:
 
   run_matches_args:
     nb_parallel_matches: -1
-    log_matches: true
+    log_func: independant_players_logging
+    log_func_args: 
+      metrics_func: gather_dond_statistics
+      metrics_func_args: {} 
+      training_data_func: set_discounted_returns
+      training_data_func_args: {}
 
   dond_game_args:
     rounds_per_game: 1
@@ -28,11 +33,10 @@ matches:
       quantities: [10]
       val_starting_negotiator: [1]
       val_responding_negotiator: [1]
-    role_assignator_func: alternating_role_assignator
+    role_assignator_func: fixed_role_assignator
     role_assignator_func_kwargs: {}
     finalization_visibility: True
     other_values_visibility: True
-
 
   players: 
 
@@ -41,71 +45,44 @@ matches:
       dond_player_args:
         mod_adpt_id: 'llama/ad_alice'
         allow_reasoning: false
-        game_intro_file: "src/prompts/dond/rules.txt"
-        in_between_file: "src/prompts/dond/between_moves.txt" 
-        finalization_file: "src/prompts/dond/finalization.txt"
-        new_round_file: "src/prompts/dond/new_round.txt"
-        max_retries: 1
-
-      ppo_data_extraction_args:
-
-        last_k_responses: -1
-        remove_errors: false
-
-        score_function: points_score
-        score_function_kwargs: 
-          no_agreement_score: 0
-          exponent: 1.0
-
-        scores_pp_func: null
-        scores_pp_func_kwargs: {}
-
-        filter_out_func: null
-        filter_out_func_kwargs: {}
+        max_retries: 0
 
     bob:
 
       dond_player_args:
         mod_adpt_id: 'llama/ad_bob'
         allow_reasoning: false
-        game_intro_file: "src/prompts/dond/rules.txt"
-        in_between_file: "src/prompts/dond/between_moves.txt" 
-        finalization_file: "src/prompts/dond/finalization.txt"
-        new_round_file: "src/prompts/dond/new_round.txt"
-        max_retries: 1
+        max_retries: 0
 
-      ppo_data_extraction_args:
 
-        last_k_responses: -1
-        remove_errors: false
+training:
+  llama:
+    adapters:
+      ad_alice:
+        train_func: train_reinforce_main
+        train_func_args: {}
+              #learning_rate: 1e10
 
-        score_function: points_score
-        score_function_kwargs: 
-          no_agreement_score: 0
-          exponent: 1.0
 
-        scores_pp_func: null
-        scores_pp_func_kwargs: {}
-
-        filter_out_func: null
-        filter_out_func_kwargs: {}
+      ad_bob:
+        train_func: train_reinforce_main
+        train_func_args: {}
+              learning_rate: 1e10
 
 models: 
 
   llama:
-
     class: hf
-
     init_args:
-
       name: 'llama'
       adapter_names: ['ad_alice', 'ad_bob']
+      include_value_head: false
       device: "cuda"
-      default_training_mode: 'ppo'
       pretrained_args: 
-        pretrained_model_name_or_path: "meta-llama/Llama-3.2-1B-Instruct"
+        pretrained_model_name_or_path: "meta-llama/Llama-3.1-8B-Instruct"
         torch_dtype: "bfloat16"
         device_map: "auto"
+        attn_implementation: "flash_attention_2"
       bits_and_bytes_args: null
         #load_in_8bit: False
         #load_in_4bit: true
@@ -113,46 +90,28 @@ models:
         task_type: TaskType.CAUSAL_LM
         r: 32
         lora_alpha: 16
-        lora_dropout: 0.1
-        target_modules: "all-linear"
+        lora_dropout: 0.0
+        target_modules: ["q_proj", "k_proj"]
 
       generation_args:
         max_new_tokens: 200
         do_sample: True
-        temperature: 1.0
+        temperature: 1.
+        
         top_k: 0.0
         top_p: 1.0
         repetition_penalty: 1.0
       keep_vllm_during_training: False
-      keep_hf_during_generation: False
-      destroy_ppo_trainer_after_training: True
-      generate_with: "vllm"
+      keep_hf_during_training: True
+      keep_hf_during_eval: False
+      keep_vllm_during_eval: True
+      eval_with: "vllm"
+      train_with: "hf"
 
-    train_ppo_args:
-      
-      ppo_trainer_class: PPOTrainer
-      step_batch_size: -1
-      parallel_batch_size: 1
+  
 
-      ppo_trainer_args:
-        batch_size: None
-        mini_batch_size: None
-        gradient_accumulation_steps: None
-        ppo_epochs: 1
-        #remove_unused_columns: false
-        #vf_coef: 0.0
-        gradient_checkpointing: False
-        log_with: "tensorboard"
-        project_kwargs: None
-        tracker_project_name: "tensorboard"
-        #target_kl: 0.1
-        #cliprange: 0.2
-        # adap_kl_ctrl: False
-        # init_kl_coef: 0.0
-        # target_kl: 5.0
-        # learning_rate: 1e-5
-        is_peft_model: True
-      
+
+
 
 
 

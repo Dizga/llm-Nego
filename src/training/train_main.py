@@ -27,7 +27,6 @@ def train_ppo_main(
         train_ppo_args={},
         output_path=None,
     ):
-    hf_model.train()
     contexts_list, returns_list, output_masks_list = paths_to_rl_data(hf_model.tokenizer, paths)
 
     if isinstance(hf_model.hf_model, AutoModelForCausalLMWithValueHead):
@@ -51,7 +50,6 @@ def train_reinforce_main(
         train_reinforce_args={},
         output_path=None,
     ):
-    hf_model.train()
     contexts_list, returns_list, output_masks_list = paths_to_rl_data(hf_model.tokenizer, paths)
     reinforce_train(model=hf_model.hf_model, 
                     contexts_list=contexts_list, 

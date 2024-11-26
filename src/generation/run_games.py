@@ -67,7 +67,7 @@ def run_matches(
             adapter_name = mod_adpt_id.split("/")[1]
             model = models[model_name]
             if prompt_batches[mod_adpt_id]!=[]:
-                model.set_adapter(adapter_name)
+                model.prepare_adapter_eval(adapter_name)
                 response_batches[mod_adpt_id] = model.prompt(prompt_batches[mod_adpt_id])
             prompt_batches[mod_adpt_id] = []
 
