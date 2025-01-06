@@ -25,7 +25,7 @@ matches:
 
   dond_game_args:
     rounds_per_game: 1
-    max_turns: 1
+    max_turns: 5
     mode: basic
     random_setup_func: fixed_manual
     random_setup_kwargs: 
@@ -62,7 +62,6 @@ training:
         train_func: train_reinforce_main
         train_func_args: {}
               #learning_rate: 1e10
-
 
       ad_bob:
         train_func: train_reinforce_main

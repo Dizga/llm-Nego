@@ -35,7 +35,7 @@ def compute_mean_game_stats(game_stats_list):
     Computes the mean and variance statistics from a list of game statistics.
     """
     if not game_stats_list:
-        return {}
+        return {} , {}
     mean_game_stats = {}
     variance_game_stats = {}
     for stat in game_stats_list[0].keys():

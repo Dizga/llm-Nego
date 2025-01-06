@@ -15,6 +15,7 @@ def set_discounted_returns(player_info, info, discount_factor=0.99):
     # Calculate discounted returns for each round
     discounted_returns = []
     cumulative_return = 0
+    
     for i in reversed(range(len(round_points))):
         # Use the player's name to get the specific points
         role = info['round_player_roles'][i].get(player_name)

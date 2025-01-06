@@ -1,5 +1,5 @@
 import json
-
+import numpy as np
 def gather_dond_statistics(player_info, info):
     """
     Gathers all statistics of a game for a single player and outputs them in JSONL format.
@@ -28,13 +28,13 @@ def gather_dond_statistics(player_info, info):
             "self_points": info['round_points'][i][player_role],
             "other_points": info['round_points'][i][other_role],
             "points_difference": info['round_points'][i][player_role] - info['round_points'][i][other_role],
-            "imbalance": calculate_imbalance(info['round_points'][i], player_role, other_role),
+            # "imbalance": calculate_imbalance(info['round_points'][i], player_role, other_role),
             "items_given_to_self": calculate_items_given_to_self(info['round_finalizations'][i][player_role]),
-            "self_points_on_agreement": info['round_points'][i][player_role] if info['round_agreements_reached'][i] else None,
-            "other_points_on_agreement": info['round_points'][i][other_role] if info['round_agreements_reached'][i] else None,
-            "points_diff_on_agreement": (info['round_points'][i][player_role] - info['round_points'][i][other_role]) if info['round_agreements_reached'][i] else None,
-            "quantities": info['round_quantities'][i],
-            "values": info['round_values'][i][player_role],
+            "self_points_on_agreement": info['round_points'][i][player_role] if info['round_agreements_reached'][i] else np.nan,
+            "other_points_on_agreement": info['round_points'][i][other_role] if info['round_agreements_reached'][i] else np.nan,
+            "points_diff_on_agreement": (info['round_points'][i][player_role] - info['round_points'][i][other_role]) if info['round_agreements_reached'][i] else np.nan,
+            # "quantities": info['round_quantities'][i],
+            # "values": info['round_values'][i][player_role],
         }
         statistics.append(round_info)
 
@@ -60,4 +60,4 @@ def calculate_imbalance(points, player_role, other_role):
 def calculate_items_given_to_self(finalization):
     if all(isinstance(x, (int, float)) for x in finalization.values()):
         return sum(finalization.values())
-    return None
+    return np.nan
